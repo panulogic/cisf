@@ -1,0 +1,12 @@
+{
+  "name": "cisf"
+, "version": "1.0.4"
+, "description": "Support for Simple Runtime Assertions in JavaScript."
+, "main" :  "CISF.js"
+,
+  "scripts": {
+    "test": "node test.js"
+  }
+  , "author": "Panu Viljamaa"
+  , "license": "Apache 2.0"
+}
