@@ -86,7 +86,7 @@ an error if ok() would not cause an error.
     fails ( _ => not (true));
 
 
-#####x (value, Type)
+##### x (value, Type)
 
  x() takes two arguments, a value and
  a "type" and throws an error
@@ -204,4 +204,7 @@ it is the equivalanet of a canary dying.
 
 #### 6. License
 SPDX-License-Identifier: Apache-2.0
+
+
+
 
