@@ -130,7 +130,7 @@ an error if ok() would not cause an error.
   
   
 ##### is (value, Type)
-it() returns true if x() called with the
+is() returns true if x() called with the
 same arguments would not fail, and false
 otherwise:
 
@@ -146,9 +146,9 @@ an error fails() returns true, else it
 causes an error.
 
 fails() may not be the most often used
-ubn runtime code but it is useful when writing
-tests of functions which we know will fail
-under ceratin conditions.  It is good to tell
+runtime code but it is useful when writing
+tests for functions which we know will fail
+under certain conditions.  It is good to tell
 the users of your API what are some such
 cases.
 
