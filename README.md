@@ -12,13 +12,40 @@ using "TypeScript Light", simpler and
 easier to learn and unobtrusive to use, 
 with no effect on your tool-chain. 
 
-  
+#### 0. MOTIVATING EXAMPLE
+
+If you want to make sure you get
+an early warning whenever your 
+function is called with a wrong
+type of argument, you might write
+something liek this: 
+
+    if (typeof arg !== "number") 
+    { throw "arg is not a number"
+    }
+ 
+ Using CISF you can write it more simply as:
+ 
+    x (arg, 1)
+ 
+ x() checks that its first and 2nd argument
+ are of the same type.
+ 
+ You are more likely to put such checks
+ into your code when they are smuch easier
+ to write and much easier to read. This
+ in turn meand that errors are caught
+ early and thus their root-cause is
+ easier to identify.
+ 
+ 
+ 
 #### 1. INSTALLATION
     npm install cisf
     
 #### 2. REQUIRING
 
-##### 2.A) With Node.js
+##### A) With Node.js
 
     const { ok, not, x, is, fails, Type} 
     = require ('CISF');
@@ -33,7 +60,7 @@ assignment. For instance:
 
 might be all you will mostly use.
 
-##### 2.B) With  browser
+##### B) With  browser
 
 If CISF.js detects it is not
 running in Node.js it stores its API-functions
@@ -51,17 +78,17 @@ SEE: **test_browser.html** which does the
 above and then runs all CISF-tests 
 within the browser. So to
 check whether it runs on your browser 
-open 
-**test_browser.html** in it. Seems to work on latest versions of Edge, 
+open  **test_browser.html** in it. 
+Seems to work on latest versions of Edge, 
 FireFox and Chrome but not in IE-11. 
 
 #### 3. API  
 
-##### ok (aBoolean)
+##### 3.1 ok ( truthy )
  
- ok() takes a boolean condition
+ ok() takes a  value
  as argument and throws an error
- if that is not "truthy".
+ if the argument is not "truthy".
  
     ok ({});
     ok ([]);
@@ -74,7 +101,7 @@ FireFox and Chrome but not in IE-11.
     fails ( _ => ok(false));
 
 
-##### not (aBoolean)
+##### 3.2 not ( nonTruthy )
 not() returns true if ok()
 would cause an error, and causes
 an error if ok() would not cause an error.
@@ -85,28 +112,33 @@ an error if ok() would not cause an error.
     fails ( _ => not (true));
 
 
-##### x (value, Type)
+##### 3.3  x (value, Type)
 
- x() takes two arguments, a value and
- a "type" and throws an error
+ x() is typicallly called with
+ two arguments, a value and
+ a "type". It throws an error
  if the 1st argument is not of the 
  type specified by the 2nd argument. 
+ We can use our API-function "fails()"
+ to show that x() 'fails' in such a case:
  
- If x() does not fail it returns its
+     fails (_=> x ("s", Number));
+     
+ If x() does _not_ fail it returns its
  first argument, which is useful
  so you can use it within an
- assignment for instance.
+ assignment for instance:
  
+    ok (x ("s", String) 	    === "s" );
+
+    
  If there is no 2nd argument x() 
  fails if it is called with null
  or undefined or no argument at all.
  This usage let's you know if the 
  first argument is something from
- which you can ask its constructor.
+ which you can ask its constructor:
  
- x() can take more than one type-argument.
- If so if any of them accepts as the
- first argument x() passes.
  
     ok (x ("")      === ""   );
     ok (x (false)   === false);
@@ -115,20 +147,28 @@ an error if ok() would not cause an error.
     fails (_=> x (undefined));
     fails (_=> x ());
   
-    ok (x ("s", String) 	    === "s" );
-    fails (_=> x ("s", Number));
+   
+ 
+ 
+ x() can take more than one type-argument.
+ If any of them accepts the first argument 
+ as a value compliant with it then
+ x() passes.
+ 
     ok (x ("s", Number, String) === "s" );
  
   How the 2nd argument is interpreted
-  as a type depends on its type. The
+  as a type depends on its kind. The
   basic case is just providing one or
   more constructors as arguments as
-  above. For more advanced usage see
+  above. 
+  
+  For more advanced usage see
   the test.js -file. It shows how you 
   can define yous own  custom "types".
   
   
-##### is (value, Type)
+##### 3.4 is (value, Type)
 is() returns true if x() called with the
 same arguments would not fail, and false
 otherwise:
@@ -136,7 +176,7 @@ otherwise:
     ok  (is (123, String) === false);
     ok  (is (123, Number) === true);
 
-##### fails (aFunction)
+##### 3.5 fails (aFunction)
 Above you have already seen use of fails().
 It assumes it is callwed with a function
 as argument which it will call without
@@ -155,7 +195,7 @@ cases.
     fails ( b => fails ( a => 123));
 
 
-##### Type ()
+##### 3.6 Type ()
 Type is a constructor for creating new "sum types"
 out of existing types. It is especially useful
 for declaring that something is EITHER
