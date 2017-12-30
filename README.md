@@ -3,15 +3,14 @@ Support for **Simple Runtime Assertions**
 in JavaScript.
  
 CISF.js allows you to add type-checks to your 
-JavaScript code  by using plain old pure JavaScript. 
-No transpiling to JavaScript is needed, since you
+JavaScript code  with minimal syntax. 
+No transpiling to JavaScript is needed since you
 do it all in JavaScript.
 
-Adding CISF.js to your platform could be thought
-of as using "TypeScript Light", simpler and
-easier to learn and unobtrusive to use, with
-no effect on your tool-chain. It might be  
-useful even when used from within TypeScript.
+Adding CISF.js to your platform is like
+using "TypeScript Light", simpler and
+easier to learn and unobtrusive to use, 
+with no effect on your tool-chain. 
 
   
 #### 1. INSTALLATION
@@ -32,7 +31,7 @@ assignment. For instance:
 
     const { ok, x }  = require ('CISF');
 
-might be what you will mostly use.
+might be all you will mostly use.
 
 ##### 2.B) With  browser
 
