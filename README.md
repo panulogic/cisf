@@ -114,58 +114,73 @@ an error if ok() would not cause an error.
 
 ##### 3.3  x (value, Type)
 
+###### 3.3.1  Two arguments
  x() is typicallly called with
  two arguments, a value and
- a "type". It throws an error
+ a "type":
+  
+  x (123, Number) 
+
+  How the 2nd argument is used 
+  as a "type" depends on its kind. The
+ most obvious case is using a constructor
+ as 2nd argument like above.  But it 
+ can also be a _value that is of the same type_
+ as the 1st:
+ 
+    x (123, 1);  // shorter to write '1' than 'Number'
+ 
+ 
+ 
+ x() throws an error
  if the 1st argument is not of the 
  type specified by the 2nd argument. 
  We can use our API-function "fails()"
- to show that x() 'fails' in such a case:
+ to show this happens:  
+   
+    fails (_=> x ("s", Number));
+
  
-     fails (_=> x ("s", Number));
      
- If x() does _not_ fail it returns its
+######  3.3.2  Result of x() 
+
+If x() does _not_ fail it returns its
  first argument, which is useful
  so you can use it within an
  assignment for instance:
  
     ok (x ("s", String) 	    === "s" );
 
+    ok (x ("")      === ""   );
+    ok (x (false)   === false);
+    ok (x (true)    === true );
     
- If there is no 2nd argument x() 
+###### 3.3.3 Only one argument
+ If called with only one argument x() 
  fails if it is called with null
  or undefined or no argument at all.
+ 
  This usage let's you know if the 
  first argument is something from
  which you can ask its constructor:
  
- 
-    ok (x ("")      === ""   );
-    ok (x (false)   === false);
-    ok (x (true)    === true );
     fails (_=> x (null));
     fails (_=> x (undefined));
     fails (_=> x ());
   
    
- 
- 
+ ###### 3.3.4  More than 2 arguments
  x() can take more than one type-argument.
  If any of them accepts the first argument 
- as a value compliant with it then
- x() passes.
+ as a  compliant value then x() succeeds:  
  
     ok (x ("s", Number, String) === "s" );
  
-  How the 2nd argument is interpreted
-  as a type depends on its kind. The
-  basic case is just providing one or
-  more constructors as arguments as
-  above. 
   
   For more advanced usage see
-  the test.js -file. It shows how you 
-  can define yous own  custom "types".
+  the **test.js** -file. It shows how  
+  for instance how you can define 
+  your own  "custom types".
   
   
 ##### 3.4 is (value, Type)

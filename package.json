@@ -1,6 +1,6 @@
 {
   "name": "cisf"
-, "version": "1.0.10"
+, "version": "1.0.11"
 , "description": "Support for Simple Runtime Assertions in JavaScript."
 , "main" :  "CISF.js"
 ,
