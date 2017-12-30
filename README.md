@@ -193,18 +193,18 @@ otherwise:
 
 ##### 3.5 fails (aFunction)
 Above you have already seen use of fails().
-It assumes it is callwed with a function
+It assumes it is called with a function
 as argument which it will call without
 arguments. If the argument function throws
 an error fails() returns true, else it
 causes an error.
 
-fails() may not be the most often used
-runtime code but it is useful when writing
-tests for functions which we know will fail
-under certain conditions.  It is good to tell
-the users of your API what are some such
-cases.
+fails() may not be  used much
+in runtime code but it is useful when writing
+tests for functions we know should and will fail
+under certain conditions.  It  is good to tell
+the users of your API what such
+cases are.
 
     fails ( a => throw "");
     fails ( b => fails ( a => 123));
