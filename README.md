@@ -18,7 +18,7 @@ If you want to make sure you get
 an early warning whenever your 
 function is called with a wrong
 type of argument, you might write
-something liek this: 
+something like this: 
 
     if (typeof arg !== "number") 
     { throw "arg is not a number"
