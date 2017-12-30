@@ -183,6 +183,38 @@ If x() does _not_ fail it returns its
   your own  "custom types".
   
   
+###### 3.3.5  Special case type-arguments
+Depending on the type of the 2nd and
+further argument the "type-check"
+can mean different things than 
+what it means for constructors.
+
+For instance if the type-argument
+is an **arrow-function** it means it
+gets called with the 1st argument
+as its argument. If the arrow-function
+returns true x() passes, else not.
+
+The special cases are best
+explained by the test-cases code in
+test.js. The simplest is 
+to use only constructors as type-
+arguments, their behavior is 
+"obvious". 
+
+One caveat is in order: 
+
+    x (123, Number)
+
+succeeds even though technically
+123 is not "instanceof" Number.
+But as far as x() is concerned 
+it is "of type" Number as far as.
+That just makes more sense to us 
+intuitively.
+
+ 
+   
 ##### 3.4 is (value, Type)
 is() returns true if x() called with the
 same arguments would not fail, and false
