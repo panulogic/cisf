@@ -32,11 +32,11 @@ something liek this:
  are of the same type.
  
  You are more likely to put such checks
- into your code when they are smuch easier
- to write and much easier to read. This
- in turn meand that errors are caught
+ into your code when they are easy
+ to write and easy to read. This
+ in turn means that errors are caught
  early and thus their root-cause is
- easier to identify.
+ easy to identify early on.
  
  
  
