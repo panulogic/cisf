@@ -1,9 +1,9 @@
 # Release Notes for CISF.js
 
-#### 1.1.1:  Instantiable Types
-Improved the documentattion a bit.
+#### 1.1.2:  Map-type  
+Improved documentation.
 
-#### 1.1.0:  Instantiable Types
+#### 1.1.0:  Map-type  
 
 **mapType:**
 'mapType' is a {} with one or no keys in it.
@@ -13,7 +13,7 @@ Improved the documentattion a bit.
   similar to how a [] with no elements matches
   any array.
 
-  A {} with exactly one key a matches any value 
+  A {} with exactly one key matches any value 
   whose constructor is an Object and whose values 
   are all of the same type as the value of the
   only field of the type-object.  
