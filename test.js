@@ -4,7 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 */
 let testee = require ("./CISF");
 
-messages        	.bind 	(testee)(); 
+log             	.bind 	(testee)(); 
+warn            	.bind 	(testee)(); 
+err             	.bind 	(testee)(); 
+customMessages  	.bind 	(testee)(); 
 ok              	.bind 	(testee)(); 
 not             	.bind 	(testee)(); 
 fails           	.bind 	(testee)(); 
@@ -34,9 +37,99 @@ console.log("");
 return;
 
 
-function messages()
+function log()
+{ let  ok=this.ok, log=this.log;
+  let s = log (`Test-method log() executed`);
+  ok (s.match(/Test-method log\(\) executed/));
+}
+
+/**
+ log() is a simple logger-method that comes as
+ part of the CISF -package. Instead of writing
+ "console.log('some msg')"
+ you can more succinctly write:
+ "log('some msg')" .
+
+log() also adds to the log-message the current
+ millisecond which may be helpful for measuring
+ performance of some operations.
+*/
+
+/* ----------------------------------------- */
+
+function warn()
+{ let ok=this.ok, warn=this.warn;
+  let s = warn (`Test-method log() executed`);
+  ok (s.match(/WARNING:/));
+}
+
+/**
+ warn() is the same as log() except
+ it adds the prefix "WARNING: " to the
+ log-message so you don't have to.
+ This makes the more critical warning-
+ messages easier to spot form the logs
+ apart from the rest of the less critical
+ log-messages.
+*/
+
+/* ----------------------------------------- */
+
+function err()
+{ let ok=this.ok,err=this.err, fails=this.fails;
+  let e  = fails ( _=> err ('something wrong') );
+  let e2 = fails ( _=> err ('wrong type', TypeError) );
+  ok (e.stack);
+  ok (e.stack.match (/something wrong/));
+  ok (e.constructor.name === "AssertError");
+  ok (e2.message.match (/wrong type/));
+  ok (e2.constructor.name === "TypeError");
+}
+
+/**
+ err() is a simple utility to throw an
+ error of default or chosen error-class.
+
+Instead of writing
+ "throw 'error-message'";
+ you can write:
+ "err ('error-message')"
+
+This does not save many key-strokes
+ in itself but calling a function instead
+ of a built-in keyword has at itws benefits:
+
+1. err('some string') turns its argument
+ into an instance of Error before throwing it.
+ Thich means the log will show not only
+ the error-message but also the stack of
+ the calls that lead to the error.
+
+2. You can assign 'err' to an even shorter
+ variable-name:
+
+let e = err;  e('something wrong')
+
+3. You can pass it (or something else)
+ as argument to functions:
+
+doSomething (something, err);
+
+4. You can replace it with your own function
+ which takes you to the debugger if an
+ error happens. Or which ignores some
+ specific error-messages altogether.
+
+Using err() gives YOU the control of
+ what should happen under which error-
+ conditions, while providing a reasonable
+ default behavior.
+*/
+
+/* ----------------------------------------- */
+
+function customMessages()
 { let ok = this.ok, not=this.not, fails=this.fails, x=this.x;
-  debugger
   let n = 1;
   ok ( n > 0, `n is not > 0: ${n}`);
   n = 0;

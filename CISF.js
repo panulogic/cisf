@@ -28,12 +28,11 @@ if (typeof module !== "undefined")
 function CISF_inner  ()
 { var C          = _Canary()    ;
   const ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is;
-
   let Type = _Type();
   const Xer = _Xer();
   const AssertError = class AssertError extends Error { };
 
-  return { ok, not, x, fails, is, Type}
+  return { ok, not, x, fails, is, Type, log, warn, err};
 
 function notXer(v )
 { if (! ( v instanceof Xer))
@@ -141,6 +140,10 @@ function assignMethods (Canary)
   C.x        = x      ;
   C.fails    = fails  ;
   C.is       = is    ;
+
+  C.log     = log    ;
+  C.warn     = warn  ;
+  C.err     = err    ;
 
   return;
 
@@ -645,22 +648,28 @@ ${ funk} ` ;
   }
 
   function log (msg = "The String to log")
-  { var s = msg;
+  { var s = "" + msg + "";
     let date = new Date();
     let ms =  date.getMilliseconds();
     if (ms.length === 1) ms = "00" + ms;
     if (ms.length === 2) ms = "0" + ms;
-    let s2 = date. toLocaleTimeString() +   " "  +
-                 ms  + " "  + s ;
+    let s2 = date. toLocaleTimeString() +   " "
+              + ms  + " "  + s ;
+    console.log (s2);
 
-    console.log(s2);
     return s2;
   }
 
-  function err ( messageOne="NO-ERROR-IF-NO-ARGS")
-  { var ErrorClass = AssertError ;
-    var s   =  messageOne + ``;
-    var err = new ErrorClass ( s );
+ function warn (msg)
+ { return log (`
+   WARNING:
+   ${ msg}
+   `);
+ }
+
+  function err ( s = "", ErrorClass = AssertError )
+  { s   =  s + ``;
+     var err = new ErrorClass ( s );
 
     if (  (  new Error ()).stack  . match (/fails\s*\(/)   )
     { } else
