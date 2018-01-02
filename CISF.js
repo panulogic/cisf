@@ -73,7 +73,7 @@ function trimLineBeginnings (s)
 }
 
 function _Type ()
-{ return class  Type
+{ return class  TypeCreator
   { [Symbol.hasInstance] (value)
     { let compTypes = this._compTypes;
        for (let ct of compTypes)
@@ -83,8 +83,45 @@ function _Type ()
        }
       return;
     }
-    constructor (...Types)
-    { this._compTypes = Types;
+    constructor (... $CompTypes)
+    { class TYPE
+      { static [Symbol.hasInstance] (value)
+        { let compTypes = $CompTypes ;
+           for (let ct of compTypes)
+           { if (is (value, ct))
+             { return true;
+             }
+           }
+           return;
+        }
+      static new  ()
+      { let T0 = $CompTypes [0];
+      if (T0 === null  || T0 === undefined)
+      { return T0;
+      }
+      try
+      { if (typeof T0 !== "function")
+        { return T0;
+        }
+        let itA = new T0 () ;
+
+        return itA .valueOf();
+      } catch (e)
+      { debugger
+
+        err
+        ( `Type -constructor failed  trying to
+           instantiate the first alternative  
+           type without argument:
+           ${ e}.
+           `
+        );
+      }
+    }
+      }
+      this._compTypes = $CompTypes;
+      TYPE._compTypes = $CompTypes;
+      return TYPE;
     }
   }
 }
@@ -480,6 +517,27 @@ function getTypeOfFunk(funk)
           type .constructor = ${ type .constructor.name}  .
         `);
       }
+      let typeFieldsCount = Object.keys(type).length;
+      if (typeFieldsCount === 0)
+      { return value;
+      }
+      if (typeFieldsCount === 1)
+      { let [k,v] = Object.entries (type)[0];
+         let typen =  v;
+
+         for (let p in value)
+         { let compValue = value[p];
+            if (is (compValue, typen))
+             { continue;
+             } else
+             { error = `Field ${ p} type-check
+                   ${ typen} failed 
+                   with value-field value
+                   ${ compValue}. `
+            }
+         }
+         return value;
+      }
      let error;
      for (let p in type)
      { let typen     = type [p];
@@ -498,7 +556,9 @@ function getTypeOfFunk(funk)
      }
      for (let p in value)
      { if (type[p] === undefined)
-       { error = `Field ${ p} missing from type.`
+       { error = `Field '${ p}' in the value does not exist in the type.`
+          debugger
+
          break;
        }
        x (value[p], type[p]);

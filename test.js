@@ -9,6 +9,7 @@ not             	.bind 	(testee)();
 fails           	.bind 	(testee)(); 
 
 // Tests for testee-method x(): 
+mapType         	.bind 	(testee)(); 
 objectType      	.bind 	(testee)(); 
 sumType         	.bind 	(testee)(); 
 zeroArgs        	.bind 	(testee)(); 
@@ -147,6 +148,46 @@ fails() is mostly useful in tests to show
 // TESTS for testee-method x():
 	
 
+function mapType()
+{ let r, ok = this.ok, fails=this.fails, not=this.not, x=this.x, is=this.is;
+  let Type = this.Type;
+  ok (x ({a:1}, {} ));
+  ok (x ({zzz:3}, {} ). zzz === 3);
+  ok ( x ({a:1}, {any: 2}
+  ).a === 1
+  );
+  x ( {a:1, b:2, c:3}
+  , {any: Number}
+  );
+  x ( {}
+  , {any: Number}
+  ); 
+  fails
+  ( _ =>
+  { x ( {a:1, b:"2", c:3}
+  , {any: Number}
+  );
+  }
+  );
+}
+
+/**
+ 'mapType' means a {} with zero or one keys.
+
+A zero keys {} matches any value whose
+ constructor is Object.
+
+With one key a {k:v} matches any value whose
+ constructor is an Object and whose values are
+ all of the same type as the only field of
+ the type-object {k:v}
+
+A map-type differs from object-type in the same
+ way as an array-type differs from a tuple type.
+*/
+
+/* ----------------------------------------- */
+
 function objectType()
 { let r, ok = this.ok, fails=this.fails, not=this.not, x=this.x, is=this.is;
   let Type = this.Type;
@@ -158,6 +199,10 @@ function objectType()
   x ({a:undefined}, {a: e => is (e, Boolean, null) });
   x ({ }          , {a: e => is (e, Boolean, null) });
   let BooleanOrNull = new Type (Boolean, null);
+  true instanceof BooleanOrNull
+  x (true, BooleanOrNull);
+  x (false, BooleanOrNull);
+  x (null, BooleanOrNull);
   x ({a:true} , {a: BooleanOrNull} );
   x ({a:false}, {a: BooleanOrNull} );
   x ({a:null} , {a: BooleanOrNull} );
@@ -176,8 +221,8 @@ function objectType()
   fails ( e => x ({n:1}, {n:"s"}     				));
   fails ( e => x ({n:1}, {n: String} 				));
   fails ( e => x ({n:1, m:2}, {n:"s", m:2} 	));
-  fails (e=> x ({M:1}, {}));
-  fails (e => x ({}, {m:2}));
+  x ({M:1}, {});
+  x ({}, {m:2}) ;
   return;
 }
 
@@ -396,6 +441,11 @@ C) If x() 1st argument is an instance of
 
 function arrayType()
 { let ok = this.ok, fails=this.fails, not=this.not, x=this.x;
+  x ( [], []);
+  x ( [], [Number]);
+  x ( [1, "2" ], []);
+  x ( [1, 2, 3], [4]);
+  fails (_ => x ( ["2", 3], [Number]) );
   let AType = [Number]; 
   x ([]			, AType);  
   x ([1]			, AType);  
@@ -728,6 +778,12 @@ function Type()
   ok  (true instanceof BooleanOrNull );
   ok  (null instanceof BooleanOrNull );
   not (123  instanceof BooleanOrNull );
+  let NullOrBoolean = new Type (null, Boolean);
+  ok  (true instanceof NullOrBoolean );
+  ok  (null instanceof NullOrBoolean );
+  not (123  instanceof NullOrBoolean );
+  ok ( BooleanOrNull.new()  ===  false);
+  ok ( NullOrBoolean.new () === null);
   ok  ( is (true, BooleanOrNull) );
   ok  ( is (null, BooleanOrNull) );
   not ( is (123 , BooleanOrNull) );
