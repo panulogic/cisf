@@ -1,5 +1,9 @@
 # Release Notes for CISF.js
 
+#### 1.1.3:  Map-type  
+Updated package.json to reflect the
+current version-number.
+
 #### 1.1.2:  Map-type  
 Improved documentation.
 
