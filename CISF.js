@@ -204,7 +204,13 @@ function x (value, ... types)
     }
   };
 
-  err ( e2 );
+  if (this)
+  { let m = this + `: 
+` + e2.stack ;
+    err (m);
+  } else
+  { err ( e2 );
+  }
 }
 
   function xSingle (value, type )

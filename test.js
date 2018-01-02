@@ -4,6 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 let testee = require ("./CISF");
 
+messages        	.bind 	(testee)(); 
 ok              	.bind 	(testee)(); 
 not             	.bind 	(testee)(); 
 fails           	.bind 	(testee)(); 
@@ -32,6 +33,49 @@ console.log ("_lib/CISF - All tests passed. ");
 console.log("");
 return;
 
+
+function messages()
+{ let ok = this.ok, not=this.not, fails=this.fails, x=this.x;
+  debugger
+  let n = 1;
+  ok ( n > 0, `n is not > 0: ${n}`);
+  n = 0;
+  let em = fails (_=> ok ( n > 0,   `n was not > 0: ${n}`)) + "";
+  ok (em.match (/n was not > 0/));
+  not (n < 0,  `n is not <= 0: ${n}`) ;
+  em = fails (_=> not ( n === 0,  `n was not < 0: ${n}`)) + "";
+  ok (em.match (/n was not < 0/));
+  x (n, null, Number);
+  n = null;
+  x (n, null, Number);
+  n = "";
+  em = "" + fails (_=> x (n, null, Number));
+  ok (em.match(/Error/));
+  em = "" + fails (_=>
+  x.call
+  ('N IS NOT A NUMBER OR null'
+  , n, null, Number)
+  );
+  ok (em.match(/N IS NOT A NUMBER OR null/));
+}
+
+/**
+ If you give ok() or not() or x() a string
+ as 2nd argument it will be shown on the log
+ if the assertion fails. That can give whoever
+ is reading the log a much better idea of
+ what failed and why than simply saying
+ "assertion failed, see the stack-trace".
+
+You can can give the 'message' as 2nd argument
+ to ok() and not() but not to x() because x()
+ expects N arguments to start with. If you
+ want to still give a custom failure-message
+ to such an assertion you can do it by binding
+ the message to the 'this' of x().
+*/
+
+/* ----------------------------------------- */
 
 function ok( )
 { let ok = this.ok, not=this.not, fails=this.fails, x=this.x;

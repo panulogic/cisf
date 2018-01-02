@@ -1,5 +1,29 @@
 # Release Notes for CISF.js
 
+
+
+#### 1.1.4: Custom log-messages for ok(), not() and x()  
+
+you can set a custom failure-message 
+for **ok()** or **not()**, to be shown on the 
+log if they fail by passing the error-string
+as 2nd argument to them:
+
+    ok  (n > 0, `n is not   > 0: ${n}`);
+    ...
+    not (m < 0,  `m is not  < 0: ${m}`) ;
+
+You can do a similar thing with x() but 
+there you muts "bind" the error-message
+to x() because x() takes 1 + N arguments
+to start with. So you could call:
+
+    x.call
+    (`n IS NOT NUMBER OR null: ${n}`
+    , n, Number, null)
+    );
+
+
 #### 1.1.3:  Map-type  
 Updated package.json to reflect the
 current version-number.
@@ -30,8 +54,8 @@ Improved documentation.
   types.
   
   Map-type and Array-type allow arbitrary number of 
-  fields in the value but their types muts be all
-	  the same.
+  fields in the value but their types must be all
+  the same.
 
 Examples (from test.js):
 
@@ -81,6 +105,6 @@ default instance.
  default values for a class.  
  
 #### 1.0.7: First Release  
-First Release.
+First Release. See README.md
  
 
