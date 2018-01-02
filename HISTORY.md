@@ -1,29 +1,32 @@
 # Release Notes for CISF.js
 
+#### 1.1.1:  Instantiable Types
+Improved the documentattion a bit.
+
 #### 1.1.0:  Instantiable Types
 
 **mapType:**
-'mapType' is a {} with zero or one key.
+'mapType' is a {} with one or no keys in it.
 
-	  A {} zero keys matches any value whose
-	  constructor is Object. This behavior is
-	  similar to how a [] with elements matches
-	  any array.
+  A {} with zero keys matches any value whose
+  constructor is Object. This behavior is
+  similar to how a [] with no elements matches
+  any array.
 
-	  A {} With exactly one key a matches any value 
-	  whose constructor is an Object and whose values 
-	  are all of the same type as the value of the
-	  only field of the type-object.  
+  A {} with exactly one key a matches any value 
+  whose constructor is an Object and whose values 
+  are all of the same type as the value of the
+  only field of the type-object.  
 
-	  A Map-type  differs from Object-type in the same
-	  way as an Array-type differs from Tuple type:
-	  
-	  Both Object-type and Tuple-type have a fixed
-	  number of fields whose values can be of different
-	  types.
-	  
-	  Map-type and Array-type allow arbitrary number of 
-	  fields in the value but their types muts be all
+  A Map-type  differs from Object-type in the same
+  way as an Array-type differs from Tuple type:
+  
+  Both Object-type and Tuple-type have a fixed
+  number of fields whose values can be of different
+  types.
+  
+  Map-type and Array-type allow arbitrary number of 
+  fields in the value but their types muts be all
 	  the same.
 
 Examples (from test.js):
