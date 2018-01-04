@@ -1,6 +1,18 @@
 # Release Notes for CISF.js
 
 
+#### 1.1.6:  toString() of composite types
+
+The toString() of composite types now returns
+a string telling the component-types. This helps
+when debugging your program and trying to
+figure out why there a type-check didn't pass.
+
+Example:
+
+	let BooleanOrNumber = new Type (Boolean, Number);
+	ok (BooleanOrNumber.toString() === "Boolean | Number" );
+
 
 #### 1.1.5: API-functions log(), warn(), err()  
 
@@ -54,7 +66,7 @@ performance of some operations.
  it adds the prefix "WARNING: " to the
  log-message so you don't have to.
  This makes the more critical warning-
- messages easier to spot form the logs
+ messages easier to spot from the logs
  apart from the rest of the less critical
  log-messages.
      
@@ -90,7 +102,7 @@ its benefits:
 
 A) err('some string') turns its argument
 into an instance of Error before throwing it.
-Thich means the log will show not only
+This means the log will show not only
 the error-message but also the stack of
 the calls that lead to the error.
 

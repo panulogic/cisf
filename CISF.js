@@ -100,14 +100,18 @@ function _Type ()
       }
       try
       { if (typeof T0 !== "function")
-        { return T0;
+        { let C           = T0 . constructor;
+          let maybeNumber = new C(T0);
+          let isNumber    = maybeNumber instanceof Number;
+          let newV        = maybeNumber .valueOf() ;
+
+          return newV;
         }
         let itA = new T0 () ;
 
         return itA .valueOf();
       } catch (e)
       { debugger
-
         err
         ( `Type -constructor failed  trying to
            instantiate the first alternative  
@@ -118,9 +122,39 @@ function _Type ()
       }
     }
       }
+      TYPE.toString   = TYPEtoString ;
       this._compTypes = $CompTypes;
       TYPE._compTypes = $CompTypes;
+
+      let temp = TYPE + "";
       return TYPE;
+
+      function TYPEtoString ()
+      { let typeNames = $CompTypes .map
+        ( e =>
+          { if (typeof e === "function")
+            { return e.name;
+            }
+            if (e === null)
+            { return 'null';
+            }
+            if (e === undefined)
+            { return '*';
+            }
+            if ( e instanceof Array)
+            { if (! e.length )
+              { return '[]' ;
+              }
+              return '[ ... ]'
+            }
+            if (e.constructor === Object)
+            { return '{ ...}'
+            }
+          }
+        );
+        let s = typeNames.join (' | ');
+        return s;
+      }
     }
   }
 }

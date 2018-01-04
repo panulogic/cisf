@@ -911,6 +911,8 @@ function Type()
   ok  (1 		instanceof BooleanOrNumber );
   ok  (true instanceof BooleanOrNumber );
   not ("s" 	instanceof BooleanOrNumber );
+  ok (BooleanOrNumber.toString() === "Boolean | Number" );
+  debugger
   let BooleanOrNull = new Type (Boolean, null);
   ok  (true instanceof BooleanOrNull );
   ok  (null instanceof BooleanOrNull );
