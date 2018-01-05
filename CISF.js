@@ -95,33 +95,33 @@ function _Type ()
         }
       static new  ()
       { let T0 = $CompTypes [0];
-      if (T0 === null  || T0 === undefined)
-      { return T0;
-      }
-      try
-      { if (typeof T0 !== "function")
-        { let C           = T0 . constructor;
-          let maybeNumber = new C(T0);
-          let isNumber    = maybeNumber instanceof Number;
-          let newV        = maybeNumber .valueOf() ;
-
-          return newV;
+        if (T0 === null  || T0 === undefined)
+        { return T0;
         }
-        let itA = new T0 () ;
+        try
+        { if (typeof T0 !== "function")
+          { let maybeNumber = deepCopy (T0);
 
-        return itA .valueOf();
-      } catch (e)
-      { debugger
-        err
-        ( `Type -constructor failed  trying to
-           instantiate the first alternative  
-           type without argument:
-           ${ e}.
-           `
-        );
-      }
+            if (typeof T0 === "object")
+            { }
+            let isNumber    = maybeNumber instanceof Number;
+            let newV        = maybeNumber .valueOf() ;
+
+            return newV;
+          }
+          let itA = new T0 () ;
+          return itA .valueOf();
+        } catch (e)
+        { err
+          ( `Type -constructor failed  trying to
+             instantiate the first alternative  
+             type without argument:
+             ${ e}.
+             `
+          );
+        }
     }
-      }
+  }
       TYPE.toString   = TYPEtoString ;
       this._compTypes = $CompTypes;
       TYPE._compTypes = $CompTypes;
@@ -600,8 +600,6 @@ function getTypeOfFunk(funk)
      for (let p in value)
      { if (type[p] === undefined)
        { error = `Field '${ p}' in the value does not exist in the type.`
-          debugger
-
          break;
        }
        x (value[p], type[p]);
@@ -680,6 +678,38 @@ ${ funk} ` ;
 (${ woDrive}`
     return m;
   }
+
+function E() { }
+
+function deepCopy (ob, level=0)
+{ if (level  > 21)
+  { err
+    (`deepCopy() caused recursion to go too deep`
+    );
+  }
+  if (typeof ob !== "object")
+  { return ob;
+  }
+  if (ob instanceof Array)
+  { let a2 = ob.map
+    ( e =>
+      { if (e === ob)
+        { return ob;
+        }
+        return deepCopy(e, level+1)
+      }
+    );
+    return a2;
+  }
+  E.prototype = ob;
+  let c       = Object.create(ob) ;
+  E.prototype = null;
+
+  for (var p in c)
+  { c[p] =  deepCopy(c[p], level + 1);
+  }
+  return c;
+}
 
   function log (msg = "The String to log")
   { var s = "" + msg + "";

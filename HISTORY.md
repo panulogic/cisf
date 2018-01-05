@@ -1,12 +1,35 @@
 # Release Notes for CISF.js
 
+#### 1.1.7: static new() of Type
 
+ When you now create a type out of an
+ instance of Object or Array and then 
+ ask that type for a new instance of it, 
+ it returns a DEEP COPY of the
+ object from which the type was created. 
+ 
+ This means that if you modify that 
+ deep copy it will not affect the original 
+ type-object in any way. That was the case/bug
+ in previous version.
+
+ Demonstration of new behavior:
+
+    let ob     = {a: {b: new Object }};
+    let ObType = new Type (ob);
+    let ob2    = ObType.new();
+    //
+    ok (ob .a.b.constructor === Object);
+    ok (ob2.a.b.constructor === Object);
+    ok (ob.a.b  !== ob2.a.b );
+ 
+ 
 #### 1.1.6:  toString() of composite types
 
 The toString() of composite types now returns
 a string telling the component-types. This helps
 when debugging your program and trying to
-figure out why there a type-check didn't pass.
+figure out why a type-check perhaps didn't pass.
 
 Example:
 

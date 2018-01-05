@@ -907,12 +907,17 @@ is() never throws an error.
 
 function Type()
 { let ok = this.ok, fails=this.fails, not=this.not, x=this.x, is=this.is, Type=this.Type;
+  let ob     = {a: {b: new Object }};
+  let ObType =  new Type (ob);
+  let ob2    = ObType.new();
+  ok (ob .a.b.constructor === Object);
+  ok (ob2.a.b.constructor === Object);
+  ok (ob.a.b  !== ob2.a.b );
   let BooleanOrNumber = new Type (Boolean, Number);
+  ok (BooleanOrNumber.toString() === "Boolean | Number" );
   ok  (1 		instanceof BooleanOrNumber );
   ok  (true instanceof BooleanOrNumber );
   not ("s" 	instanceof BooleanOrNumber );
-  ok (BooleanOrNumber.toString() === "Boolean | Number" );
-  debugger
   let BooleanOrNull = new Type (Boolean, null);
   ok  (true instanceof BooleanOrNull );
   ok  (null instanceof BooleanOrNull );
