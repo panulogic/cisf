@@ -79,11 +79,6 @@ function err()
 { let ok=this.ok,err=this.err, fails=this.fails;
   let e  = fails ( _=> err ('something wrong') );
   let e2 = fails ( _=> err ('wrong type', TypeError) );
-  ok (e.stack);
-  ok (e.stack.match (/something wrong/));
-  ok (e.constructor.name === "AssertError");
-  ok (e2.message.match (/wrong type/));
-  ok (e2.constructor.name === "TypeError");
 }
 
 /**

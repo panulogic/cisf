@@ -1,44 +1,40 @@
 ﻿<!DOCTYPE html>
+<!--
+Copyright 2017 Panu Viljamaa
+SPDX-License-Identifier: Apache-2.0
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>test_browser</title>
 
-
     <script src="CISF.js"></script>
-    <script>  let {ok, not, x, fails, is, Type} = CISF;
+    <script type="text/javascript">
+    let {ok, not, x, fails, is, Type, log, err, warn} = CISF;
     </script>
 
 
-</head>
-<body>
-ok
-</body>
-</html>
+<script type="text/javascript">
 
-<script>
 
-/**
-Copyright (c) Panu Viljamaa 2017.
-SPDX-License-Identifier: Apache-2.0
-*/
 runTests ();
 
 
 function runTests ()
 {
-let testee = CISF ;
- /**
-Copyright (c) Panu Viljamaa 2017.
-SPDX-License-Identifier: Apache-2.0
-*/
+let testee = CISF;
 
 
+log             	.bind 	(testee)();
+warn            	.bind 	(testee)();
+err             	.bind 	(testee)();
+customMessages  	.bind 	(testee)();
 ok              	.bind 	(testee)();
 not             	.bind 	(testee)();
 fails           	.bind 	(testee)();
 
 // Tests for testee-method x():
+mapType         	.bind 	(testee)();
 objectType      	.bind 	(testee)();
 sumType         	.bind 	(testee)();
 zeroArgs        	.bind 	(testee)();
@@ -56,15 +52,139 @@ selfRefType     	.bind 	(testee)();
 is              	.bind 	(testee)();
 Type            	.bind 	(testee)();
 
-if (typeof console !== "undefined")
-{ console.log("");
-  console.log ("_lib/CISF - All tests passed. ");
-  console.log("");
-}
-
-
+console.log("");
+console.log ("_lib/CISF - All tests passed. ");
+console.log("");
 return;
 
+
+function log()
+{ let  ok=this.ok, log=this.log;
+  let s = log (`Test-method log() executed`);
+  ok (s.match(/Test-method log\(\) executed/));
+}
+
+/**
+ log() is a simple logger-method that comes as
+ part of the CISF -package. Instead of writing
+ "console.log('some msg')"
+ you can more succinctly write:
+ "log('some msg')" .
+
+log() also adds to the log-message the current
+ millisecond which may be helpful for measuring
+ performance of some operations.
+*/
+
+/* ----------------------------------------- */
+
+function warn()
+{ let ok=this.ok, warn=this.warn;
+  let s = warn (`Test-method warn() executed (to test API-function 'warn()').`);
+  ok (s.match(/WARNING:/));
+}
+
+/**
+ warn() is the same as log() except
+ it adds the prefix "WARNING: " to the
+ log-message so you don't have to.
+ This makes the more critical warning-
+ messages easier to spot form the logs
+ apart from the rest of the less critical
+ log-messages.
+*/
+
+/* ----------------------------------------- */
+
+function err()
+{ let ok=this.ok,err=this.err, fails=this.fails;
+  let e  = fails ( _=> err ('something wrong') );
+  let e2 = fails ( _=> err ('wrong type', TypeError) );
+}
+
+/**
+ err() is a simple utility to throw an
+ error of default or chosen error-class.
+
+Instead of writing
+ "throw 'error-message'";
+ you can write:
+ "err ('error-message')"
+
+This does not save many key-strokes
+ in itself but calling a function instead
+ of a built-in keyword has at itws benefits:
+
+1. err('some string') turns its argument
+ into an instance of Error before throwing it.
+ Thich means the log will show not only
+ the error-message but also the stack of
+ the calls that lead to the error.
+
+2. You can assign 'err' to an even shorter
+ variable-name:
+
+let e = err;  e('something wrong')
+
+3. You can pass it (or something else)
+ as argument to functions:
+
+doSomething (something, err);
+
+4. You can replace it with your own function
+ which takes you to the debugger if an
+ error happens. Or which ignores some
+ specific error-messages altogether.
+
+Using err() gives YOU the control of
+ what should happen under which error-
+ conditions, while providing a reasonable
+ default behavior.
+*/
+
+/* ----------------------------------------- */
+
+function customMessages()
+{ let ok = this.ok, not=this.not, fails=this.fails, x=this.x;
+  let n = 1;
+  ok ( n > 0, `n is not > 0: ${n}`);
+  n = 0;
+  let em = fails (_=> ok ( n > 0,   `n was not > 0: ${n}`)) + "";
+  ok (em.match (/n was not > 0/));
+  not (n < 0,  `n is not <= 0: ${n}`) ;
+  em = fails (_=> not ( n === 0,  `n was not < 0: ${n}`)) + "";
+  ok (em.match (/n was not < 0/));
+  x (n, null, Number);
+  n = null;
+  x (n, null, Number);
+  n = "";
+  em = "" + fails (_=> x (n, null, Number));
+  ok (em.match(/Error/));
+  em = "" + fails (_=>
+  x.call
+  ('N IS NOT A NUMBER OR null'
+  , n, null, Number)
+  );
+  ok (em.match(/N IS NOT A NUMBER OR null/));
+}
+
+/**
+ If you give ok() or not() or x() a string
+ as 2nd argument it will be shown on the log
+ if the assertion fails. That can give whoever
+ is reading the log a much better idea of
+ what failed and why than simply saying
+ "assertion failed, see the stack-trace".
+
+You can can give the 'message' as 2nd argument
+ to ok() and not() but not to x() because x()
+ expects N arguments to start with. If you
+ want to still give a custom failure-message
+ to such an assertion you can do it by binding
+ the message to the 'this' of x().
+*/
+
+/* ----------------------------------------- */
 
 function ok( )
 { let ok = this.ok, not=this.not, fails=this.fails, x=this.x;
@@ -181,6 +301,49 @@ fails() is mostly useful in tests to show
 // TESTS for testee-method x():
 
 
+function mapType()
+{ let r, ok = this.ok, fails=this.fails, not=this.not, x=this.x, is=this.is;
+  let Type  = this.Type;
+  ok (x ({a:1}, {} ));
+  ok (x ({zzz:3}, {} ). zzz === 3);
+  ok ( x ({a:1}, {_: 2}
+  ).a === 1
+  );
+  fails ( e =>
+  {  x ({a:1}, {b: 2});
+  } );
+  x ( {a:1, b:2, c:3}
+  , {_: Number}
+  );
+  x ( {}
+  , {_: Number}
+  );
+  fails
+  ( _ =>
+  { x ( {a:1, b:"2", c:3}
+  , {_: Number}
+  );
+  }
+  );
+}
+
+/**
+ 'mapType' means a {} with zero or one keys.
+
+A zero keys {} matches any value whose
+ constructor is Object.
+
+With one key a {k:v} matches any value whose
+ constructor is an Object and whose values are
+ all of the same type as the only field of
+ the type-object {k:v}
+
+A map-type differs from object-type in the same
+ way as an array-type differs from a tuple type.
+*/
+
+/* ----------------------------------------- */
+
 function objectType()
 { let r, ok = this.ok, fails=this.fails, not=this.not, x=this.x, is=this.is;
   let Type = this.Type;
@@ -192,6 +355,10 @@ function objectType()
   x ({a:undefined}, {a: e => is (e, Boolean, null) });
   x ({ }          , {a: e => is (e, Boolean, null) });
   let BooleanOrNull = new Type (Boolean, null);
+  true instanceof BooleanOrNull
+  x (true, BooleanOrNull);
+  x (false, BooleanOrNull);
+  x (null, BooleanOrNull);
   x ({a:true} , {a: BooleanOrNull} );
   x ({a:false}, {a: BooleanOrNull} );
   x ({a:null} , {a: BooleanOrNull} );
@@ -210,8 +377,11 @@ function objectType()
   fails ( e => x ({n:1}, {n:"s"}     				));
   fails ( e => x ({n:1}, {n: String} 				));
   fails ( e => x ({n:1, m:2}, {n:"s", m:2} 	));
-  fails (e=> x ({M:1}, {}));
-  fails (e => x ({}, {m:2}));
+  x ({M:1}, {});
+  x ({}, {m:2}) ;
+  let o =  x ({a:1}, {a:99, b:3} );
+  ok (o.a === 1);
+  ok (o.b === 3);
   return;
 }
 
@@ -430,6 +600,11 @@ C) If x() 1st argument is an instance of
 
 function arrayType()
 { let ok = this.ok, fails=this.fails, not=this.not, x=this.x;
+  x ( [], []);
+  x ( [], [Number]);
+  x ( [1, "2" ], []);
+  x ( [1, 2, 3], [4]);
+  fails (_ => x ( ["2", 3], [Number]) );
   let AType = [Number];
   x ([]			, AType);
   x ([1]			, AType);
@@ -754,7 +929,14 @@ is() never throws an error.
 
 function Type()
 { let ok = this.ok, fails=this.fails, not=this.not, x=this.x, is=this.is, Type=this.Type;
+  let ob     = {a: {b: new Object }};
+  let ObType =  new Type (ob);
+  let ob2    = ObType.new();
+  ok (ob .a.b.constructor === Object);
+  ok (ob2.a.b.constructor === Object);
+  ok (ob.a.b  !== ob2.a.b );
   let BooleanOrNumber = new Type (Boolean, Number);
+  ok (BooleanOrNumber.toString() === "Boolean | Number" );
   ok  (1 		instanceof BooleanOrNumber );
   ok  (true instanceof BooleanOrNumber );
   not ("s" 	instanceof BooleanOrNumber );
@@ -762,6 +944,12 @@ function Type()
   ok  (true instanceof BooleanOrNull );
   ok  (null instanceof BooleanOrNull );
   not (123  instanceof BooleanOrNull );
+  let NullOrBoolean = new Type (null, Boolean);
+  ok  (true instanceof NullOrBoolean );
+  ok  (null instanceof NullOrBoolean );
+  not (123  instanceof NullOrBoolean );
+  ok ( BooleanOrNull.new()  ===  false);
+  ok ( NullOrBoolean.new () === null);
   ok  ( is (true, BooleanOrNull) );
   ok  ( is (null, BooleanOrNull) );
   not ( is (123 , BooleanOrNull) );
@@ -806,3 +994,10 @@ The instanceof behave with the result-type
 
 
 </script>
+
+</head>
+<body>
+CISF v. 1.2.1
+See JavaScript console for test-results
+</body>
+</html>

@@ -1,5 +1,16 @@
 # Release Notes for CISF.js
 
+#### 1.2.1:  Updated browser-tests
+
+Updated the browser-tests in
+test_browser.html to work with
+this latest version of CISF.
+
+CISF requires an ES6-compliant
+JavaScript engine. Therefpore
+latest version of Chrome, FireFox
+and Edge will do, but IE-11 not.
+
 
 #### 1.2.0:  Optional fields with  x()
 

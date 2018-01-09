@@ -15,7 +15,7 @@
  
    =============================================
    FILE: CISF.js
-   USAGE:   const {ok, not, x, fails, x, log, err} = require ("CISF");
+   USAGE:   let {ok, not, x, fails, x, log, err} = require ("CISF");
    =========================================== */
 
 "use strict"
@@ -27,10 +27,10 @@ if (typeof module !== "undefined")
 
 function CISF_inner  ()
 { var C          = _Canary()    ;
-  const ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is;
+  let ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is;
   let Type = _Type();
-  const Xer = _Xer();
-  const AssertError = class AssertError extends Error { };
+  let Xer = _Xer();
+  let AssertError = class AssertError extends Error { };
 
   return { ok, not, x, fails, is, Type, log, warn, err};
 
@@ -731,6 +731,7 @@ function deepCopy (ob, level=0)
     if (ms.length === 2) ms = "0" + ms;
     let s2 = date. toLocaleTimeString() +   " "
               + ms  + " "  + s ;
+
     console.log (s2);
 
     return s2;
