@@ -59,7 +59,7 @@ log() also adds to the log-message the current
 
 function warn()
 { let ok=this.ok, warn=this.warn;
-  let s = warn (`Test-method log() executed`);
+  let s = warn (`Test-method warn() executed (to test API-function 'warn()').`);
   ok (s.match(/WARNING:/));
 }
 
@@ -287,22 +287,25 @@ fails() is mostly useful in tests to show
 
 function mapType()
 { let r, ok = this.ok, fails=this.fails, not=this.not, x=this.x, is=this.is;
-  let Type = this.Type;
+  let Type  = this.Type;
   ok (x ({a:1}, {} ));
   ok (x ({zzz:3}, {} ). zzz === 3);
-  ok ( x ({a:1}, {any: 2}
+  ok ( x ({a:1}, {_: 2}
   ).a === 1
   );
+  fails ( e =>
+  {  x ({a:1}, {b: 2});
+  } );
   x ( {a:1, b:2, c:3}
-  , {any: Number}
+  , {_: Number}
   );
   x ( {}
-  , {any: Number}
+  , {_: Number}
   ); 
   fails
   ( _ =>
   { x ( {a:1, b:"2", c:3}
-  , {any: Number}
+  , {_: Number}
   );
   }
   );
@@ -360,6 +363,9 @@ function objectType()
   fails ( e => x ({n:1, m:2}, {n:"s", m:2} 	));
   x ({M:1}, {});
   x ({}, {m:2}) ;
+  let o =  x ({a:1}, {a:99, b:3} );
+  ok (o.a === 1);
+  ok (o.b === 3);
   return;
 }
 

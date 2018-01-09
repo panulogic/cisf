@@ -1,5 +1,57 @@
 # Release Notes for CISF.js
 
+
+#### 1.2.0:  Optional fields with  x()
+
+The behavior of x() was relaxed
+so that if the type-argument is
+a {} it can have fields which do 
+not exist in the value-argument, 
+as long  assuming all common fields'
+values are of compatible type. 
+
+The fields which
+do not exist in the 1st argument but
+do in the 2nd are (deep-) copied to 
+the result of x(). This
+now works: 
+
+    let o =  x ({a:1}, {a:99, B:3} );
+    ok (o.a === 1);
+    ok (o.B === 3);
+
+
+As a consequence the 2nd argument
+of x() is now only  interpreted 
+as a "map-type" if it has exactly
+one  field  whose name is'_'. 
+
+Next works because
+all fields in the value-argument
+have a value which is compatible 
+with the type of the (only) field
+'_' in the type-argument:
+
+    x ( {a:1, b:2, c:3}
+      , {_: Number}
+      );
+
+
+But the next now fails because 
+field 'b' of the  value-argument 
+is not compatible with  the value 
+of the (only) type-field  '_':  
+
+    fails
+    ( _ =>
+      { x ( {a:1, b:"2", c:3}
+          , {_: Number}
+          );
+	  }
+    );
+	
+
+
 #### 1.1.7: static new() of Type
 
  When you now create a type out of an

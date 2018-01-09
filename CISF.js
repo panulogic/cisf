@@ -261,7 +261,7 @@ function x (value, ... types)
       let em = `
       x(value, ... null) called with
       value which is not null nor undefined `;
-      err (em);
+      err (em );
     }
     try
     { if (value instanceof type)
@@ -560,11 +560,13 @@ function getTypeOfFunk(funk)
           type .constructor = ${ type .constructor.name}  .
         `);
       }
-      let typeFieldsCount = Object.keys(type).length;
+      let typeKeys = Object.keys(type) ;
+
+      let typeFieldsCount = typeKeys.length;
       if (typeFieldsCount === 0)
       { return value;
       }
-      if (typeFieldsCount === 1)
+      if (typeFieldsCount === 1 && typeKeys[0] === '_')
       { let [k,v] = Object.entries (type)[0];
          let typen =  v;
 
@@ -573,25 +575,35 @@ function getTypeOfFunk(funk)
             if (is (compValue, typen))
              { continue;
              } else
-             { error = `Field ${ p} type-check
-                   ${ typen} failed 
-                   with value-field value
-                   ${ compValue}. `
+             { error = `
+Field ${ p} type-check
+${ typen} failed 
+with value-field value
+${ compValue}. `
             }
          }
          return value;
       }
      let error;
+     let result = { };
+
      for (let p in type)
      { let typen     = type [p];
        let compValue = value[p];
-       if (is (compValue, typen))
-       { continue;
-       } else
+
+       if (is (compValue, typen)   )
+       { result[p] = compValue;
+          continue;
+       }
+       if (compValue === undefined )
+       { result[p] = deepCopy(type[p]);
+          continue;
+       }
+       else
        { error = `Field ${ p} type-check
-                   ${ typen} failed 
-                   with value-field value
-                   ${ compValue}. `
+                    ${ typen} failed 
+                    with value-field value
+                    ${ compValue}. `
        }
      }
       if (error)
@@ -607,7 +619,7 @@ function getTypeOfFunk(funk)
       if (error)
      { err (new Error (error));
      }
-     return value;
+     return result;
     }
   }
 
@@ -731,13 +743,20 @@ function deepCopy (ob, level=0)
    `);
  }
 
-  function err ( s = "", ErrorClass = AssertError )
+  function err ( s = "", ErrorClass = AssertError  )
   { s   =  s + ``;
      var err = new ErrorClass ( s );
 
     if (  (  new Error ()).stack  . match (/fails\s*\(/)   )
     { } else
-    { }
+    { let stack = (new Error()).stack;
+
+      let doNotHalt
+      = stack.match (/ xSingle /) ||
+        stack.match (/ is /) ;
+      if (! doNotHalt)
+      { }
+    }
     throw (err);
    }
 }
