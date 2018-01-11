@@ -593,6 +593,7 @@ ${ compValue}. `
 
        if (is (compValue, typen)   )
        { result[p] = compValue;
+
           continue;
        }
        if (compValue === undefined )
@@ -600,10 +601,14 @@ ${ compValue}. `
           continue;
        }
        else
-       { error = `Field ${ p} type-check
-                    ${ typen} failed 
-                    with value-field value
-                    ${ compValue}. `
+       { if (p ===  "class")
+       { debugger
+       }
+           error = `
+Type-check of field "${ p}" failed.
+Default-value: <${ typeof typen}> ${ typen}  
+Actual value:  <${ typeof compValue}> ${ compValue}. 
+`
        }
      }
       if (error)

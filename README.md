@@ -14,29 +14,33 @@ with no effect on your tool-chain.
 
 #### 0. MOTIVATING EXAMPLE
 
-If you want to make sure you get
+You want to make sure you get
 an early warning whenever your 
-function is called with a wrong
-type of argument, you might write
-something like this: 
+function is called with wrong
+type(s) of arguments. You might 
+write something like this:  
 
-    if (typeof arg !== "number") 
-    { throw "arg is not a number"
-    }
+    if ( arg.constructor !== Number &&   
+         arg.constructor !== String
+	   )
+	  { throw "not number nor string";
+	  }
  
  Using CISF you can write it more simply as:
  
-    x (arg, 1)
+    { x (arg, 0, "");
  
- x() checks that its first and 2nd argument
- are of the same type.
+ x() checks that its first argument is
+ of the same type as one of its remaining
+ arguments.
  
  You are more likely to put such checks
  into your code when they are easy
- to write and easy to read. This
- in turn means that errors are caught
- early and thus their root-cause is
- easy to identify early on.
+ to write (and get correct) and easy to 
+ read (and understand). 
+ 
+ This in turn means that errors are caught
+ early on - before they reach your customers.
  
  
  

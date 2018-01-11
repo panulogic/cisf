@@ -4,6 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 let testee = require ("./CISF");
 
+example         	.bind 	(testee)(); 
 log             	.bind 	(testee)(); 
 warn            	.bind 	(testee)(); 
 err             	.bind 	(testee)(); 
@@ -37,6 +38,96 @@ console.log("");
 return;
 
 
+function example()
+{ let x=this.x, fails=this.fails, ok=this.ok;
+  function exA (arg)
+  { x (arg, 0, "");
+  }
+  function exB (arg)
+  { if ( arg.constructor !== Number &&
+  arg.constructor !== String
+  )
+  { throw "not number nor string";
+  }
+  }
+  exA (123);
+  exA ("s");
+  exB (123);
+  exB ("s");
+  fails (e => exA (true));
+  fails (e => exB (true));
+  ok (exA (123) === undefined);
+  return;
+}
+
+/**
+ This example shows how you can
+ verify that  a function is called
+ either with a number or a string
+ as argument but nothng else.
+
+The function exA() shows how you
+ do that with CISF API "x()":
+
+x (arg, 0, "") causes an error if
+ its first argument is not of the
+ same type as any of its remaining
+ arguments. x (arg, 0) would cause
+ an error if the arg is not a number.
+
+The function exB() shows how you
+ can do that WITHOUT x(), showing
+ how the code to check that the
+ argument is either a number or a
+ string gets much longer. exB()
+ takes longer to type and longer
+ to type correctly and longer to
+ understand making your code as
+ a whole less "readable".
+
+The point here is not only that
+ shorter code which does the same
+ as longer code is always better
+ for the reasons mentioned.
+
+It is that if type-checks are as
+ complicated as in exB(), you are
+ unlikely to put such checks into
+ your code. And if you do it is
+ much easier to have a bug in them
+ or misunderstand what they dop when
+ reading them. Most devious kind of
+ bug? It is when you have a bug in
+ your error-checking code.
+
+The code above also demonstrates
+ the usefulness of two other CISF API
+ -functions,  fails() and ok().
+
+fails() is a function which takes a
+ function as argument and causes an error
+ if calling the argument function does
+ not cause error. So, it verifies
+ that its argument-function causes an
+ error. We will use a lot of it in
+ other tests just to show the cases
+ in which CISF API functions cause
+ errors. Most of them are MEANT to
+ cause an error if the thing they
+ are checking is not like it should.
+
+ok() causes an error if its argument
+ is not "truthy", meaning anything
+ except false, null, undefined, 0 or "".
+
+In your runtime code you would mostly
+ use ok() and x(), but in your tests
+ (like above) you might find fails()
+ useful too.
+*/
+
+/* ----------------------------------------- */
+
 function log()
 { let  ok=this.ok, log=this.log;
   let s = log (`Test-method log() executed`);
@@ -68,9 +159,9 @@ function warn()
  it adds the prefix "WARNING: " to the
  log-message so you don't have to.
  This makes the more critical warning-
- messages easier to spot form the logs
- apart from the rest of the less critical
- log-messages.
+ messages easier to spot from the logs
+ apart from the rest of less critical
+ messages.
 */
 
 /* ----------------------------------------- */
