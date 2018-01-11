@@ -172,8 +172,9 @@ If x() does _not_ fail it returns its
     fails (_=> x (undefined));
     fails (_=> x ());
   
-   
- ###### 3.3.4  More than 2 arguments
+
+
+ ###### 3.3.4 More than 2 arguments
  x() can take more than one type-argument.
  If any of them accepts the first argument 
  as a  compliant value then x() succeeds:  
@@ -206,16 +207,19 @@ to use only constructors as type-
 arguments, their behavior is 
 "obvious". 
 
-One caveat is in order: 
+A caveat: 
 
     x (123, Number)
 
 succeeds even though technically
 123 is not "instanceof" Number.
 But as far as x() is concerned 
-it is "of type" Number as far as.
+it is "of type" Number as far as
+x() is conceerned.
+
 That just makes more sense to us 
-intuitively.
+intuitively. A number is a number
+no matter how small.
 
  
    
@@ -231,7 +235,7 @@ otherwise:
 Above you have already seen use of fails().
 It assumes it is called with a function
 as argument which it will call without
-arguments. If the argument function throws
+arguments. If the argument -function throws
 an error fails() returns true, else it
 causes an error.
 
@@ -250,7 +254,8 @@ cases are.
 Type is a constructor for creating new "sum types"
 out of existing types. It is especially useful
 for declaring that something is EITHER
-a value of specific type or it is null.
+a value of specific type or it is null 
+(a.k.a "Maybe-type")
 
     let NumberOrNull = new Type (Number, null);
     x( 123      , NumberOrNull);
@@ -258,10 +263,9 @@ a value of specific type or it is null.
     x( undefined, NumberOrNull);
     fails (e=> x("s", NumberOrNull))
 
-Note, null used as the 2nd argument
+Note, null as 2nd argument
 accepts  null or undefined as the actual
 value. See test.js.
-
 
 
 
@@ -288,6 +292,7 @@ assumption that air is good to breathe,
 the canaries would tell you it is by
 staying alive. If CISF assertions fail
 it is the equivalanet of a canary dying.
+Something is wrong.
 
 
 
