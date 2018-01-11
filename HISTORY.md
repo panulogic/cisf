@@ -1,5 +1,43 @@
 # Release Notes for CISF.js
 
+
+#### 1.2.2:  Better Motivating Example
+Updated the "Motivating Example" in
+README.md, to show how **x()** can be 
+used to check that its 1st argument is
+of the same type as ANY of the
+remaining arguments. It now better
+shows how using x() makes code
+shorter, easier to write (correctly),
+and easier to understand (correctly). 
+
+Added this test-function in test.js to 
+test the code of the motivating example:
+
+    function example()
+    { let x=this.x, fails=this.fails, ok=this.ok;
+    
+      function exA (arg)
+      { x (arg, 0, "");
+      }
+    
+      function exB (arg)
+      { if ( arg.constructor !== Number &&
+             arg.constructor !== String
+           )
+          { throw "not number nor string";
+          }
+      }
+      exA (123);
+      exA ("s");
+      exB (123);
+      exB ("s");
+      fails (e => exA (true));
+      fails (e => exB (true));
+      ok (exA (123) === undefined);
+    }
+
+
 #### 1.2.1:  Updated browser-tests
 
 Updated the browser-tests in

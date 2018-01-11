@@ -28,18 +28,18 @@ write something like this:
  
  Using CISF you can write it more simply as:
  
-    { x (arg, 0, "");
+     x (arg, 0, "");
  
  x() checks that its first argument is
- of the same type as one of its remaining
- arguments.
+ of the same type as ANY of its other
+remaining arguments.
  
  You are more likely to put such checks
  into your code when they are easy
- to write (and get correct) and easy to 
- read (and understand). 
+ to write (correctly) and easy to 
+ read and understand (correctly). 
  
- This in turn means that errors are caught
+ This in turn means that errors get caught
  early on - before they reach your customers.
  
  
@@ -62,7 +62,7 @@ assignment. For instance:
 
     const { ok, x }  = require ('CISF');
 
-might be all you will mostly use.
+might be all you mostly use.
 
 ##### B) With  browser
 
