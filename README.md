@@ -12,6 +12,15 @@ using "TypeScript Light", simpler and
 easier to learn and unobtrusive to use, 
 with no effect on your tool-chain. 
 
+USAGE:
+
+    let {ok, not, x, fails, Type, log, err
+        } = require ("CISF");
+
+
+UPDATES INFO:
+https://twitter.com/ClassCloudLLC
+   
 #### 0. MOTIVATING EXAMPLE
 
 You want to make sure you get
@@ -30,17 +39,17 @@ write something like this:
  
      x (arg, 0, "");
  
- x() checks that its first argument is
- of the same type as ANY of its other
+x() checks that its first argument is
+of the same type as one of the other
 remaining arguments.
  
- You are more likely to put such checks
- into your code when they are easy
- to write (correctly) and easy to 
- read and understand (correctly). 
+You are more likely to put such checks
+into your code when they are easy
+to write (correctly) and easy to 
+read and understand (correctly). 
  
- This in turn means that errors get caught
- early on - before they reach your customers.
+This in turn means that bugs get caught
+early - before they reach your customers.
  
  
  

@@ -1,5 +1,28 @@
 # Release Notes for CISF.js
 
+For information about future CISF updates
+follow  https://twitter.com/ClassCloudLLC 
+ 
+#### 1.2.3: More control over error-messages
+
+Calling err ("some message") will output the
+given message to the log followed by the
+stack-trace showing where the call to err()
+was made.
+
+If the error message is aimed at end-users 
+you might want to show them just the plain 
+explanation of what went wrong, without the
+stack-trace. 
+
+You can do that by binding err() to 
+"no stack":
+
+    err.call
+	("no stack", " user-friendly error -message ...");
+
+
+
 
 #### 1.2.2:  Better Motivating Example
 Updated the "Motivating Example" in

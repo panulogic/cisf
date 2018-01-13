@@ -14,9 +14,14 @@
    limitations under the License.
  
    =============================================
-   FILE: CISF.js
-   USAGE:   let {ok, not, x, fails, x, log, err} = require ("CISF");
-   =========================================== */
+   USAGE:
+   let {ok, not, x, fails, Type, log, err
+       } = require ("CISF");
+
+   UPDATES ANNOUNCEMENTS:
+   https://twitter.com/ClassCloudLLC
+   =============================================
+*/
 
 "use strict"
 
@@ -763,6 +768,9 @@ function deepCopy (ob, level=0)
       if (! doNotHalt)
       { }
     }
+if (this === "no stack")
+{ err = err.message;
+}
     throw (err);
    }
 }
