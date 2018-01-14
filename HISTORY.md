@@ -2,7 +2,57 @@
 
 For information about future CISF updates
 follow  https://twitter.com/ClassCloudLLC 
+
+
+#### 1.2.4: Left-aligned log-messages
  
+Assume you have code like below
+in your program. You have taken
+extra care to indent the error-message
+like it is because you want the
+indentation of the code to follow
+the level of the statement-block
+in which it appears. 
+
+But just because the call to err()
+is indended several levels to right 
+it does not mean that is how you 
+want the message to be indended in 
+the log. The log-output should not
+depend on the indentation-level of 
+the statement which made the call to 
+log something. In CISF v.1.2.4 each 
+line in the log-output will be strictly 
+on the left edge of the log.
+
+        try
+        { "" . thisMethodDoesNotExist ()
+        } catch (e)
+        { err
+          (`This example shows how you 
+            can write an error-message
+            in your code indending it 
+            like the statement it is 
+            contained in, yet in the 
+            log the message will show 
+            aligned on the left edge 
+            of the log LIKE ALL OTHER
+            log-messages.  
+            
+            The log-output should not
+            depend on the indentation-level
+            of the statement which made the
+            call to log something.
+        `);
+        }
+
+This may seem a like a very minor detail
+but somehow I just had to make this change.  
+Else I started aligning code like above 
+to the left edge and I didn't like that 
+either. Now I'm happy. This 
+
+
 #### 1.2.3: More control over error-messages
 
 Calling err ("some message") will output the

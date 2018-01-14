@@ -15,8 +15,12 @@
  
    =============================================
    USAGE:
-   let {ok, not, x, fails, Type, log, err
+   let {ok, not, x, fails, Type, log, warn, err
        } = require ("CISF");
+
+   Or pick just the functions you need
+   for example:
+   let {ok, x} = require ("CISF");
 
    UPDATES ANNOUNCEMENTS:
    https://twitter.com/ClassCloudLLC
@@ -734,16 +738,14 @@ function deepCopy (ob, level=0)
 }
 
   function log (msg = "The String to log")
-  { var s = "" + msg + "";
+  { var s =  trimLineBeginnings (msg + ``);
     let date = new Date();
     let ms =  date.getMilliseconds();
     if (ms.length === 1) ms = "00" + ms;
     if (ms.length === 2) ms = "0" + ms;
     let s2 = date. toLocaleTimeString() +   " "
               + ms  + " "  + s ;
-
     console.log (s2);
-
     return s2;
   }
 
@@ -755,7 +757,9 @@ function deepCopy (ob, level=0)
  }
 
   function err ( s = "", ErrorClass = AssertError  )
-  { s   =  s + ``;
+  { s   =  `
+` + trimLineBeginnings (s + `
+`);
      var err = new ErrorClass ( s );
 
     if (  (  new Error ()).stack  . match (/fails\s*\(/)   )
