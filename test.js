@@ -2,7 +2,7 @@
 Copyright (c) Panu Viljamaa 2017.  
 SPDX-License-Identifier: Apache-2.0
 */
-let testee = require ("./CISF");
+let testee = require ("./");
 
 example         	.bind 	(testee)(); 
 log             	.bind 	(testee)(); 
