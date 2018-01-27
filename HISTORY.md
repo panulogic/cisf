@@ -3,8 +3,15 @@
 For future information about future releases
 see https://twitter.com/ClassCloudLLC 
 
+#### 1.3.1: Updated browser-tests
+ 
+ The tests to run on browser 
+ in file 'test_browser.html'
+were updated to test the
+new behavior of x() in Cisf v. 1.3.n .
 
-#### 1.3.0: Relaxation of x() 
+
+### 1.3.0: Relaxation of x() 
 
 In 1.3 the behavior of x() has been relaxed
 so statements like this no longer cause errors:
