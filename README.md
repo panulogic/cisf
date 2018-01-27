@@ -12,7 +12,7 @@ using "TypeScript Light", simpler and
 easier to learn and unobtrusive to use, 
 with no effect on your tool-chain. 
 
-**USAGE:**
+#####USAGE: 
 
     let {ok, not, x, fails, Type, log, warn, err
         } = require ("cisf");
@@ -21,8 +21,10 @@ Or, pick the subset the functions you might need:
 
     let {ok, x} = require ("cisf");
 
-**FUTURE UPDATES WILL BE ANNOUNCED AT:**   
+##### TO BE RELEASE-ANNOUNCEMENTS:
+   
 https://twitter.com/ClassCloudLLC
+   
    
 #### 0. MOTIVATING EXAMPLE
 

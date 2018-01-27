@@ -1,8 +1,65 @@
-# Release Notes for CISF.js
+# "Cisf" release notes  
 
-For information about future CISF updates
-follow  https://twitter.com/ClassCloudLLC 
+For future information about future releases
+see https://twitter.com/ClassCloudLLC 
 
+
+#### 1.3.0: Relaxation of x() 
+
+In 1.3 the behavior of x() has been relaxed
+so statements like this no longer cause errors:
+
+      x ({a:1}, {b: 2});
+
+This used to cause an error. Why?
+Well, the thinking was that
+passing in {a:1} as argument when {b:2} was
+expected would make no sense and therefore 
+making such a call would likely be a typo 
+by the user, which we wanted to 
+draw the user's attention to.
+
+But, it turns out in
+practice it is more useful that x() only checks
+that the value has EVERYTHING NEEDED.
+It does not matter if it  has more than what 
+is needed.  You only need what you need, right?
+
+In contrast the code below still 
+fails, like it should, because the 
+same field exists in both the value- 
+and type-argument  but has a different 
+type of value in each:  
+
+    fails 
+    ( () =>
+      { x ({a:1}, {a: "2"});
+      } 
+    );
+
+As before x() uses fields which
+only exist in the type-argument
+to produce default values for fields
+missing from the value-argument:
+
+    ok (x ({a:1}, {b: 2}).b === 2);
+    ok (x ({a:1}, {b: 2}).a === undefined);
+
+Fields which
+only exist in the value-arg will be 
+undefined in the result of x().
+
+Version 1.3.0 is backwards-compatible
+with previous version 1.2.4 in that
+it causes no more errors than 1.2.4.
+Because of the relaxation of x() it
+may not cause errors in 
+every situation where 1.2.4 did.
+
+See the function **mapType()** in the file
+**test.js** for updated tests that
+demonstrate the behavior described above.
+ 
 
 #### 1.2.4: Left-aligned log-messages
  

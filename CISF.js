@@ -16,13 +16,13 @@
    =============================================
    USAGE:
    let {ok, not, x, fails, Type, log, warn, err
-       } = require ("CISF");
+       } = require ("cisf");
 
    Or pick just the functions you need
    for example:
-   let {ok, x} = require ("CISF");
+   let {ok, x} = require ("cisf");
 
-   UPDATES ANNOUNCEMENTS:
+   UPDATES-ANNOUNCEMENTS:
    https://twitter.com/ClassCloudLLC
    =============================================
 */
@@ -610,25 +610,12 @@ ${ compValue}. `
           continue;
        }
        else
-       { if (p ===  "class")
-       { debugger
-       }
-           error = `
+       { error = `
 Type-check of field "${ p}" failed.
 Default-value: <${ typeof typen}> ${ typen}  
 Actual value:  <${ typeof compValue}> ${ compValue}. 
 `
        }
-     }
-      if (error)
-     { err (new Error (error));
-     }
-     for (let p in value)
-     { if (type[p] === undefined)
-       { error = `Field '${ p}' in the value does not exist in the type.`
-         break;
-       }
-       x (value[p], type[p]);
      }
       if (error)
      { err (new Error (error));
@@ -696,10 +683,11 @@ ${ funk} ` ;
     { return ``;
     }
     var woDrive = 
-    lineForCallingModule.replace(/^\([A-Z]\:/, "");
-    var sep = require("path").sep;
+    lineForCallingModule.replace(/^\([A-Z]:/, "");
+    var sep   = require("path").sep;
     var parts = woDrive.split( sep );
     var filePart = parts[parts.length - 1];
+
     var m = `${ filePart}
 (${ woDrive}`
     return m;

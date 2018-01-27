@@ -2,7 +2,7 @@
 Copyright (c) Panu Viljamaa 2017.  
 SPDX-License-Identifier: Apache-2.0
 */
-let testee = require ("./");
+let testee = require ("./CISF");
 
 example         	.bind 	(testee)(); 
 log             	.bind 	(testee)(); 
@@ -379,9 +379,14 @@ function mapType()
   ok ( x ({a:1}, {_: 2}
   ).a === 1
   );
-  fails ( e =>
-  {  x ({a:1}, {b: 2});
-  } );
+  x ({a:1}, {b: 2});
+  ok (x ({a:1}, {b: 2}).b === 2);
+  ok (x ({a:1}, {b: 2}).a === undefined);
+  fails
+  ( e =>
+  {  x ({a:1}, {a: "2"});
+  }
+  );
   x ( {a:1, b:2, c:3}
   , {_: Number}
   );
