@@ -796,6 +796,7 @@ function classType()
   x (Function, Object);
   x (Function, Function);
   fails (_=> x (Array, Array));
+  debugger
   x(1,1);
   x({}, {})
   x("abc", "abc")
