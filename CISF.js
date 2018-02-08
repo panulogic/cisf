@@ -1,5 +1,5 @@
 /* =========================================
-   Copyright 2017 Panu Viljamaa
+   Copyright 2018 Class Cloud LLC
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -260,7 +260,16 @@ function x (value, ... types)
 }
 
   function xSingle (value, type )
-  { if (value === type)
+  { try
+    { if (value instanceof type)
+      { return value;
+      }
+    } catch (ee)
+    { }
+    if (value  && value.constructor === type)
+    { return value;
+    }
+    if (value === type && typeof type !== "function")
     { return value;
     }
     if (type === null)
@@ -355,7 +364,7 @@ xer (simple );
     if (b && b.valueOf)
     { b = b.valueOf();
     }
-    if (a === b)
+    if (a === b && typeof b !== "function" )
     { return a;
     }
     if (b === null)
@@ -391,8 +400,7 @@ xer (simple );
 
     function eq_function (a, b)
     { if (a === b)
-      { return a;
-      }
+      { }
       if (typeof b !== "function")
       { err (`internal error  eq_function should not come here`);
       }

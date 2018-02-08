@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <!--
-Copyright 2017 Panu Viljamaa
+Copyright 2018 Class Cloud LLC
 SPDX-License-Identifier: Apache-2.0
 -->
 <html lang="en">
@@ -802,6 +802,7 @@ TupleTypes are USEFUL especially when you
 
 /* ----------------------------------------- */
 
+
 function classType()
 { let ok = this.ok, fails=this.fails, not=this.not, x=this.x;
   ok    (x ("s", String) === "s"   );
@@ -814,8 +815,20 @@ function classType()
   fails ( _ =>  x(e2, TypeError));
   x (e, Error);
   x (e, Object);
+  x (Object, Object);
+  x (Function, Object);
+  x (Function, Function);
+  fails (_=> x (Array, Array));
+  x(1,1);
+  x({}, {})
+  x("abc", "abc");
+
+  x (Array, Array)
+
   return;
 }
+
+
 
 /**
  A) If the 2nd argument is a function which
@@ -1084,9 +1097,6 @@ The instanceof behave with the result-type
  such as BooleanOrNull in our example.
 */
 
-/* ----------------------------------------- */
-
-
 }
 
 
@@ -1094,7 +1104,8 @@ The instanceof behave with the result-type
 
 </head>
 <body>
-CISF v. 1.3.1
-See JavaScript console for test-results
+<h2>CISF v. 1.3.2</h2>
+<h3>Open JavaScript-console of your browser
+to see if the browser-tests passed or not. </h3>
 </body>
 </html>

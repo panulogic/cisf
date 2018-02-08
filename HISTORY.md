@@ -3,6 +3,46 @@
 For future information about future releases
 see https://twitter.com/ClassCloudLLC 
 
+#### 1.3.2: Fixed x(Array, Array)
+
+Fixed an issue with method x() where
+
+     x(Array, Array));
+
+dir NOT cause an error although it must.
+In 1.3.2 it does. The reason it is an error
+is that Array is  NOT an instance of Array. 
+
+You might have thought x(Array, Array) 
+should not cause an error because  
+x(Function, Function) and  x(Object, Object) 
+do not cause error. But there is good
+reason for that: Every Function in Javascript
+IS AN INSTANCE of Object. And
+every Function is an instanceof Function.
+
+The fixed behavior is demonstrated
+in the test-method: classType ()
+whose relavant code is here:
+
+    x (Object, Object);
+    // Works  because Object is a Function
+    // and all Functions are instances of Object.
+    // 
+    x (Function, Object);
+    // Works because Function is a Function
+    // and every Function is also an instanceof
+    // Object. 
+    //
+    x (Function, Function);
+    // Works because  Function is an 
+    // instanceof Function.
+    // 
+    fails (_=> x (Array, Array));
+    // Fails because Array is NOT instacneof Array.
+
+
+
 #### 1.3.1: Updated browser-tests
  
  The tests to run on browser 

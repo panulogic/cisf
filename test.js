@@ -202,7 +202,7 @@ let e = err;  e('something wrong')
 doSomething (something, err);
 
 4. You can replace it with your own function
- which takes you to the debugger if an
+ which takes you to the de-bugger if an
  error happens. Or which ignores some
  specific error-messages altogether.
 
@@ -792,6 +792,13 @@ function classType()
   fails ( _ =>  x(e2, TypeError));
   x (e, Error);
   x (e, Object);
+  x (Object, Object);
+  x (Function, Object);
+  x (Function, Function);
+  fails (_=> x (Array, Array));
+  x(1,1);
+  x({}, {})
+  x("abc", "abc")
   return;
 }
 
