@@ -3,7 +3,30 @@
 For future information about future releases
 see https://twitter.com/ClassCloudLLC 
 
-#### 1.3.2: Fixed x(Array, Array)
+
+#### 1.3.3: Improved Error-Reporting
+
+##### Errors inside a call to fails()
+Errors which happens inside a call
+to fails() are no longer reported 
+to the console no matter how deep 
+in the stack they happen. 
+
+Previously
+this caused some fails() -calls cause 
+error-output which was confusing, 
+because the purpose of fails is
+not to report errors but to assert
+that certain calls will cause errors.
+
+##### Calls to log()
+Calls to **log()** now preserve empty
+lines in their argument-string.
+Like before they still remove empty
+space from in front of (now only non-empty) 
+-lines.
+
+#### 1.3.2: Fixed  x(Array, Array)
 
 Fixed an issue with method x() where
 

@@ -41,7 +41,7 @@ function CISF_inner  ()
   let Xer = _Xer();
   let AssertError = class AssertError extends Error { };
 
-  return { ok, not, x, fails, is, Type, log, warn, err};
+  return { ok, not, x, fails, is, Type, log, warn, err, eq}
 
 function notXer(v )
 { if (! ( v instanceof Xer))
@@ -73,9 +73,10 @@ function _Xer()
 }
 
 function trimLineBeginnings (s)
-{ let s2 =
+{ let pat = /\n[ \t]+(\S+)/g;
+let s2 =
  (s + "").trim()
-         .replace(/\n\s*/g, `\n`);
+         .replace (pat, `\n$1`);
 
   return s2;
 }
@@ -92,7 +93,9 @@ function _Type ()
       return;
     }
     constructor (... $CompTypes)
-    { class TYPE
+    { if ($CompTypes[0] === null)
+      { }
+      class TYPE
       { static [Symbol.hasInstance] (value)
         { let compTypes = $CompTypes ;
            for (let ct of compTypes)
@@ -187,6 +190,8 @@ function assignMethods (Canary)
   C.log     = log    ;
   C.warn     = warn  ;
   C.err     = err    ;
+
+  C.eq      = eq;
 
   return;
 
@@ -424,22 +429,21 @@ x():  eq_function fails: ${ a}, ${ b}.
         if ( bool)
         { return a;
         }
-if ((b + "" ).match(/xtype/))
-{ b(a);
-}
-        err
-       (` 
+let m = ` 
 x(${ a}, ${ b}) failed
 because the predicate call
  ${ b} (${ a})
 does not return == true. 
-       `);
+`;
+
+        err (m);
       } catch (e)
-      { err
-       (` 
+      { let m2 = ` 
 x(${ a}, ${ b}) failed with error:
  ${ e}
-       `);
+       `;
+
+        err (m2);
       }
        }
        if (typeof a === "function")
@@ -659,7 +663,7 @@ function isPredicate (v)
   return true;
 }
 
-  function fails (funk = x => null.error )
+  function fails (funk = x => null )
   { var eMsg, eMsg2, argsArray;
 
     var originalArgs  = [].slice.call(arguments);
@@ -733,8 +737,14 @@ function deepCopy (ob, level=0)
   return c;
 }
 
-  function log (msg = "The String to log")
-  { var s =  trimLineBeginnings (msg + ``);
+  function log (msg = "")
+  { if (typeof msg !== "string")
+    { msg = "" + msg;
+    }
+    msg = msg.replace (/<\w+>/, "");
+    msg = msg.replace (/<\/\w+>/, "");
+
+    var s =  trimLineBeginnings (msg + ``) .slice(0,377);
     let date = new Date();
     let ms =  date.getMilliseconds();
     if (ms.length === 1) ms = "00" + ms;
@@ -745,11 +755,12 @@ function deepCopy (ob, level=0)
     return s2;
   }
 
- function warn (msg)
- { return log (`
-   WARNING:
-   ${ msg}
-   `);
+ function warn (errorOrString)
+ { let msg = errorOrString;
+  if (typeof msg === "object")
+  { msg =  " "  + msg
+  }
+  return log (`WARNING: ${ msg}`);
  }
 
   function err ( s = "", ErrorClass = AssertError  )
@@ -758,7 +769,11 @@ function deepCopy (ob, level=0)
 `);
      var err = new ErrorClass ( s );
 
-    if (  (  new Error ()).stack  . match (/fails\s*\(/)   )
+    Error.stackTraceLimit = Infinity;
+
+    let stack =  (new Error ()).stack ;
+
+    if ( stack . match (/fails\s*\(/)   )
     { } else
     { let stack = (new Error()).stack;
 
@@ -773,4 +788,61 @@ if (this === "no stack")
 }
     throw (err);
    }
+
+function eq (a, b)
+{ if (a instanceof Array)
+  { for (var j=0; j <  a.length; j++)
+    { eq (a[j], b[j]);
+    }
+    if (a.length === b.length)
+    { return;
+    }
+  }
+  if (a instanceof Object)
+  { for (let p in  a)
+    { eq (a[p], b[p]);
+    }
+    for (let p in  b)
+    { eq (a[p], b[p]);
+    }
+    return;
+  }
+  if (a === b)
+  { return true;
+  }
+  err
+  (`eq() failed: 
+    ${ a} !== ${ b}
+   `
+  );
+}
+}
+
+function zet(owner, key, value, force)
+{ if (! owner)
+  { throw "zet() called without owner"
+  }
+  if (owner.hasOwnProperty(key))
+  { if (!force)
+    { debugger
+      err
+      ("Trying to double-bind " + key + ` to ${ value}`
+      )
+      return;
+    }
+  }
+ let temp =     Object.getOwnPropertyDescriptor(owner, key);
+
+  Object.defineProperty
+  ( owner, key
+  , { value        : value
+    , enumerable   : false
+    , writable     : false
+    , configurable : true
+    }
+  );
+
+  if (owner[key] !== value)
+  { throw `zet() almost silently failed to  set the value to property ${ key}.` ;
+  }
 }

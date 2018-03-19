@@ -680,6 +680,7 @@ function arrayType()
   x ( [1, "2" ], []);
   x ( [1, 2, 3], [4]);
   fails (_ => x ( ["2", 3], [Number]) );
+
   let AType = [Number]; 
   x ([]			, AType);  
   x ([1]			, AType);  
@@ -687,16 +688,20 @@ function arrayType()
   fails (_=> x (["1"]   , AType ));
   fails (_=> x ([1, "1"], AType ));
   x ([1, "1", 1], AType );
+
   let AType2 = [123];    
   x ([1]			, AType2);
   x ([1,2,3]	, AType2);
   fails (_=> x (["1"]   , AType2 ));
   fails (_=> x ([1, "1"], AType2 ));
+
   let AType3 =  [e => e > 0];   		
-  x ([1,2,3], AType3);  						
+  x ([1,2,3], AType3);
+
   fails  													
   ( e => x ([1, -1], AType3)
   );
+
   x ([1, -1, 3], AType3);
   [1,2,3,4].map ( e => x (e, AType3[0]) );
   x ( [1,2,3], Array) ;  
@@ -796,7 +801,6 @@ function classType()
   x (Function, Object);
   x (Function, Function);
   fails (_=> x (Array, Array));
-  debugger
   x(1,1);
   x({}, {})
   x("abc", "abc")
