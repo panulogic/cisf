@@ -763,15 +763,20 @@ function deepCopy (ob, level=0)
   return log (`WARNING: ${ msg}`);
  }
 
-  function err ( s = "", ErrorClass = AssertError  )
-  { s   =  `
+  function err ( errorOrString = "", ErrorClass = AssertError  )
+  { let stack;
+    let err =    errorOrString;
+    let s = errorOrString;
+    if (typeof s === "string")
+    { stack =  (new Error ()).stack ;
+      s   =  `
 ` + trimLineBeginnings (s + `
 `);
-     var err = new ErrorClass ( s );
-
+      err = new ErrorClass ( s );
+    } else
+    { stack = err.stack;
+    }
     Error.stackTraceLimit = Infinity;
-
-    let stack =  (new Error ()).stack ;
 
     if ( stack . match (/fails\s*\(/)   )
     { } else

@@ -4,6 +4,26 @@ For future information about future releases
 see https://twitter.com/ClassCloudLLC 
 
 
+#### 1.3.4: Better err()
+
+Previously if you called err() from within
+your error-handler because of some original
+error eOrig it logged the stack-trace only
+based on the location where you called err().
+
+Now err(e) recognizes that its argument
+can be EITHER a string or an instance of
+Error. If it is an instance of Error
+it will log the stack-trace of its
+error-argument, not the stack-trace
+of the location where err() was called.
+
+The previous behavior meant that if you
+passed an error-instance to err() it
+was hard to know from the log where the
+real error actually happened.
+
+
 #### 1.3.3: Improved Error-Reporting
 
 ##### Errors inside a call to fails()
