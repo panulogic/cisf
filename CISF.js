@@ -825,7 +825,8 @@ function eq (a, b)
 
 function zet(owner, key, value, force)
 { if (! owner)
-  { throw "zet() called without owner"
+  { debugger
+     throw "zet() called without owner"
   }
   if (owner.hasOwnProperty(key))
   { if (!force)
