@@ -743,8 +743,8 @@ function deepCopy (ob, level=0)
     }
     msg = msg.replace (/<\w+>/, "");
     msg = msg.replace (/<\/\w+>/, "");
+    var s =  trimLineBeginnings (msg + ``) .slice(0,2048);
 
-    var s =  trimLineBeginnings (msg + ``) .slice(0,377);
     let date = new Date();
     let ms =  date.getMilliseconds();
     if (ms.length === 1) ms = "00" + ms;
@@ -837,7 +837,7 @@ function zet(owner, key, value, force)
       return;
     }
   }
- let temp =     Object.getOwnPropertyDescriptor(owner, key);
+  let temp =     Object.getOwnPropertyDescriptor(owner, key);
 
   Object.defineProperty
   ( owner, key

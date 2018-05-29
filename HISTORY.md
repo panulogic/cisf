@@ -4,6 +4,10 @@ For future information about future releases
 see https://twitter.com/ClassCloudLLC 
 
 
+#### 1.3.5: Better log ()
+Increased the maximum length of
+log-messages to 2048.
+
 #### 1.3.4: Better err()
 
 Previously if you called err() from within
