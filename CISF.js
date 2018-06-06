@@ -255,8 +255,11 @@ function x (value, ... types)
     }
   };
 
+ if (typeof this === "number")
+ { debugger
+ }
   if (this)
-  { let m = this + `: 
+  { let m = "x() error: " + this + `
 ` + e2.stack ;
     err (m);
   } else

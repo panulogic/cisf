@@ -1,10 +1,21 @@
 # "Cisf" release notes  
 
 For future information about future releases
-see https://twitter.com/ClassCloudLLC 
+see https://twitter.com/ClassCloudLLC
+
+#### 1.3.6: Better x()
+If x() causes an error and
+typeof 'this' === "number"
+then a debugger -statement is executed.
+
+This is useful if you get an x() -error
+and would then like to debug it live to see
+the values of variables around the stack-frame
+where it happens. To do that call x() like
+x.call (123, valueArg, typeArg, ...);
 
 
-#### 1.3.5: Better log ()
+#### 1.3.5: Better log()
 Increased the maximum length of
 log-messages to 2048, was < 400.
 
@@ -32,13 +43,13 @@ real error actually happened.
 
 ##### Errors inside a call to fails()
 Errors which happens inside a call
-to fails() are no longer reported 
-to the console no matter how deep 
-in the stack they happen. 
+to fails() are no longer reported
+to the console no matter how deep
+in the stack they happen.
 
 Previously
-this caused some fails() -calls cause 
-error-output which was confusing, 
+this caused some fails() -calls cause
+error-output which was confusing,
 because the purpose of fails is
 not to report errors but to assert
 that certain calls will cause errors.
@@ -47,7 +58,7 @@ that certain calls will cause errors.
 Calls to **log()** now preserve empty
 lines in their argument-string.
 Like before they still remove empty
-space from in front of (now only non-empty) 
+space from in front of (now only non-empty)
 -lines.
 
 #### 1.3.2: Fixed  x(Array, Array)
@@ -58,11 +69,11 @@ Fixed an issue with method x() where
 
 dir NOT cause an error although it must.
 In 1.3.2 it does. The reason it is an error
-is that Array is  NOT an instance of Array. 
+is that Array is  NOT an instance of Array.
 
-You might have thought x(Array, Array) 
+You might have thought x(Array, Array)
 should not cause an error because  
-x(Function, Function) and  x(Object, Object) 
+x(Function, Function) and  x(Object, Object)
 do not cause error. But there is good
 reason for that: Every Function in Javascript
 IS AN INSTANCE of Object. And
@@ -75,30 +86,30 @@ whose relavant code is here:
     x (Object, Object);
     // Works  because Object is a Function
     // and all Functions are instances of Object.
-    // 
+    //
     x (Function, Object);
     // Works because Function is a Function
     // and every Function is also an instanceof
-    // Object. 
+    // Object.
     //
     x (Function, Function);
-    // Works because  Function is an 
+    // Works because  Function is an
     // instanceof Function.
-    // 
+    //
     fails (_=> x (Array, Array));
     // Fails because Array is NOT instacneof Array.
 
 
 
 #### 1.3.1: Updated browser-tests
- 
- The tests to run on browser 
+
+ The tests to run on browser
  in file 'test_browser.html'
 were updated to test the
 new behavior of x() in Cisf v. 1.3.n .
 
 
-### 1.3.0: Relaxation of x() 
+### 1.3.0: Relaxation of x()
 
 In 1.3 the behavior of x() has been relaxed
 so statements like this no longer cause errors:
@@ -108,27 +119,27 @@ so statements like this no longer cause errors:
 This used to cause an error. Why?
 Well, the thinking was that
 passing in {a:1} as argument when {b:2} was
-expected would make no sense and therefore 
-making such a call would likely be a typo 
-by the user, which we wanted to 
+expected would make no sense and therefore
+making such a call would likely be a typo
+by the user, which we wanted to
 draw the user's attention to.
 
 But, it turns out in
 practice it is more useful that x() only checks
 that the value has EVERYTHING NEEDED.
-It does not matter if it  has more than what 
+It does not matter if it  has more than what
 is needed.  You only need what you need, right?
 
-In contrast the code below still 
-fails, like it should, because the 
-same field exists in both the value- 
-and type-argument  but has a different 
+In contrast the code below still
+fails, like it should, because the
+same field exists in both the value-
+and type-argument  but has a different
 type of value in each:  
 
-    fails 
+    fails
     ( () =>
       { x ({a:1}, {a: "2"});
-      } 
+      }
     );
 
 As before x() uses fields which
@@ -140,56 +151,56 @@ missing from the value-argument:
     ok (x ({a:1}, {b: 2}).a === undefined);
 
 Fields which
-only exist in the value-arg will be 
+only exist in the value-arg will be
 undefined in the result of x().
 
 Version 1.3.0 is backwards-compatible
 with previous version 1.2.4 in that
 it causes no more errors than 1.2.4.
 Because of the relaxation of x() it
-may not cause errors in 
+may not cause errors in
 every situation where 1.2.4 did.
 
 See the function **mapType()** in the file
 **test.js** for updated tests that
 demonstrate the behavior described above.
- 
+
 
 #### 1.2.4: Left-aligned log-messages
- 
+
 Assume you have code like below
 in your program. You have taken
 extra care to indent the error-message
 like it is because you want the
 indentation of the code to follow
 the level of the statement-block
-in which it appears. 
+in which it appears.
 
 But just because the call to err()
-is indended several levels to right 
-it does not mean that is how you 
-want the message to be indended in 
+is indended several levels to right
+it does not mean that is how you
+want the message to be indended in
 the log. The log-output should not
-depend on the indentation-level of 
-the statement which made the call to 
-log something. In CISF v.1.2.4 each 
-line in the log-output will be strictly 
+depend on the indentation-level of
+the statement which made the call to
+log something. In CISF v.1.2.4 each
+line in the log-output will be strictly
 on the left edge of the log.
 
         try
         { "" . thisMethodDoesNotExist ()
         } catch (e)
         { err
-          (`This example shows how you 
+          (`This example shows how you
             can write an error-message
-            in your code indending it 
-            like the statement it is 
-            contained in, yet in the 
-            log the message will show 
-            aligned on the left edge 
+            in your code indending it
+            like the statement it is
+            contained in, yet in the
+            log the message will show
+            aligned on the left edge
             of the log LIKE ALL OTHER
             log-messages.  
-            
+
             The log-output should not
             depend on the indentation-level
             of the statement which made the
@@ -199,9 +210,9 @@ on the left edge of the log.
 
 This may seem a like a very minor detail
 but somehow I just had to make this change.  
-Else I started aligning code like above 
-to the left edge and I didn't like that 
-either. Now I'm happy. This 
+Else I started aligning code like above
+to the left edge and I didn't like that
+either. Now I'm happy. This
 
 
 #### 1.2.3: More control over error-messages
@@ -211,12 +222,12 @@ given message to the log followed by the
 stack-trace showing where the call to err()
 was made.
 
-If the error message is aimed at end-users 
-you might want to show them just the plain 
+If the error message is aimed at end-users
+you might want to show them just the plain
 explanation of what went wrong, without the
-stack-trace. 
+stack-trace.
 
-You can do that by binding err() to 
+You can do that by binding err() to
 "no stack":
 
     err.call
@@ -227,24 +238,24 @@ You can do that by binding err() to
 
 #### 1.2.2:  Better Motivating Example
 Updated the "Motivating Example" in
-README.md, to show how **x()** can be 
+README.md, to show how **x()** can be
 used to check that its 1st argument is
 of the same type as ANY of the
 remaining arguments. It now better
 shows how using x() makes code
 shorter, easier to write (correctly),
-and easier to understand (correctly). 
+and easier to understand (correctly).
 
-Added this test-function in test.js to 
+Added this test-function in test.js to
 test the code of the motivating example:
 
     function example()
     { let x=this.x, fails=this.fails, ok=this.ok;
-    
+
       function exA (arg)
       { x (arg, 0, "");
       }
-    
+
       function exB (arg)
       { if ( arg.constructor !== Number &&
              arg.constructor !== String
@@ -278,16 +289,16 @@ and Edge will do, but IE-11 not.
 
 The behavior of x() was relaxed
 so that if the type-argument is
-a {} it can have fields which do 
-not exist in the value-argument, 
+a {} it can have fields which do
+not exist in the value-argument,
 as long  assuming all common fields'
-values are of compatible type. 
+values are of compatible type.
 
 The fields which
 do not exist in the 1st argument but
-do in the 2nd are (deep-) copied to 
+do in the 2nd are (deep-) copied to
 the result of x(). This
-now works: 
+now works:
 
     let o =  x ({a:1}, {a:99, B:3} );
     ok (o.a === 1);
@@ -295,13 +306,13 @@ now works:
 
 
 As a consequence the 2nd argument
-of x() is now only  interpreted 
+of x() is now only  interpreted
 as a "map-type" if it has exactly
-one  field  whose name is'_'. 
+one  field  whose name is'_'.
 
 Next works because
 all fields in the value-argument
-have a value which is compatible 
+have a value which is compatible
 with the type of the (only) field
 '_' in the type-argument:
 
@@ -310,9 +321,9 @@ with the type of the (only) field
       );
 
 
-But the next now fails because 
-field 'b' of the  value-argument 
-is not compatible with  the value 
+But the next now fails because
+field 'b' of the  value-argument
+is not compatible with  the value
 of the (only) type-field  '_':  
 
     fails
@@ -322,19 +333,19 @@ of the (only) type-field  '_':
           );
 	  }
     );
-	
+
 
 
 #### 1.1.7: static new() of Type
 
  When you now create a type out of an
- instance of Object or Array and then 
- ask that type for a new instance of it, 
+ instance of Object or Array and then
+ ask that type for a new instance of it,
  it returns a DEEP COPY of the
- object from which the type was created. 
- 
- This means that if you modify that 
- deep copy it will not affect the original 
+ object from which the type was created.
+
+ This means that if you modify that
+ deep copy it will not affect the original
  type-object in any way. That was the case/bug
  in previous version.
 
@@ -347,8 +358,8 @@ of the (only) type-field  '_':
     ok (ob .a.b.constructor === Object);
     ok (ob2.a.b.constructor === Object);
     ok (ob.a.b  !== ob2.a.b );
- 
- 
+
+
 #### 1.1.6:  toString() of composite types
 
 The toString() of composite types now returns
@@ -374,23 +385,23 @@ it helps to get them automatically
 as part of importing the CISF -package.
 
 Because they are used so frequently
-even small savings in code 
-you are required to type 
-over the built-in versions (like 
-"console.log()") will 
-accrue over time. 
+even small savings in code
+you are required to type
+over the built-in versions (like
+"console.log()") will
+accrue over time.
 
-The functions' test-methods below show 
+The functions' test-methods below show
 examples of using them:
 
-##### log() 
+##### log()
 
     function log ()
     { let  ok=this.ok, log=this.log;
       let s = log (`Test-method log() executed`);
       ok (s.match(/Test-method log\(\) executed/));
     }
-    
+
 log() is a simple logger-method that comes as
 part of the CISF -package. Instead of writing
 "console.log('some msg')"
@@ -401,15 +412,15 @@ log() also adds to the log-message the current
 millisecond which may be helpful for measuring
 performance of some operations.
 
- 
- 
-##### warn() 
+
+
+##### warn()
     function warn()
     { let ok=this.ok, warn=this.warn;
       let s = warn (`Test-method log() executed`);
       ok (s.match(/WARNING:/));
     }
-    
+
  warn() is the same as log() except
  it adds the prefix "WARNING: " to the
  log-message so you don't have to.
@@ -417,11 +428,11 @@ performance of some operations.
  messages easier to spot from the logs
  apart from the rest of the less critical
  log-messages.
-     
 
-##### err() 
- 
-    
+
+##### err()
+
+
     function err()
     { let ok=this.ok,err=this.err, fails=this.fails;
       let e  = fails ( _=> err ('something wrong') );
@@ -432,8 +443,8 @@ performance of some operations.
       ok (e2.message.match (/wrong type/));
       ok (e2.constructor.name === "TypeError");
     }
-    
-  
+
+
 **err()** is a simple utility to throw an
 error of default or chosen error-class. Instead of writing:
 
@@ -443,8 +454,8 @@ you can write:
      err ('error-message');
 
 This does not save you
-many key-strokes but calling a function 
-instead of a built-in keyword has 
+many key-strokes but calling a function
+instead of a built-in keyword has
 its benefits:
 
 
@@ -461,7 +472,7 @@ variable-name:
 
 C) You can pass it (or something else)
 as argument to functions:
-              
+
        doSomething (something, err);
 
 D) You can replace it with your own function
@@ -477,8 +488,8 @@ default behavior for it.
 
 #### 1.1.4: Custom log-messages for ok(), not() and x()  
 
-You can set a custom failure-message 
-for **ok()** and **not()**, to be shown on the 
+You can set a custom failure-message
+for **ok()** and **not()**, to be shown on the
 log if they fail, by passing the error-string
 as 2nd argument to them:
 
@@ -486,7 +497,7 @@ as 2nd argument to them:
     ...
     not (m < 0,  `m is not  < 0: ${m}`) ;
 
-You can do a similar thing with x() but 
+You can do a similar thing with x() but
 there you must "bind" the error-message
 to x() because x() takes 1 + N arguments
 to start with. So you could call:
@@ -514,19 +525,19 @@ Improved documentation.
   similar to how a [] with no elements matches
   any array.
 
-  A {} with exactly one key matches any value 
-  whose constructor is an Object and whose values 
+  A {} with exactly one key matches any value
+  whose constructor is an Object and whose values
   are all of the same type as the value of the
   only field of the type-object.  
 
   A Map-type  differs from Object-type in the same
   way as an Array-type differs from Tuple type:
-  
+
   Both Object-type and Tuple-type have a fixed
   number of fields whose values can be of different
   types.
-  
-  Map-type and Array-type allow arbitrary number of 
+
+  Map-type and Array-type allow arbitrary number of
   fields in the value but their types must be all
   the same.
 
@@ -557,14 +568,14 @@ Examples (from test.js):
 
 
 #### 1.0.8:  Instantiable Types
-The type-constructor-function Type() 
+The type-constructor-function Type()
 was extended so that the types it
-creates now have the (static) method new() 
-which returns the default instance 
+creates now have the (static) method new()
+which returns the default instance
 for the type.
 
 For types with multiple component-types
-the first component-type produces the 
+the first component-type produces the
 default instance.
 
     ok ((new Type(Number))  .new() === 0);
@@ -576,8 +587,6 @@ default instance.
  could be to declare the
  instance variables, their types and
  default values for a class.  
- 
+
 #### 1.0.7: First Release  
 First Release. See README.md
- 
-
