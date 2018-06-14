@@ -15,7 +15,7 @@
  
    =============================================
    USAGE:
-   let {ok, not, x, fails, Type, log, warn, err
+   let {ok, x, r, not, fails, log, warn, err, Type, is
        } = require ("cisf");
 
    Or pick just the functions you need
@@ -30,18 +30,20 @@
 "use strict"
 
 let CISF = CISF_inner ();
+
 if (typeof module !== "undefined")
 { module.exports =  CISF;
 }
 
 function CISF_inner  ()
 { var C          = _Canary()    ;
-  let ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is;
-  let Type = _Type();
+  let ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is, r=C.r;
+  let Type = _Type  ;
   let Xer = _Xer();
   let AssertError = class AssertError extends Error { };
 
-  return { ok, not, x, fails, is, Type, log, warn, err, eq}
+  let api =  { ok, x, is, not, Type, fails, log, err, r }
+  return api
 
 function notXer(v )
 { if (! ( v instanceof Xer))
@@ -81,7 +83,90 @@ let s2 =
   return s2;
 }
 
-function _Type ()
+function _Type (... functions )
+{ let AType = class AType
+  { static [Symbol.hasInstance] (value)
+    { for (let funk of functions)
+       { if (funk === null)
+         { if (value === null || value === undefined)
+           { return true;
+           } else
+           { continue;
+           }
+         }
+         if (funk === undefined)
+         { continue;
+         }
+         if ( value instanceof funk)
+         { return true;
+         }
+         if ( value && value.constructor === funk)
+         { return true;
+         }
+          if ( value === null || value === undefined)
+          { if (funk === null)
+            { return true;
+            }
+          }
+          let isConstructor
+          =  funk.name
+          && (funk.name[0].match(/[A-Z]/));
+
+          if (isConstructor )
+          { continue;
+          }
+          try
+          { let  b = funk (value);
+            if (b)
+            { return true;
+            }
+          } catch (e)
+          { }
+       }
+      return false;
+    }
+    static toString ()
+    { let typeNames = functions .map
+      ( e =>
+        { if (typeof e === "function")
+          { if (! e.name)
+            { return "=>";
+            }
+            return e.name[0].toUpperCase() + e.name.slice(1);
+          }
+          if (e === null)
+          { return 'null';
+          }
+          if (e === undefined)
+          { return '*';
+          }
+          if ( e instanceof Array)
+          { if (! e.length )
+            { return '[]' ;
+            }
+            return '[ ... ]'
+          }
+          if (e.constructor === Object)
+          { return '{ ...}'
+          }
+        }
+      );
+      let s = typeNames.join (' | ');
+      return s;
+    }
+    constructor (  )
+    { err(`
+Trying to construct an instance 
+of the Type ${ this}.
+Types can not be instantiated.      
+`      );
+    }
+  };
+  zet (AType, 'name', AType + "", "force");
+  return AType;
+}
+
+function _TypeCombo ()
 { return class  TypeCreator
   { [Symbol.hasInstance] (value)
     { let compTypes = this._compTypes;
@@ -180,18 +265,21 @@ function _Canary ()
 }
 
 function assignMethods (Canary)
-{ var C = Canary;
-  C.ok      = ok    ;
-  C.not      = not    ;
+{ var C      = Canary;
+  if (typeof require !== "undefined" &&  require.main)
+  { C.r  = require.main.require;
+  }
+  C.ok       = ok    ;
   C.x        = x      ;
   C.fails    = fails  ;
   C.is       = is    ;
+  C.not      = not    ;
 
-  C.log     = log    ;
+  C.log      = log    ;
   C.warn     = warn  ;
-  C.err     = err    ;
+  C.err      = err    ;
 
-  C.eq      = eq;
+  C.eq       = eq;
 
   return;
 
@@ -213,9 +301,7 @@ function assignMethods (Canary)
 
   function not  (aBoolean=false, msg )
   { if (aBoolean)
-      { var loc = getCallingLine();
-         var m = `not(): ${ msg}) 
-         at: ${ loc}
+      { var m = `not(): ${ msg}) 
 `;
         err   (m);
       }
@@ -232,15 +318,16 @@ function assignMethods (Canary)
     }
   }
 
-function x (value, ... types)
-{ if (! arguments.length)
+function x (value, ... typesArg)
+{ let  types = [... typesArg];
+  if (! arguments.length)
   { err (`x() called without arguments.`);
   }
   if (! types.length)
   { if (value === null || value === undefined)
-    { err (`x() called with ${ value} as only argument.`);
+    { err (`x() called with null or undefined as the its argument.`);
      }
-    return xSingle (value);
+    return value;
   }
   let e2, r;
 
@@ -254,6 +341,28 @@ function x (value, ... types)
     { e2 = e;
     }
   };
+
+let typeNames =
+typesArg.map
+( et =>
+  { if ((typeof et === "function") && et.name )
+    { return et.name;
+    }
+    return et + ""
+  }
+). join (', ');
+
+let em =
+`x() type-check failed. 
+The 1st argument in 
+x (${ value}, ${ typeNames})
+is not an instance of any 
+of the remaining arguments.
+.
+`;
+
+err (em);
+throw em;
 
  if (typeof this === "number")
  { debugger
@@ -277,92 +386,12 @@ function x (value, ... types)
     if (value  && value.constructor === type)
     { return value;
     }
-    if (value === type && typeof type !== "function")
-    { return value;
-    }
     if (type === null)
     { if (value === null || value === undefined)
       { return value;
       }
-      let em = `
-      x(value, ... null) called with
-      value which is not null nor undefined `;
-      err (em );
     }
-    try
-    { if (value instanceof type)
-      { return value;
-      }
-     } catch(e)
-    { }
-    if (arguments.length ===  2)
-    { if (type === undefined)
-      { return value;
-      }
-    }
-    if (arguments.length ===  0)
-    { if   (value !== undefined && value !== null)
-      { return value;
-      }
-      let em = `
-      x()  called without argument      `;
-      err (em);
-    };
-
-    if ( arguments.length ===  1
-      || arguments[1] === undefined
-       )
-    { if (value !== undefined && value !== null)
-      { return value;
-      }
-      let em = `
-        x()  called with 1 argument
-        which is either null or undefined:
-        ${ value} 
-      `;
-       err (em);
-    };
-
-    if (type === null)
-    { if ( value === undefined )
-      { let em = `
-      x(${ value}, null) 
-      fails.  null used as type
-      accpets everything EXCEPT undefined.
-      `;
-       err(em);
-      }
-      return value;
-    }
-    if (value === undefined || value === null)
-    { if ( isClass(type) )
-      { let em = `
-        x(${ value}, ${ type}) 
-        fails.  'undefined'  is not valid
-        first argument if 2nd argument is 
-        a class.
-        `;
-        err(em);
-      }
-    }
-    let  simple, wasError = true;
-    simple = checkAndReturn (value, type   );
-    if (notXer (simple))
-    { return simple;
-    }
-xer (simple );
-
-       simple = checkAndReturn (value, type );
-       if (simple)
-      { return value;
-      }
-        let em = `
-        x() caused error:
-        ${ e}
-        Arguments were: 
-        ${ value}, ${ type}, ${ type}, ...'
-      `;
-       err (em);
+    throw new Error ('cisf.x() type-error');
   }
 
   function checkAndReturn (a, b)
@@ -828,13 +857,11 @@ function eq (a, b)
 
 function zet(owner, key, value, force)
 { if (! owner)
-  { debugger
-     throw "zet() called without owner"
+  { throw "zet() called without owner"
   }
   if (owner.hasOwnProperty(key))
   { if (!force)
-    { debugger
-      err
+    { err
       ("Trying to double-bind " + key + ` to ${ value}`
       )
       return;
@@ -855,3 +882,31 @@ function zet(owner, key, value, force)
   { throw `zet() almost silently failed to  set the value to property ${ key}.` ;
   }
 }
+
+function zet(owner, key, value, force)
+  { if (! owner)
+    { throw "zet() called without owner"
+    }
+    if (owner.hasOwnProperty(key))
+    { if (!force)
+      { err
+        ("Trying to double-bind " + key + ` to ${ value}`
+        )
+        return;
+      }
+    }
+   let temp =     Object.getOwnPropertyDescriptor(owner, key);
+
+    Object.defineProperty
+    ( owner, key
+    , { value        : value
+      , enumerable   : false
+      , writable     : false
+      , configurable : true
+      }
+    );
+
+    if (owner[key] !== value)
+    { throw `zet() almost silently failed to  set the value to property ${ key}.` ;
+    }
+  }

@@ -1,7 +1,111 @@
-# "Cisf" release notes  
+# cisf.js release notes
 
 For future information about future releases
 see https://twitter.com/ClassCloudLLC
+
+####  2.0: Simpler x(), Type(), r()
+
+See the file cisf/test.js.
+
+Cisf version 2 is <b><em>not</em> backwards-compatible</b>
+with earlier versions.
+But it is much simpler to use and easier to understand.
+Most API-functions work the same as before.
+Many of the x() type-declaration-options that were present
+in previous versions no longer apply.
+They were quite esoteric, good riddance.
+
+
+
+#### Sinplified x() Type-System
+The arguments of x() after 1st must now
+all be TYPES -- meaning functions.
+
+NON-title-cased-argument functions are called
+with the 1st  argument of x(). If the result
+is truthy then the type-check passes.
+
+Title-cased argument-functions are NOT called,
+instead they are tested with 'instanceof'.
+
+#### New API-function  'Type()'
+
+x() allows you to test a value
+against the disjunction of
+multiple types. Type() allows
+you to package such a disjuntion
+into a new type of its own.
+
+Example:
+
+    const {Type, x, ok} = require("cisf");
+    ...
+    const NumberOrString = Type(Number, String);
+    x  (123, NumberOrString);
+    ok (is (123, NumberOrString));
+
+Example 2:
+
+    const {Type, x} = require("cisf");
+    ...
+    const NumberOrNothing = Type(Number, null);
+    x (123, NumberOrNothing);
+    x (null, NumberOrNothing);
+    x (undefined, NumberOrNothing);
+
+To create arbitrary dynamic types use
+non-title-cased functions:
+
+    const {Type, x} = require("cisf");
+    ...
+    const Odd = Type(n => n % 2 === 1);
+    x(123, Odd);
+
+As shown in the above example
+you can use **ES6 arrow-functions** to
+make the type-declarations quite succinct:
+
+    Odd = Type(n => n % 2 === 1)
+
+
+#### New API-function 'r()'
+
+'r()' is a shorthand for require.main.require.
+It is the best way to load other modules which
+are also under development in Node.js.
+
+Example:
+
+    const {r}   = require("cisf");
+    let libComp = r ("../lib/someComp");
+
+r() is used like ordinary require but it
+interprets relative paths relative
+to the directory of the first module
+loaded. Typically that is your main
+'application'.
+
+Using r() means modules in lower
+directory levels
+need not refer to upper-level modules
+with paths consisting mostly
+of  several "../".
+
+If you move a module that uses
+r() up or down the file-system the
+<b>r()</b> -calls will keep on working
+as is. That would
+not be the case with standard
+'require' that would need to
+refer to modules in upper
+directories with a fixed
+number of "../" -steps.
+
+
+
+
+
+### History of earlier versions 1.x.x
 
 #### 1.3.6: Better x()
 If x() causes an error and

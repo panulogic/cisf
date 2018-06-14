@@ -1,16 +1,15 @@
-# CISF.js
-Support for **Simple Runtime Assertions** 
+# Cisf 2
+Support for **Runtime Types**
 in JavaScript.
  
-CISF.js allows you to add type-checks to your 
+Cisf.js allows you to add type-checks to your
 JavaScript code  with minimal syntax. 
-No transpiling to JavaScript is needed since you
-do it all in JavaScript.
+No transpiling to JavaScript is needed
+you do it all in JavaScript.
 
-Adding CISF.js to your platform is like
-using "TypeScript Light", simpler and
-easier to learn and unobtrusive to use, 
-with no effect on your tool-chain. 
+cisf.js  could be described as "TypeScript Light",
+simplea and easy to learn and unobtrusive to use,
+with no effect on your tool-chain(s).
 
 #####USAGE: 
 
@@ -19,7 +18,8 @@ with no effect on your tool-chain.
         
 Or, pick the subset the functions you might need:
 
-    let {ok, x} = require ("cisf");
+    let {ok, x, r} = require ("cisf");
+
 
 ##### TO BE RELEASE-ANNOUNCEMENTS:
    
@@ -42,7 +42,7 @@ write something like this:
  
  Using CISF you can write it more simply as:
  
-     x (arg, 0, "");
+     x (arg, Number, String);
  
 x() checks that its first argument is
 of the same type as one of the other
@@ -87,14 +87,14 @@ can then access like shown here from within an
 HTML-page:
 
     <script src="CISF.js"></script>
-    <script> let {ok, not, x, fails, is, Type} = CISF;
+    <script> let {ok, not, x, fails, is, Type, r} = CISF;
     </script>
 
 
 
 SEE: **test_browser.html** which does the
 above and then runs all CISF-tests 
-within the browser. So to
+within the browser. To
 check whether it runs on your browser 
 open  **test_browser.html** in it. 
 Seems to work on latest versions of Edge, 
@@ -130,112 +130,97 @@ an error if ok() would not cause an error.
     fails ( _ => not (true));
 
 
-##### 3.3  x (value, Type)
+##### 3.3  x (value, ... Types)
 
-###### 3.3.1  Two arguments
+###### 3.3.0 Zero arguments
+
+Callin g() without arguments
+throws an error, because doing
+that ius same as calling
+x(undefined)*[]:
+
+###### 3.3.1 One x() argument
+ If called with  one argument x()
+ fails if it is called with null
+ or undefined or no argument at all.
+
+ This allows you to know if the
+  argument is something from
+ which you can ask its constructor:
+
+    x(0);
+    x(false);
+    x("");
+    fails (_=> x (null));
+    fails (_=> x (undefined));
+    fails (_=> x ());
+
+A spdecial case ius using null as
+type-argument. It allows values that
+are either null or undefined, but
+nothing else:
+
+
+###### 3.3.2  Two x() arguments
  x() is typicallly called with
  two arguments, a value and
  a "type":
   
-  x (123, Number) 
-
-  How the 2nd argument is used 
-  as a "type" depends on its kind. The
- most obvious case is using a constructor
- as 2nd argument like above.  But it 
- can also be a _value that is of the same type_
- as the 1st:
- 
-    x (123, 1);  // shorter to write '1' than 'Number'
- 
- 
- 
- x() throws an error
- if the 1st argument is not of the 
- type specified by the 2nd argument. 
- We can use our API-function "fails()"
- to show this happens:  
-   
+    x (123, Number)
     fails (_=> x ("s", Number));
 
- 
+A special case is using null as the
+2nd argument, it matches only itself
+or undefined:
+
+  x (null     , null);
+  x (undefined, null);
+  fails (() => x(33, null));
+
+You will not be testing that somnething
+is null or undefined, but the opposite.
+So why have this "null type"? It is because
+you may often want to assert that IF
+something is not null or undefined,
+TEHN it muts of a specific type,
+which you can do by having
+more thna one type argument:
+
+  x (3   , Number, null);
+  x (null, Number, null);
+
+That is actually explained next ...
+
+
+###### 3.3.3  Many x() arguments
+You can add any number of types
+as arguments after the value-argument.
+The x() sill succeed if the value
+argument is an instacne of any of
+the  type-arguments:
+
+    x (123, Number, String)
+    x ("123", Number, String)
+    fails (_=> x (true, Number, String));
+
      
-######  3.3.2  Result of x() 
+######  3.3.4  Result of x()
 
-If x() does _not_ fail it returns its
- first argument, which is useful
- so you can use it within an
- assignment for instance:
- 
-    ok (x ("s", String) 	    === "s" );
+If x() does not cause an error
+it returns its first argument.
 
-    ok (x ("")      === ""   );
-    ok (x (false)   === false);
-    ok (x (true)    === true );
-    
-###### 3.3.3 Only one argument
- If called with only one argument x() 
- fails if it is called with null
- or undefined or no argument at all.
- 
- This usage let's you know if the 
- first argument is something from
- which you can ask its constructor:
- 
-    fails (_=> x (null));
-    fails (_=> x (undefined));
-    fails (_=> x ());
-  
+ This is  useful when
+ you want to assign the
+ value to a field and want
+ to be sure you are not
+ assigning  a value of wrong type:
+
+    function example (arg)
+    { let this.n  =  x(arg, Number);
+        ...
+    };
 
 
- ###### 3.3.4 More than 2 arguments
- x() can take more than one type-argument.
- If any of them accepts the first argument 
- as a  compliant value then x() succeeds:  
- 
-    ok (x ("s", Number, String) === "s" );
- 
-  
-  For more advanced usage see
-  the **test.js** -file. It shows how  
-  for instance how you can define 
-  your own  "custom types".
-  
-  
-###### 3.3.5  Special case type-arguments
-Depending on the type of the 2nd and
-further argument the "type-check"
-can mean different things than 
-what it means for constructors.
-
-For instance if the type-argument
-is an **arrow-function** it means it
-gets called with the 1st argument
-as its argument. If the arrow-function
-returns true x() passes, else not.
-
-The special cases are best
-explained by the test-cases code in
-test.js. The simplest is 
-to use only constructors as type-
-arguments, their behavior is 
-"obvious". 
-
-A caveat: 
-
-    x (123, Number)
-
-succeeds even though technically
-123 is not "instanceof" Number.
-But as far as x() is concerned 
-it is "of type" Number as far as
-x() is conceerned.
-
-That just makes more sense to us 
-intuitively. A number is a number
-no matter how small.
-
- 
    
 ##### 3.4 is (value, Type)
 is() returns true if x() called with the
@@ -244,6 +229,11 @@ otherwise:
 
     ok  (is (123, String) === false);
     ok  (is (123, Number) === true);
+
+You can thus use the same type-machinery
+as x() does, to make branching  decisions
+within your program.
+
 
 ##### 3.5 fails (aFunction)
 Above you have already seen use of fails().
@@ -265,11 +255,21 @@ cases are.
 
 
 ##### 3.6 Type ()
-Type is a constructor for creating new "sum types"
-out of existing types. It is especially useful
+Type is a constructor for creating new  types.
+
+###### 3.6.1 (Named) Sum-Types ()
+
+Type can be used tpo combe
+existing types into a "sum type"
+which accepts anything that
+is accepted by one of its components.
+
+This is especially useful
 for declaring that something is EITHER
-a value of specific type or it is null 
-(a.k.a "Maybe-type")
+a value of specific type or it is null
+or undefined. A type like this is
+commonly referred to as a
+"Maybe-type":
 
     let NumberOrNull = new Type (Number, null);
     x( 123      , NumberOrNull);
@@ -277,10 +277,63 @@ a value of specific type or it is null
     x( undefined, NumberOrNull);
     fails (e=> x("s", NumberOrNull))
 
-Note, null as 2nd argument
-accepts  null or undefined as the actual
-value. See test.js.
+Note, null as 2nd argument accepts  null or
+undefined as value. See test.js.
 
+###### 3.6.2 Dependent Types ()
+
+This is the 2nd use of Type, pertaining
+to advanaced type-theory made simple:
+Dependent Types.
+
+Wheter a value is a member of
+a dependent type depends on
+some other value.
+
+Let's say we  define a function
+whose argument-type is basically
+Number, but then we realize it can
+only accept Positive numbers as
+its argument. Cisf can declare
+such a type easily:
+
+    let Positive = Type (n => n > 0);
+
+    function dependable (n)
+    { x(n, Positive);
+    }
+
+Be aware, above the function that
+defines a type must either start
+lowercase, or have no name at all.
+
+If a function starts with uppercase
+it is a 'constructor' or 'class'
+and its membership will be checked
+more simply with 'instanceof',  i
+nstead of calling it. All constructors
+say String and Number are
+functions, and we  can not
+decide if something is their
+instance or not by calling them.
+
+For non-title-cased functions we
+adopt the rule that they are not
+to be used as 'types'. They are
+to be passed as arguments to Type()
+to create types from them.
+
+
+The Point: You can use
+Type() to define a "type" based on
+arbitrary logic which  determines
+whether some value is its member
+ or not.
+
+For instance you could define
+the type PrimeNumber  which
+accepts only prime numbers as
+its members.
 
 
 #### 4. Tests
