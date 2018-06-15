@@ -42,8 +42,16 @@ function CISF_inner  ()
   let Xer = _Xer();
   let AssertError = class AssertError extends Error { };
 
-  let api =  { ok, x, is, not, Type, fails, log, err, r }
-  return api
+  let path, fs;
+  if (typeof require === "function")
+  { path = require ("path");
+    fs   = require ("fs");
+  }
+  let api =
+  { ok, x, is, not, Type, fails, log, err, r
+  , path, fs
+  }
+  return api;
 
 function notXer(v )
 { if (! ( v instanceof Xer))

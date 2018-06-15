@@ -335,6 +335,47 @@ the type PrimeNumber  which
 accepts only prime numbers as
 its members.
 
+##### 3.7 path ()
+The value of require("cisf").path
+is the value of the standard
+require("path");
+
+You get 'path' along with cisf
+so you don't have to require it yourself.
+You just refer to it as one of the
+fields of your structuring require
+assignment:
+
+    let {ok, x, path} = require('cisf');
+
+Note 'cisf.path' is not available on browser.
+
+
+##### 3.8 fs ()
+The value of require("cisf").fs
+is the value of the standard
+require("fs");
+
+You get 'fs' along with cisf so you
+don't have to require it yourself.
+You just refer to it as one of the
+fields of your structuring require
+assignment:
+
+    let {ok, x, fs, path} = require('cisf');
+
+Note 'cisf.fs' is not available on browser.
+
+Notee 'fs' and 'path' are (currently)
+the only two  Node.js core APIs available
+via cisf. We added those two
+because we think they are the most
+useful and most frequently used core APIs.
+That may or may not apply ot your application
+but that's the tradeoff we made between
+keeping Cisf simple and making reducing
+the number of require-statements you and
+us havce to make every day.
 
 #### 4. Tests
 The file test.js in the same directory as CISF.js

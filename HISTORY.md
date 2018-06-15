@@ -3,6 +3,54 @@
 For future information about future releases
 see https://twitter.com/ClassCloudLLC
 
+
+####  2.1: path(), fs()
+
+Two new api-functions 'path' and
+'fs' now come along with require("cisf")
+if you are running on Node.js.
+
+Their values are the normal 'path'
+and 'fs' a normal require() gives
+you on Node.js.
+
+The reason they are now part of
+Cisf is that this spares you from
+having to require them yourself,
+they "hitch a ride" with Cisf:
+
+    let {ok, path, fs} = require("cisf");
+
+See, two less require-statements you would
+otherwise need to write.  Of course your
+module may not use either 'path' nor 'fs'
+in which case you would not include them
+but would write something like:
+
+    let {ok, x} = require("cisf");
+
+We added only these two Node.js core-APIs
+because our intention is to keep the
+cisf-API simple. But in our own work
+we find we end up using both "fs" and "path"
+in most modules.
+
+Of course you could use this same trick
+yourself to import your most frequently
+used core modules in a single statement:
+
+    let {http, url} = require("myFavorites");
+
+If there is popular demand we might
+consider adding
+those and other core-APIs to cisf as well.
+The downside is that loadingf them takes
+time and memory.  So currently we feel
+that just loading 'fs' and 'path'
+ with 'cisf' is
+a worthy compromise.
+
+
 ####  2.0: Simpler x(), Type(), r()
 
 See the file cisf/test.js.

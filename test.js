@@ -16,11 +16,14 @@ testCisf ();
 function testCisf ()
 {
 let cisf;
-if (typeof require !== "undefined")
+if (typeof require === "function")
 { cisf = require ("./cisf");
 } else
 {  cisf = CISF; // for the browser
 }
+
+path              .bind 	(cisf) ();
+fs                .bind 	(cisf) ();
 
 Type              .bind 	(cisf) ();
 x             	  .bind 	(cisf) ();
@@ -33,7 +36,7 @@ fails           	.bind 	(cisf) ();
 log             	.bind 	(cisf) ();
 err             	.bind 	(cisf) ();
 
-msg ("cisf.js 2.0.0 all tests passed. ");
+msg ("cisf.js 2.1 all tests passed. ");
 
 return;
 
@@ -56,8 +59,29 @@ function msg (s)
 }
 // -----------------------------------------------
 
+function path ()
+{
+  let {path, x} = this;
+  if (! path)
+  { return;  // in the browser
+	}
+  x(path.join, Function);
+  x(path.resolve, Function);
+}
+
+function fs ()
+{
+  let {fs, x} = this;
+  if (! fs)
+  { return;  // in the browser
+	}
+	x (fs.readFile, Function);
+}
+
+
+
 function Type ()
-{ let Type=this.Type, ok = this.ok, not=this.not, fails=this.fails, x=this.x, is=this.is;
+{ let {Type, ok, not, fails, x, is} = this;
 
   let Odd             = Type (odd);
   let Even            = Type (even);
