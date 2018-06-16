@@ -4,6 +4,17 @@ For future information about future releases
 see https://twitter.com/ClassCloudLLC
 
 
+##### 2.1.1 Fix to x()
+
+A fix was made that allows the following tests,
+which were added, to pass:
+
+     x (""   , String);
+     x (0    , Number);
+     x (false, Boolean);
+
+
+
 ####  2.1: path(), fs()
 
 Two new api-functions 'path' and

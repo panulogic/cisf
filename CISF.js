@@ -49,7 +49,7 @@ function CISF_inner  ()
   }
   let api =
   { ok, x, is, not, Type, fails, log, err, r
-  , path, fs, A
+  , path, fs
   }
   return api;
 
@@ -301,7 +301,13 @@ throw em;
       }
     } catch (ee)
     { }
-    if (value  && value.constructor === type)
+    if  (value === undefined || value === null)
+    { if (type === null)
+      { return value;
+      }
+      throw new Error ('cisf.x() undefined or null value type-error');
+    }
+    if ( value.constructor === type)
     { return value;
     }
     if (type === null)

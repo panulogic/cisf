@@ -9,18 +9,18 @@ SPDX-License-Identifier: Apache-2.0
 // each test has access to the functions
 // ok, not, x(), fails() etc. which are
 // PERFECTLY SUITED FOR TESTING themselves.
-// See the exaamples.
+// See the examples.
 
 testCisf ();
 
 function testCisf ()
 {
-let cisf;
-if (typeof require === "function")
-{ cisf = require ("./cisf");
-} else
-{  cisf = CISF; // for the browser
-}
+  let cisf;
+  if (typeof require === "function")
+  { cisf = require ("./cisf");
+  } else
+  { cisf = CISF; // for the browser
+  }
 
 path              .bind 	(cisf) ();
 fs                .bind 	(cisf) ();
@@ -36,7 +36,8 @@ fails           	.bind 	(cisf) ();
 log             	.bind 	(cisf) ();
 err             	.bind 	(cisf) ();
 
-msg ("cisf.js 2.1 all tests passed. ");
+
+msg ("cisf.js 2.1.1 all tests passed. ");
 
 return;
 
@@ -65,8 +66,8 @@ function path ()
   if (! path)
   { return;  // in the browser
 	}
-  x(path.join, Function);
-  x(path.resolve, Function);
+  x (path.join   , Function);
+  x (path.resolve, Function);
 }
 
 function fs ()
@@ -77,7 +78,6 @@ function fs ()
 	}
 	x (fs.readFile, Function);
 }
-
 
 
 function Type ()
@@ -200,6 +200,10 @@ return;
 function x ()
 {
   let x=this.x, ok=this.ok, fails=this.fails;
+
+  x (""   , String);
+  x (0    , Number);
+  x (false, Boolean);
 
   x (null     , null);
   x (undefined, null);
