@@ -8,7 +8,7 @@ No transpiling to JavaScript is needed
 you do it all in JavaScript.
 
 cisf.js  could be described as "TypeScript Light",
-simplea and easy to learn and unobtrusive to use,
+simple and easy to learn and unobtrusive to use,
 with no effect on your tool-chain(s).
 
 #####USAGE: 

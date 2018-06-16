@@ -49,7 +49,7 @@ function CISF_inner  ()
   }
   let api =
   { ok, x, is, not, Type, fails, log, err, r
-  , path, fs
+  , path, fs, A
   }
   return api;
 
@@ -172,96 +172,6 @@ Types can not be instantiated.
   };
   zet (AType, 'name', AType + "", "force");
   return AType;
-}
-
-function _TypeCombo ()
-{ return class  TypeCreator
-  { [Symbol.hasInstance] (value)
-    { let compTypes = this._compTypes;
-       for (let ct of compTypes)
-       { if (is (value, ct))
-          { return true;
-          }
-       }
-      return;
-    }
-    constructor (... $CompTypes)
-    { if ($CompTypes[0] === null)
-      { }
-      class TYPE
-      { static [Symbol.hasInstance] (value)
-        { let compTypes = $CompTypes ;
-           for (let ct of compTypes)
-           { if (is (value, ct))
-             { return true;
-             }
-           }
-           return;
-        }
-      static new  ()
-      { let T0 = $CompTypes [0];
-        if (T0 === null  || T0 === undefined)
-        { return T0;
-        }
-        try
-        { if (typeof T0 !== "function")
-          { let maybeNumber = deepCopy (T0);
-
-            if (typeof T0 === "object")
-            { }
-            let isNumber    = maybeNumber instanceof Number;
-            let newV        = maybeNumber .valueOf() ;
-
-            return newV;
-          }
-          let itA = new T0 () ;
-          return itA .valueOf();
-        } catch (e)
-        { err
-          ( `Type -constructor failed  trying to
-             instantiate the first alternative  
-             type without argument:
-             ${ e}.
-             `
-          );
-        }
-    }
-  }
-      TYPE.toString   = TYPEtoString ;
-      this._compTypes = $CompTypes;
-      TYPE._compTypes = $CompTypes;
-
-      let temp = TYPE + "";
-      return TYPE;
-
-      function TYPEtoString ()
-      { let typeNames = $CompTypes .map
-        ( e =>
-          { if (typeof e === "function")
-            { return e.name;
-            }
-            if (e === null)
-            { return 'null';
-            }
-            if (e === undefined)
-            { return '*';
-            }
-            if ( e instanceof Array)
-            { if (! e.length )
-              { return '[]' ;
-              }
-              return '[ ... ]'
-            }
-            if (e.constructor === Object)
-            { return '{ ...}'
-            }
-          }
-        );
-        let s = typeNames.join (' | ');
-        return s;
-      }
-    }
-  }
 }
 
 function _Canary ()
@@ -861,34 +771,6 @@ function eq (a, b)
    `
   );
 }
-}
-
-function zet(owner, key, value, force)
-{ if (! owner)
-  { throw "zet() called without owner"
-  }
-  if (owner.hasOwnProperty(key))
-  { if (!force)
-    { err
-      ("Trying to double-bind " + key + ` to ${ value}`
-      )
-      return;
-    }
-  }
-  let temp =     Object.getOwnPropertyDescriptor(owner, key);
-
-  Object.defineProperty
-  ( owner, key
-  , { value        : value
-    , enumerable   : false
-    , writable     : false
-    , configurable : true
-    }
-  );
-
-  if (owner[key] !== value)
-  { throw `zet() almost silently failed to  set the value to property ${ key}.` ;
-  }
 }
 
 function zet(owner, key, value, force)
