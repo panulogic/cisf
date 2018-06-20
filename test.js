@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
 // each test has access to the functions
 // ok, not, x(), fails() etc. which are
 // PERFECTLY SUITED FOR TESTING themselves.
-// See the examples.
+// See the exaamples.
 
 testCisf ();
 
@@ -22,10 +22,10 @@ function testCisf ()
   { cisf = CISF; // for the browser
   }
 
+eq                .bind   (cisf) ();
 path              .bind 	(cisf) ();
 fs                .bind 	(cisf) ();
 
-Type              .bind 	(cisf) ();
 x             	  .bind 	(cisf) ();
 r           	    .bind 	(cisf) ();
 
@@ -36,8 +36,11 @@ fails           	.bind 	(cisf) ();
 log             	.bind 	(cisf) ();
 err             	.bind 	(cisf) ();
 
+Type              .bind 	(cisf) ();
+A             	  .bind 	(cisf) ();
 
-msg ("cisf.js 2.1.1 all tests passed. ");
+
+msg ("cisf.js 3.0.0 all tests passed. ");
 
 return;
 
@@ -60,6 +63,104 @@ function msg (s)
 }
 // -----------------------------------------------
 
+// eq() also tests neq() which is simply the negation of eq().
+
+function eq ()
+{ let {fails, ok, eq, neq} = this;
+
+  fails (_=> eq());
+  fails (_=> eq(1));
+  fails (_=> eq(1,2,3));
+
+  eq (1,1); // YES!
+  eq ("1", "1"); // YES!
+  fails (_=> eq(1,2));
+  fails (_=> eq("1", "2"));
+
+  neq (1,2);
+  fails(_=> neq(2,2));
+
+  ok ( eq(1,1) === 1);  // returns its first argument
+
+  fails (_=> eq(1,2));
+  fails (_=> eq([1], [2]));
+  fails (_=> eq([1], 1));
+
+  eq([1,2,3], [1,2,3]);
+  eq([1,[2,[3]]], [1,[2,[3]]]);
+
+ let ob =
+ { a: {b: [1,2, {c:3}]}
+ }
+ let ob2 =
+ { a: {b: [1,2, {c:3}]}
+ }
+ let ob3 =
+ { a: {b: [1,2, {c:5}]}
+ }
+
+ eq (ob, ob2);
+ eq (ob2, ob);
+ fails (_=> eq(ob,ob3 ));
+ fails (_=> eq(ob2,ob3));
+
+ eq (new Object(), new Object());
+ // Because they must have all the same fields
+ // with all the same values they must be eq.
+ // Point is eq() works with non-literal
+ // arguments as well.
+ eq (new Object(), new Function () );
+
+ ok (Object === eq (Object, Function));
+ // Above works too because for objects
+ // we dont compare their constructors
+ // only thgeir ENUMERABLE properties.
+ //
+ // But as seen for primitive objects
+ // eq() does not compare the properties
+ // because we know there are none:
+
+ eq  (1,1);
+ neq (1,2);
+ // WHEREAS for boxed Strings and numbers they are juts
+ // like other objects, and rq only compares their
+ // ENUMERABLE properties:
+ eq (new String(), new Number() )
+
+// So eq () is about comparing the "carried data"
+// of two objects, or if objects are primitive
+// meaning they are data themselves then comparing
+// that data. Or in other wrods if you compare
+// VESSELS we only compare the CONTENT of those
+// vessels, NOT whether the vessels are the same
+// or even of the same class.
+
+// If one of the args is an object and the
+// other is not then we fail, even if neither
+// has any enumerable properties. You can not
+// compare Apples and Oranges.
+
+neq (1, {});
+neq ({}, 1);
+eq  ({}, {});
+
+return;
+
+  /**
+  You would rarely check that your arguments are
+  a given fixed array or object. But eq() is part
+  of the API because it  supports the 2nd major
+  user-case of cisf: Writing the  documentary tests
+  for your  API, including the API of cisf itself.
+
+  So in this sense eq() is in same group as fails().
+  You typically only call fails() in your API-doc
+  -tests, to show what are some illegal calls.
+
+   */
+}
+
+
 function path ()
 {
   let {path, x} = this;
@@ -80,66 +181,499 @@ function fs ()
 }
 
 
+function A ()
+{ let {ok, x, A, Type, fails, is, eq, neq } = this;
+  let StringOrNull = Type (String, null);
+
+  let ex = fails (a => a.yah() );
+
+  A     (        [String, Number], "good", 123   );
+  fails (_=> A ( [String, Number], "good", "BAD" ));
+
+
+  function AExample (s, n) { A([String, Number], s, n) }
+	AExample ("yeah", 123);
+	fails (_=> AExample ("yeah", "BAD"));
+
+
+  A     (        ["", 1], "good", 123   );
+  fails (_=> A ( ["", 1], "good", "BAD" ));
+
+
+  let [types, values]
+  =  A ( [1, StringOrNull ]
+       , 1,  "abc"
+       );
+
+  eq  (values, [1,  "abc"]);
+  neq (types, [1, StringOrNull] );
+  // Above neq() because the 1 has by now
+  // been converted to Type(Number).
+  ok  (types[0].name === "Type(Number)" );
+
+  A ( [1, StringOrNull ]
+    , 1,  null
+    );
+
+  A ( [1, StringOrNull ]
+    , 1   // nulltype accepts undefined
+    );
+
+
+ [types, values] = fails
+ ( _=>
+   A ( [1, StringOrNull ]
+     , 1,  321
+     )
+ );
+
+eq (values, [1,  321]);
+ok (types[0].name === "Type(Number)");
+ok (types[1].name === "Type(String, null)"  );
+
+
+              A([Number, String], 123, "123");
+   fails (_=> A([Number, String], 123, 123  ));
+
+	/* BEWARE: A() first Arg is an array of types,
+     it does NOT create an ARRAY-type unless you
+     give it an element which is an Array:
+   */
+   A([ [Number] ], [555] );
+   A([ [0]    ]  , [555] );
+
+   return;
+
+/*
+Above shows how to use A().
+It is a good way to test ALL your
+argument-types in a single statement.
+*/
+
+}
+
+
 function Type ()
-{ let {Type, ok, not, fails, x, is} = this;
+{ let {Type, ok, not, fails, x, is, err, log} = this;
 
-  let Odd             = Type (odd);
-  let Even            = Type (even);
+	let CtorType = Type (String);
+	let ctorT    = new CtorType();
+	// ctorT MUST be BOXED because constructors
+	// can only return boxed values. Therefore:
 
-  // Non-title-cased functions like odd() and even()
-  // will be CALLED with the prospective type-member
-  // and the result indicates by being truthy or not
-  // whether membership is true. In contrast
-  // title-cased functions are assumed to be
-  // constructors and they will never be called,
-  // instead we use only the instanceof test with them.
-  // But instanceof is first also used with
-  // non-title-cased functions just in case YOU
-  // use them as constructors and use 'new' to
-  // create instances of them.
+	ok (ctorT instanceof String);
 
-  ok (is (3, Odd ));
-  x  (3, Odd);
-  ok (is (2, Even));
-  x  (2, Even);
+	// But also:
+	ok  (ctorT instanceof CtorType);
 
-  ok  (is (new odd  (), Odd));
-  ok  (is (new even (), Even));
-  not (is (new odd  (), Even));
-  not (is (new even (), Odd));
+	// So, new CtorType() is a boxed String
+	// so it is instanceof String. But it is
+	// ALSO instanceof CtorType because Types
+	// have their own way to do instanceof .
+	// Also in this case we have:
 
-  fails (()=>  new Odd() );
-  // You can not instantiate Types.
-  // Types are NOT constructors.
+	ok ( ctorT.constructor === String );
 
+
+
+  //  TYPES' NAME IS THEIR SERIALIZATION:
+
+  let A3b = Type( [[[ 1 ]]] ) ;
+  ok (A3b.name === "Type([Type([Type([Type(Number)])])])" );
+  let GetBack     = Type([Type([Type([Type(Number)])])]);
+  ok (GetBack.name  ===  A3b.name );
+
+/*
+What the above shows is that if I have a type like
+A3b which only depends on built-in JavaScript classes
+I can then send the NAME of the type over the network
+and whoever gets it can evaluate it and get the
+exactly same type to use in their own applications.
+ */
+
+
+
+
+/* ==================================
+   ATOMIC TYPES
+*/
+  let NumberYes = Type (123);
+  x (111, NumberYes);
+
+  // interperting 1 as a type means it is
+  // a SHORTHAND for its constructor in the context
+  // where a type is expected.
+
+
+   let S2 = Type ("abc");
+   ok (S2 !== String);
+   x (123  , Type(1));
+   x ( true, Type(false));
+   x ( "a" , Type("b"));
+
+   // Note this applies only to
+   // unboxed numbers, unboxed strings and
+   // unboxed booleans, not to {} etc. :
+
+
+/* ==================================
+   CONSTRUCTOR TYPES
+
+   Types which already exist in JavaScript
+   are String, Number, Boolean Object, Function.
+   They are the buillding blocks of moe complex
+   types. But you can easily create your own
+   constructors or "classes" which can be
+   used as "types" as is.
+ */
+
+  x (1, Number);
+
+   let O = Type (Object);
+   let F = Type (Function);
+   ok (O === Object);
+   ok (F === Function);
+
+   let S = Type (String);
+   let N = Type (Number);
+   let B = Type (Boolean);
+
+   ok (S !== String);
+   ok (N !== Number);
+   ok (B !== Boolean);
+
+
+
+   let AnyOb = Type({});
+   ok (AnyOb !== Object);
+   // Type({})  is valid but it is not === Object
+   // it matches anything which is an instance of Object.
+   x ({}, AnyOb);
+   x ({x:8}, AnyOb);
+   x (new String(), AnyOb); // Because boxed Strings are Objects
+   x (new Number(), AnyOb); // Similarly
+
+   x (Type, AnyOb); // Because Type is a Function
+                    // and all Functions are instances
+                    // of Object
+
+
+
+
+
+/* ==================================
+   SUM TYPES
+ */
+
+  let ST  = Type (String, Number);
+  let ST2 = Type (ST);
+  ok (ST === ST2);
+
+  ST2 = Type (ST, ST);
+  not (ST === ST2);
+
+  let sCount=0, nCount=0, st, st2;
+
+  for (let j=0; j<100; j++)
+	{ st  = new ST ();
+	  if (is (st, String))
+		{ sCount++;
+		  continue;
+		}
+		if (is (st, Number))
+		{ nCount++;
+		  continue;
+	  }
+	  debugger
+		err ("Error in test"); // beware not to call err() which is part of the test
+	}
+  ok (sCount + nCount === 100);
+  ok (sCount); // if its 0 you won a cosmic jackpot
+  ok (nCount); // if its 0 you won a cosmic jackpot
+
+  // Next the same but with ST2. But really they
+  // are ther same types internally because when
+  // the type is created the comp-types are resolved
+  // already.
+
+  sCount=0, nCount=0;
+  for (let j=0; j<100; j++)
+	{ st  = new ST2 ();
+	  if (is (st, String))
+		{ sCount++;
+		  continue;
+		}
+		if (is (st, Number))
+		{ nCount++;
+		  continue;
+		}
+		err ("Error in test")
+	}
+
+  ok (sCount + nCount === 100);
+  ok (sCount); // if its 0 you won a cosmic jackpot
+  ok (nCount); // if its 0 you won a cosmic jackpot
+
+
+/* ==================================
+   NULL TYPES
+ */
+
+ let NullT = Type(null);
+ x (null, NullT);
+ x (undefined, NullT);
+
+/*
+NulLType is not very useful by itself.
+It is useful as part of a SumType for saying
+that IF something is NOT null THEN it mus be
+a value of a specific type:
+*/
+
+  let StringOrNull         = Type(String, null);
+  ok (StringOrNull.name === "Type(String, null)" );
+
+  x (null     , StringOrNull);
+  x (undefined, StringOrNull);
+  x ("", StringOrNull);
+
+  fails (_=> x(123, StringOrNull));
+
+
+/* ==================================
+   FUNCTION TYPES
+ */
+  let  FT = Type ( () =>  [String, Number, String] );
+  // Above describes a function which take 2 arguments
+  // a String and a Number, and returns a String;
+
+  ok (is (()=> "result", FT) );
+  ok (   (()=> "result") instanceof  FT);
+
+  let ft = new FT ();
+  ft();
+  ok (is (ft, FT) );
+  ok (is (ft()     , String));
+  ok (is (ft(1,2,3), String));
+
+
+
+/* ==================================
+   PREDICATE TYPES
+
+   To create a predicate-type the argument
+   - function must havbe a name which
+   MUST NOT start with [A-Z]. If it does
+   then it will be treated as an ordinary
+   constructor-type.
+
+	 The predicate-function from which a
+	 Predicate-type is created when called
+	 without arguments must return its
+	 "example instance" which must be such
+	 that the predicate-function returns true
+	 when called with it as argument.
+
+*/
+
+  function odd_p (n)
+  { if (! arguments.length)
+    { return example ();
+    }
+    if ( n % 2 === 1 || n % 2 === -1)
+    { return true;
+    }
+
+    function example ()
+		{ let max    = Math.floor (Number.MAX_SAFE_INTEGER / 2)  ;
+		  let bigOdd =  max  * 2 - 1 ;
+
+		  let it  = rix (max) * 2 - 1 ;
+
+		  if (rix(9) > 4)
+			{ // it is important that edge-cases
+			  // get testing in a limited test-run.
+				it =  [bigOdd, 1,3,5,7,9,11,13,15,17] [rix(9)];
+			}
+
+      // beware rix returns a random index into
+      // an array of length of its arg. So if you
+      // call it with 1 it will always return 0.
+      // So think of its argument as telling the
+      // nuymber of possibel values it can return.
+
+		  if (rix(2) > 0)
+			{ it = it * -1;
+			}
+
+      return it;
+		}
+
+		function rix (leng)
+		{ let randix =  Math.floor (Math.random() * leng ) ;
+			return randix;
+    }
+	}
+
+  let Odd  = Type (odd_p);
+  ok (Odd.name === "Type(odd_p)");
+
+
+let anOdd = new Odd ();   // boxed number
+let value = anOdd.valueOf();
+ok (value % 2 === 1 || value % 2 === -1 );
+
+ok  (is (anOdd, Odd));
+ok  (is (value, Odd));
+
+
+// BEWARE: It deos not make a predicate=-type
+// if the argument of Type() is a NAMELESS
+// function. That creates a Funk-Type.
+// And the function then must return
+// an Array of arg-types + result-type
+// of the function that are to be memebers
+// of that type.
+
+
+  fails (_ => Type (n => n % 2 === 1));
+  // You can not create predicate functions
+  // from nameless functions. And if you
+  // want to create a Functon-type then the
+  // function you pass as argument must
+  // return an array of types to tell the
+  // argument- and result-types required
+  // of the instances of that Function-type.
+
+
+
+
+/* ==================================
+   OBJECT TYPES
+ */
+
+  let XObType = Type ({x: 1});
+
+  ok  (is ({x:777}  , XObType));
+  not (is ({x:"abc"}, XObType));
+  not (is ({x:null} , XObType));
+  not (is ({y:777}  , XObType));
+
+let OT = Type ({a: Number, b: Type(String, null)});
+ok (OT.name === "Type({a: Type(Number), b: Type(String, null)})" );
+ok  ( is ( {a:1, b: "b" }, OT  ));
+not ( is ( {a:1, b: 23  }, OT  ));
+ok  ( is ( {a:1, b: null}, OT ));
+
+let OT2 = Type ({a: Number, b: [String, null] });
+ok (OT2.name === "Type({a: Type(Number), b: Type([Type(String), Type(null)])})");
+
+not ( is ( {a:1, b: "b" }, OT2  ));
+not ( is ( {a:1, b: 23  }, OT2  ));
+not ( is ( {a:1, b: null}, OT2 ));
+// Above all are not because value of b:
+// must be an Array of Strings or nulls
+ok  (is ( {a:1, b: ["b"] }, OT2 ));
+not (is ( {a:1, b: [23 ] }, OT2 ));
+ok  (is ( {a:1, b: [null]}, OT2 ));
+
+
+let OB3 = Type
+( { a :
+      { b :
+          { c: 1
+          }
+      }
+  }
+);
+ok (OB3.name ===
+    "Type({a: Type({b: Type({c: Type(Number)})})})"
+   );
+x ({a: {b: {c: 77}}}, OB3);
+
+
+
+
+/* ==================================
+   ARRAY TYPES
+ */
+
+  // For arrays if there are multiple types
+  // given inside the array those are alternative
+  // element types. For instance [String, null]
+
+  let NA  = Type ([Number]);
+  ok (NA.name = 'Type([Number])');
+
+  let NA2  = Type ([1]);
+  ok (NA2.name = 'Type([Number])');
+
+  ok  ([1]       instanceof NA);
+  ok  ([1,2,3]   instanceof NA);
+  not (["a,b,c"] instanceof NA);
+
+  let StringOrNullArr  = Type ([String, null]);
+  ok (StringOrNullArr.name = 'Type([String,null])' );
+  not ([1,2,3]   instanceof StringOrNullArr);
+  ok  (["1"]     instanceof StringOrNullArr);
+
+  ok  ([null]    instanceof StringOrNullArr);
+  ok  (["a", null,"c"]   instanceof StringOrNullArr);
+
+
+
+ok (Type(String).name === "Type(String)" );
+// MULTI-D ARRAYS:
+let NA2D   = Type ([  Type([Number])  ]);
+ ok (NA2D .name === "Type([Type([Type(Number)])])");
+
+ok ([ [1]            ] instanceof  NA2D);
+ok ([ [1,2]          ] instanceof  NA2D);
+ok (is ([ [1,2], [3] ], NA2D));
+
+not (is ([ [1,2], ["3"]  ], NA2D));
+not (is ([ [1,2], [null] ], NA2D));
+
+ok ("abc" instanceof  Type(String, null) );
+
+
+
+// MULTI-D ARRAYS:
+
+let A2 = Type( [ [1] ] ) ;
+ok ([[5]] instanceof A2);
+
+
+let A3 = Type( [[[ 1 ]]] ) ;
+ok (A3.name === "Type([Type([Type([Type(Number)])])])" );
+
+A3 = Type( [[[ 1, "", false ]]] ) ;
+ok (A3.name ===
+    "Type([Type([Type([Type(Number), Type(String), Type(Boolean)])])])"
+    );
+ok ([[[5]]] instanceof A3);
+
+ok (
+[ [ [1, 2]
+  , [3, 4]
+  ]
+, [ [5, 6]
+  , [7, 8]
+  ]
+] instanceof A3);
+
+
+
+
+/* =====================================
+ LEGACY MISC TESTS:
+*/
 
   not (is(2, Odd ));
-  not (is(3, Even));
+
 fails (()=> x(2, Odd));
-fails (()=> x(3, Even));
-
-  let OddOrEven = Type (odd, even);
-  ok  (is (2    , OddOrEven));
-  ok  (is (3    , OddOrEven));
-  not (is (3.5  , OddOrEven));
-  not (is ("abc", OddOrEven));
-  not (is (true , OddOrEven));
-
-  // It does not matter whetrher you
-  // construct a type out of multiple
-  // functions or already constructed
-  // types, the end -result should be
-  // in most if not all cases the same:
-
-  OddOrEven = Type (Odd, Even);
-  ok  (is (2    , OddOrEven));
-  ok  (is (3    , OddOrEven));
-  not (is (3.5  , OddOrEven));
-  not (is ("abc", OddOrEven));
-  not (is (true , OddOrEven));
 
   let NumberOrString  = Type (Number, String);
-  let NumberOrNothing = Type (Number, null);
 
   ok  (is (2        , NumberOrString));
   ok  (is ("2"      , NumberOrString));
@@ -149,8 +683,10 @@ fails (()=> x(3, Even));
   not (is (true     , NumberOrString));
   not (is (false    , NumberOrString));
 
+  let NumberOrNothing = Type (Number, null);
   ok (is (3         ,  NumberOrNothing));
   ok (is (null      ,  NumberOrNothing));
+
   ok (is (undefined ,  NumberOrNothing));
 
   not (is (false,  NumberOrNothing));
@@ -168,29 +704,95 @@ fails (()=> x(3, Even));
   // You can use ES6 arrow-functions
   // to make Type-definitions succinct:
 
-  const Odd2 = Type (n => n % 2 === 1);
-  x (123, Odd2);
 
-  const Even2 = Type (n => n % 2 === 0);
-  x (22, Even2);
+  // INSTANTIATING SUM-TYPES:
+  let nos  = new NumberOrString  ( );
+  let nos2 = new NumberOrString  ( );
+   x (nos , NumberOrString);
+   x (nos2, NumberOrString);
 
+  let NT2 = Type (null);
+  let non  = new NumberOrNothing ( )  ;
+
+
+  if (   non.valueOf() === null )  // note it could be null
+	{
+	  ok (non instanceof NT2 );
+	}
+
+let NT = Type(null);
+
+for (let j = 0; j<22; j++)
+{ let non2 = new NumberOrNothing ( );
+
+	if (non2.name === "Null")
+	{ ok (non2 instanceof NT); // NullType  checks the valueOf() as well
+	  x (non2,  NT);
+	  ok (is (non2,  NT));
+
+	  let vof = non2.valueOf();
+	  if (vof !== null)
+		{
+			debugger
+			vof = non2.valueOf();
+		}
+	  ok (vof  ===  null) ;
+	}
+
+  x (non , NumberOrNothing);
+  x (non2, NumberOrNothing);
+}
+
+
+  x   (null, NumberOrNothing);
+  not (is ("abc", NumberOrNothing));
+
+  let NullType = Type(null);
+  x (null , NullType);
+  x (undefined , NullType);
+
+  ok (is(null, NullType));
+  ok (is(undefined, NullType));
+
+  not (is(0, NullType));
+  not (is("", NullType));
+  not (is(false, NullType));
+
+  not (is(33, NullType));
+
+
+
+/* ==================================
+   NON-TYPES
+
+   Calling Type() with no argument creates
+   a type which is npobody's type.
+   It is not very useful but it is possible
+   you might find a use for it.
+
+*/
+
+   let NBT = new Type();
+   not (is (123, NBT));   // but we cant test them all
+
+	/*
+   You can not call Type with just
+   anything. You have to know what are
+   its valid arguments, see further below
+   the tests for each type of Type you can
+   create. Here are some exaxmples of
+   what you can NOT call Type() with:
+	 */
+	fails (()=> Type (new String() ));
+	fails (()=> Type (new Number() ));
+	fails (()=> Type (new Boolean()));
+	fails (()=> Type (undefined));
+
+
+// end test.js::Type()
 return;
 
-  function odd (n)
-  { if (n === undefined)
-    { return false
-    }
-    x (n, Number);
-    return n % 2 === 1;
-	}
 
-  function even (n)
-  { if (n === undefined)
-    { return false
-    }
-    x (n, Number);
-    return n % 2 === 0;
-	}
 
 
 }
@@ -201,9 +803,11 @@ function x ()
 {
   let x=this.x, ok=this.ok, fails=this.fails;
 
+
   x (""   , String);
   x (0    , Number);
   x (false, Boolean);
+
 
   x (null     , null);
   x (undefined, null);
@@ -241,36 +845,36 @@ function x ()
 
 function r ()
 {
-  let r = this.r,  ok = this.ok, log = this.log ;
+  let {r, ok, log, path, not}  = this;
 
   if (! r)
   { log (`cisf/tes.js: There is no 'r()'
     when running in the browser so we won't
-    test it, that is what you expect.`);
+    try to test it either, on the browser`);
     return;
 	}
 
-  let Path = require("path");
-  // 'r' is just a useful short alias
-  // which hitches a ride on the cisf.
+	ok ( r ("path") === require ("path")) ;
+	ok ( r ("fs"  ) === require ("fs"))   ;  // etc.
 
-  ok (r === require.main.require);
+  let cwd = process.cwd();
+  ok (r.abs() === cwd );
+  ok (r.abs("") === cwd );
 
-  let cisfP = Path.join( __dirname , "cisf.js");
-  // assumes test.js must be in the same
-  // directory like it is.
 
-  let cisf  = r (cisfP);
-  ok (cisf.ok);
-  ok (cisf.r); // etc.
+  let relPath = r.rel(__filename);
+  not (path.isAbsolute(relPath));
+  ok (r.abs (r.rel (__filename) ) === __filename);
 
-  /*
-  Not much testing here when you know
-  r === require.main.require
-  then r does what require.main.require
-  does, which is part of the official
-  Node.js documentation I believe.
-   */
+  ok (r (relPath) === require (__filename));
+
+  // Above is the main reason for r(), you can
+  // require modules by giving r() their path
+  // relative to the cwd, so you don't need
+  // to type out the full host-specific abspath,
+  // nor use fragile non-portable module-relative
+  // upward paths.
+
 }
 
 

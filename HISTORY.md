@@ -4,6 +4,85 @@ For future information about future releases
 see https://twitter.com/ClassCloudLLC
 
 
+####  Version 3.0: More Support for Types
+
+This latest version bumps the version
+number all the way to 3 because the way
+Predicate Types are declared is slightly
+backwards incompatible.
+
+There is a new api A() which allows you
+to declare the types of your arguments
+in a single statement.
+
+**r()** now requires modules interpreting
+its argument relative to process.cwd().
+It now has two helper methods abs() and rel()
+to switch between absolute and relative paths.
+
+The Types support is now complete as far
+as we can see. It includes eight (8) types
+of types:
+
+1. AtomicType
+2. ConstructorType
+3. FunctionType
+4. PredicateType
+5. ArrayType
+6. ObjectType
+7. SumType
+8. NullType
+
+See the test.js for examples of each
+ot them can be defined and used.
+
+PredicateTypes of 3.x differ from
+version  2.x in that they are now
+created  only from
+non-Title-cased named functions
+In 2.x  also anonymous functions
+created predicate-types.
+In 3.x anonymous functions create
+Function-types, which declare the
+argument- and result-types of Functions.
+
+There is also a new API-primitive
+"A()" which allows you to check
+the types of an array of elements.
+This is useful for asserting the
+types of arguments with a single
+statement. Like this:
+
+    let {A} = require("cisf");
+
+    function funk (n, s)
+    { A([Number, String], n, s);
+      ...
+    }
+
+And two new API-=functions eq() and neq() the ;atter of which is the negative of the former.
+
+eq() tests for field-wise equality
+of Objects and arrays. You might not use
+it to test your arguments since arguments
+ahve always dfifferent values. But it is
+useful for writing Unit-Tests, you can
+test that two arrays or obejcts carry the
+same values.
+
+Example:
+
+         let {eq, neq} = require("cisf");
+         eq([1,2,3], [1,2, 2+1]);
+         eq ({x:1}, {x:2-1});
+         neq ([1], [2]);
+
+
+
+
+
+#### Pre-3.x Versions:
+
 ##### 2.1.1 Fix to x()
 
 A fix was made that allows the following tests,

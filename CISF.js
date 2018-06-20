@@ -16,6 +16,7 @@
    =============================================
    USAGE:
    let {ok, x, r, not, fails, log, warn, err, Type, is
+       , A, eq, neq
        } = require ("cisf");
 
    Or pick just the functions you need
@@ -28,8 +29,15 @@
 */
 
 "use strict"
-
-let CISF = CISF_inner ();
+let path, fs, Path, Fs;
+if (typeof require === "function")
+{ path = require ("path");
+  Path = path;
+  fs   = require ("fs");
+  Fs   = fs;
+}
+const DATA = Symbol('CISF');
+var CISF   = CISF_inner ();
 
 if (typeof module !== "undefined")
 { module.exports =  CISF;
@@ -38,18 +46,18 @@ if (typeof module !== "undefined")
 function CISF_inner  ()
 { var C          = _Canary()    ;
   let ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is, r=C.r;
-  let Type = _Type  ;
+
+  let Type = _Type;
+  Type[DATA] =  { };
+
+  let $SuperType = _Type ();
+
   let Xer = _Xer();
   let AssertError = class AssertError extends Error { };
 
-  let path, fs;
-  if (typeof require === "function")
-  { path = require ("path");
-    fs   = require ("fs");
-  }
   let api =
   { ok, x, is, not, Type, fails, log, err, r
-  , path, fs
+  , path, fs, A, eq, neq
   }
   return api;
 
@@ -84,63 +92,613 @@ function _Xer()
 
 function trimLineBeginnings (s)
 { let pat = /\n[ \t]+(\S+)/g;
-let s2 =
+  let s2 =
  (s + "").trim()
          .replace (pat, `\n$1`);
 
   return s2;
 }
 
-function _Type (... functions )
-{ let AType = class AType
-  { static [Symbol.hasInstance] (value)
-    { for (let funk of functions)
-       { if (funk === null)
-         { if (value === null || value === undefined)
-           { return true;
-           } else
-           { continue;
-           }
+function _ArrayType (  $elementTypes )
+{ return  class  ArrayType
+        extends $SuperType
+  { constructor (   )
+    { super( );
+      let types =  this.constructor[DATA].elementTypes;
+
+      let it = [];
+      let size = rix (40);
+      if (rix(9) === 1)
+      { size = 0;
+      }
+      for (var j= 0; j<size; j++)
+      { let randTypeIx = rix(types.length);
+        let ElemType   = types[randTypeIx];
+        let value      = new ElemType();
+        it.push(value);
+      }
+      return it;
+
+  function rix (leng)
+  { let randix =  Math.floor(Math.random() * leng );
+        return randix;
+  }
+    }
+   static toString()
+   { let ets = this[DATA].elementTypes;
+     if (! ets)
+     { return `Incomplete array type`;
+     }
+     let etNames = ets.map (e=> e !== null && e !== undefined
+                                ? e.name
+                                : 'null'
+                           ).join (', ');
+     let s = `Type([${ etNames}])`;
+     return s;
+   }
+    static [Symbol.hasInstance] (shouldBeArray)
+    { if (shouldBeArray && shouldBeArray.constructor === this)
+       { return true;
+       }
+       if (! (shouldBeArray instanceof Array))
+       { return false;
+       }
+       let elemTypes =  this[DATA].elementTypes;
+
+       for (var e of shouldBeArray)
+       { let itsType = elemTypes.find(et => is(e, et) );
+         if (! itsType)
+         { return false;
          }
-         if (funk === undefined)
+       }
+       return true;
+    }
+    static init ()
+    { super.init();
+
+      let realElemTypes
+      = $elementTypes.map (e=> Type(e));
+
+      this[DATA].elementTypes =  realElemTypes;
+
+      let typeName =  this + "" ;
+      zet (this, 'name', typeName, "force");
+
+      return this;
+    }
+  } .init()
+}
+
+function _ObjectType ($obSpec )
+{ return  class  ObjectType
+        extends $SuperType
+  { constructor (   )
+    { super();
+      let spec = this.spec ();
+      let  ob   = { };
+      for (var p in spec)
+      { let fieldType = spec[p];
+        let fieldValue = (new fieldType()).valueOf() ;
+        ob [p] =  fieldValue;
+      }
+      return ob;
+    }
+    static [Symbol.hasInstance] (value)
+    { if (value && value.constructor === this)
+       { return true;
+       }
+       let spec = x(this[DATA]. unfoldedSpec);
+       for (var p in  spec )
+       { let fieldType  = spec [p];
+
+         let fieldValue = value[p];
+         if ( is (fieldValue, fieldType))
          { continue;
          }
-         if ( value instanceof funk)
-         { return true;
-         }
-         if ( value && value.constructor === funk)
-         { return true;
-         }
-          if ( value === null || value === undefined)
-          { if (funk === null)
-            { return true;
-            }
-          }
-          let isConstructor
-          =  funk.name
-          && (funk.name[0].match(/[A-Z]/));
-
-          if (isConstructor )
-          { continue;
-          }
-          try
-          { let  b = funk (value);
-            if (b)
-            { return true;
-            }
-          } catch (e)
-          { }
+         return false;
        }
-      return false;
+       return true;
+    }
+   static toString()
+   { let obSpec  = this[DATA].unfoldedSpec ;
+     if (! obSpec)
+     { return `Incomplete ObjectType`;
+     }
+     let s  = "{ ";
+     let entries
+     = Object.entries (obSpec)
+       . map
+       ( ([k, v]) =>
+         { return `${ k}: ${ v.name}`;
+         }
+       ) ;
+     s +=  entries.join (`, `) + `}`
+
+     let s2 = `Type(${ s})`;
+     return s2;
+   }
+    static init ()
+    { super.init();
+
+      let unfoldedSpec  = { };
+      for (var p in $obSpec)
+      { let TheType = Type ($obSpec[p]) ;
+
+         unfoldedSpec[p] =  TheType;
+      }
+      this[DATA].unfoldedSpec =  unfoldedSpec;
+
+      let typeName =  this + "" ;
+      zet (this, 'name', typeName, "force");
+      return this;
+    }
+    spec ()
+    { return this.constructor[DATA].unfoldedSpec;
+    }
+  } .init()
+}
+
+function _FunkType ($namelessFunk )
+{ return  class   FunkType
+          extends $SuperType
+  { constructor ( value )
+    { super(value);
+      let ResultType = this.constructor [DATA].resultType;
+
+      let funk =  () => new ResultType();
+      return funk;
+    }
+   static toString()
+   { return `Type(${ $namelessFunk.name})`;
+   }
+    static [Symbol.hasInstance] (value)
+    { let argTypes   = this [DATA].argTypes  ;
+      let ResultType = this [DATA].resultType;
+      let argValues  = argTypes.map
+      ( ET =>
+        { let it = new ET();
+          return it;
+        }
+      );
+      let result;
+      try
+      { result = value (argValues);
+        if (is (result, ResultType))
+        { return true;
+        }
+        return false;
+      } catch (e)
+      { return false;
+      }
+    }
+    static init ()
+    { super.init();
+       let argsAndResultType ;
+
+       try
+       { argsAndResultType = $namelessFunk ( );
+       } catch (e)
+       { debugger
+         err
+         ( `FunkType -argument-function
+           causes an error when called without
+           argument. Therefore that function 
+           does not specify a valid predicate 
+           type:      
+           ${ $namelessFunk}.
+           `
+         );
+       }
+        if (! (argsAndResultType instanceof Array))
+        { err
+          (`Function-type's defining function returns
+            a non-array. It should return an array of
+            the types which are the argument- and 
+            result-types of functions that would be 
+            instances of the function-type being created.
+
+            Bad defining function: ${ $namelessFunk}
+            `
+          )
+        }
+       let  argTypes   = argsAndResultType.slice (0, -1);
+       let  resultType = argsAndResultType.slice (-1)[0];
+
+       this[DATA].argTypes   = argTypes;
+       this[DATA].resultType = resultType;
+
+       return this;
+    }
+  } .init()
+}
+
+function _PredicateType ($predicateFunk )
+{ return  class   PredicateType
+          extends $SuperType
+  { constructor ( value )
+    { super(value);
+      if (value !==  undefined)
+      { ok (value instanceof  PredicateType)
+      };
+
+      let pf =  this.constructor[DATA].predicateFunk
+      let exampleInstance = pf ();
+
+      ok (is (exampleInstance, PredicateType)
+         , `The example-instance of a PredicateType
+            is not an instance of it:
+            ${ exampleInstance} 
+            !
+            `
+         );
+
+      if (   exampleInstance === undefined
+         )
+      { err
+        (`Predicate function's member-function
+          return undefined. The function:
+          ${ pf} 
+         `) ;
+      }
+      if ( exampleInstance === null
+         )
+      { return exampleInstance;
+      }
+      if (typeof exampleInstance === "object")
+      { return exampleInstance;
+      }
+      let obv = new (exampleInstance.constructor)
+                     (exampleInstance);
+
+      return obv;
+    }
+   static toString()
+   { return `Type(${ $predicateFunk.name})`;
+   }
+    static [Symbol.hasInstance] (value)
+    { if ( value !== undefined
+         && value !== null
+         && value.constructor === this
+          )
+       { debugger
+          return true;
+       }
+       let see;
+       if (value === undefined)
+       { return false;
+       }
+       if (value !== null)
+       { value =  value.valueOf();
+       }
+       try
+       { see = $predicateFunk (value);
+       } catch (e)
+       { debugger
+         return false;
+       }
+       if (see)
+       { return true;
+       } else
+       { return false;
+       }
+    }
+    static init ()
+    { super.init();
+       let see;
+       try
+       { see = $predicateFunk ( );
+       } catch (e)
+       { debugger
+         err
+         ( `PredicateType -argument-function
+           causes an error when called without
+           argument. Therefore that function 
+           does not specify a valid predicate 
+           type:      
+           ${ $predicateFunk}.
+           `
+         );
+       }
+       this[DATA].predicateFunk = $predicateFunk;
+      return this;
+    }
+  } .init()
+}
+
+function _AtomicType ( $atomicCtor )
+{ if (  $atomicCtor === null || $atomicCtor === undefined  )
+  { }
+  x ($atomicCtor);
+  if (typeof $atomicCtor !== "function")
+  { $atomicCtor = $atomicCtor.constructor;
+  }
+  return  class  AtomicType extends $SuperType
+  { constructor ( value  )
+    { super (value);
+
+      let ub;
+      let it = new $atomicCtor();
+      if ($atomicCtor === String)
+      { ub =  randString ();
+      }
+      if ($atomicCtor === Number)
+      { ub =  randNumber ();
+      }
+      if ($atomicCtor === Boolean)
+      { ub =  randBool();
+      }
+      it = new $atomicCtor(ub);
+      return it;
+
+      function randBool ()
+      { if (rix(2) === 0)
+        { return false;
+        }
+        return true;
+      }
+
+    function randNumber ()
+    { let max    = Number.MAX_SAFE_INTEGER  ;
+
+      let it  = Math.random() * max   ;
+
+      if (rix(9) > 4)
+      { it =  [max, 0, 0, 0, 1, 1, 2, 3, 3,4,5,6,7,8,9,11,13,15,17
+              ] [rix(9)];
+      }
+      if (rix(2) > 0)
+      { it = it  + Math.random();
+      }
+      if (rix(2) > 0)
+      { it = it * -1;
+      }
+      return it;
+    }
+
+      function randString ()
+      { let maxCodePoint = 0xFFFF;
+
+        let siz = rix (90);
+        if (rix(9) === 1)
+        { return "";
+        }
+        if (rix(5) === 1)
+        { siz =  rix(12);
+        }
+        let s = "";
+        for (let j = 0; j < siz; j++)
+        { let codePoint = Math.floor(Math.random()* 299);
+           if (rix(9) === 1)
+           { codePoint =    Math.floor(Math.random()* maxCodePoint);
+           }
+           let randChar  = String.fromCodePoint (codePoint);
+           s += randChar;
+        }
+        return s;
+      }
+
+    function rix (leng)
+    { let randix =  Math.floor (Math.random() * leng ) ;
+      return randix;
+    }
+    }
+    static [Symbol.hasInstance] (value)
+    { if (value && value.constructor === this)
+       { return true;
+       }
+       value = value.valueOf();
+       if (value === undefined)
+       { return false;
+       }
+       if (value === null)
+       { return false;
+       }
+       if (value instanceof $atomicCtor)
+       { return true;
+       }
+       let C =  value.constructor;
+       if (C ===  $atomicCtor)
+       { return true;
+       }
+       return false;
+    }
+    static init ()
+    { let typeName =  this + "" ;
+      zet (this, 'name', typeName, "force");
+      return this;
     }
     static toString ()
-    { let typeNames = functions .map
+    { return `Type(${ $atomicCtor.name})`;
+    }
+  } .init();
+  }
+
+function _NullType ( )
+{ return  class  NullType
+  { constructor ( value )
+    { }
+    static [Symbol.hasInstance] (value)
+    { if (value && value.constructor === this)
+       { return true;
+       }
+       if (value === undefined)
+       { return true;
+       }
+       if (value === null)
+       { return true;
+       }
+       let vof = value.valueOf();
+       if (vof === null)
+       { return true;
+       }
+       if (vof === undefined)
+       { return true;
+       }
+       return false;
+    }
+    static toString ()
+    { debugger
+      return "Type(null)"
+    }
+    static init ()
+    { let typeName =   "Type(null)" ;
+      zet (this, 'name', typeName, "force");
+      return this;
+    }
+    valueOf ()
+    { return null;
+    }
+  } .init();
+  }
+
+function _Type (... $compTypes )
+{ return  class SumType
+  { constructor ( value )
+    { if (! (this.constructor [DATA])  )
+{ debugger
+}
+      let COMPS = this . constructor [DATA] . compTypes ;
+
+      if (value !== undefined)
+      { err
+        (`Trying to create an instance of   
+          a Type from an explicit value.
+          There is no need, you use Types
+          just to create constraints on 
+          actual values.
+         `
+        );
+    }
+      if (value !== undefined)
+      { ok (value instanceof SumType);
+      }
+       let len = 0;
+       if (COMPS)
+       { len =  COMPS.length ;
+       }
+       if (len >= 1)
+       { let ix       = randomIx (len);
+         let CompType = COMPS[ix];
+
+         if (CompType === null)
+         { let Null = { valueOf: ()=>null }
+           return Null;
+         }
+         let maybeBoxed = new CompType();
+
+         let ub =  maybeBoxed;
+         return ub ;
+       }
+      if (len)
+      { return new COMPS[0]();
+      }
+      return null;
+    }
+   static [Symbol.hasInstance] (value)
+    { if (value && value.constructor === this)
+       { return true;
+       }
+      let gompTypes = this [DATA] . compTypes;
+
+  let ItsType
+  = gompTypes.find
+    (et =>
+     { let b = is (value, et);
+       return b;
+     }
+    );
+  if (ItsType)
+  { return  ItsType;
+  }
+  return;
+}
+  static init ()
+  { this [DATA] = { };
+    this [DATA] . isType  = true;
+    let typeName =  this + "" ;
+    zet (this, 'name', typeName, "force");
+
+    if (! $compTypes.length)
+    { return this;
+    }
+let readyTypes =
+    $compTypes.map
+    ( et =>
+      { if (et === 1)
+        { }
+        if (et === null)
+        { let NullType = _NullType ();
+          return NullType;
+        }
+        if (  et instanceof Function &&
+            ! et.name
+           )
+        { let FType = _FunkType (et);
+          return FType;
+        }
+        if (  et instanceof Function &&
+            ! et.name.match (/^[A-Z]/)
+           )
+        { let PType = _PredicateType (et);
+          return PType;
+        }
+        if (et === String || et === Number || et === Boolean   )
+        { return _AtomicType (et);
+        }
+        if (et instanceof Function  &&
+            et.name.match (/^[A-Z]/)
+           )
+        { return et;
+        }
+        if (typeof et !== "object")
+        { return _AtomicType (et);
+        }
+        if (et .constructor === Array)
+        { let ArrayType = _ArrayType ( et);
+          return ArrayType;
+        }
+        if (et .constructor === Object)
+        { let ObjectType = _ObjectType ( et);
+          return ObjectType;
+        }
+        err
+        (`In valid Type -argument:  
+          ${ et}. 
+          Check the documetnation of 
+          cisf.Type() for what can be
+          its valid arguments.
+         `
+        );
+      }
+    );
+
+    if (readyTypes.length === 1)
+    { let OBT  = readyTypes[0];
+       if ( OBT  !== Number
+         && OBT  !== String
+         && OBT  !== Boolean
+         )
+       { return  OBT;
+       }
+    }
+    this [DATA] . compTypes = readyTypes ;
+
+   if ($compTypes[0] === undefined)
+    { debugger
+    }
+    return this;
+  }
+    static toString ()
+    { if (! $compTypes.length)
+       { return "Type()";
+       }
+       let typeNames = $compTypes .map
       ( e =>
         { if (typeof e === "function")
           { if (! e.name)
             { return "=>";
             }
-            return e.name[0].toUpperCase() + e.name.slice(1);
+            return `${ e.name}`  ;
           }
           if (e === null)
           { return 'null';
@@ -159,19 +717,11 @@ function _Type (... functions )
           }
         }
       );
-      let s = typeNames.join (' | ');
-      return s;
+      let s  = typeNames.join (', ');
+      let s2 = `Type(${ s})`;
+      return s2;
     }
-    constructor (  )
-    { err(`
-Trying to construct an instance 
-of the Type ${ this}.
-Types can not be instantiated.      
-`      );
-    }
-  };
-  zet (AType, 'name', AType + "", "force");
-  return AType;
+  }.init() ;
 }
 
 function _Canary ()
@@ -182,10 +732,37 @@ function _Canary ()
   { }
 }
 
+     function rLinux (path)
+     { return path.replace(/\\/g, "/");
+     }
+
+     function rRelative (path)
+     { let full = this.abs(path);
+       let base = this.abs();
+       let rp   = full.replace(base, "");
+
+       rp = rp.slice(1);
+       rp =  "." + Path.sep + rp;
+       return rp;
+     }
+
+     function cwdRequireResolve (path="")
+     { let cwd = process.cwd();
+       if (Path.isAbsolute (path))
+       { return path;
+       }
+        let pp2 = Path.resolve (cwd, path);
+        return pp2;
+     }
+
 function assignMethods (Canary)
 { var C      = Canary;
   if (typeof require !== "undefined" &&  require.main)
-  { C.r  = require.main.require;
+  { cwdRequire.abs   = cwdRequireResolve;
+     cwdRequire.rel   = rRelative;
+     cwdRequire.linux = rLinux;
+
+     C.r  =  cwdRequire;
   }
   C.ok       = ok    ;
   C.x        = x      ;
@@ -200,6 +777,19 @@ function assignMethods (Canary)
   C.eq       = eq;
 
   return;
+
+function cwdRequire  (path)
+{ let home     = process.cwd();
+  if (path.match (/^\w+$/))
+  { return require (path);
+  }
+  if (path.match (/^\w+[\s\S]*$/))
+  { return require (path);
+  }
+  let absPath = Path.resolve (home, path);
+  let imports = require(absPath);
+  return imports;
+}
 
   function ok
   ( aBoolean=false, msg="ok() failed"
@@ -274,24 +864,13 @@ let em =
 `x() type-check failed. 
 The 1st argument in 
 x (${ value}, ${ typeNames})
-is not an instance of any 
-of the remaining arguments.
+is not an instance of  
+any of the rest.
 .
 `;
 
 err (em);
 throw em;
-
- if (typeof this === "number")
- { debugger
- }
-  if (this)
-  { let m = "x() error: " + this + `
-` + e2.stack ;
-    err (m);
-  } else
-  { err ( e2 );
-  }
 }
 
   function xSingle (value, type )
@@ -307,7 +886,10 @@ throw em;
       }
       throw new Error ('cisf.x() undefined or null value type-error');
     }
-    if ( value.constructor === type)
+    if ( value !== null &&
+         value !== undefined  &&
+         value.constructor === type
+        )
     { return value;
     }
     if (type === null)
@@ -725,9 +1307,10 @@ function deepCopy (ob, level=0)
     let s = errorOrString;
     if (typeof s === "string")
     { stack =  (new Error ()).stack ;
-      s   =  `
-` + trimLineBeginnings (s + `
+      s   =  `` + trimLineBeginnings (s + `
 `);
+     s += `
+`;
       err = new ErrorClass ( s );
     } else
     { stack = err.stack;
@@ -741,35 +1324,113 @@ function deepCopy (ob, level=0)
       let doNotHalt
       = stack.match (/ xSingle /) ||
         stack.match (/ is /) ;
-      if (! doNotHalt)
-      { }
     }
-if (this === "no stack")
-{ err = err.message;
-}
+    if (this === "no stack")
+    { err = err.message;
+    }
     throw (err);
    }
 
+function A (typesArray, ... values)
+{ let exampleTypes = typesArray.map
+  ( ex => Type (ex)
+  );
+
+   if (values.length > exampleTypes.length)
+   { debugger
+     err
+     (`cisf.A(typesArray, ...values)
+       -call has fewer elements in typeArray
+       than there are values. Every 
+       value-argument must have its
+       corresponding Type in the 1st
+       argument which must be an Array. `
+     );
+   }
+   if (exampleTypes.length > values.length + 2 )
+   { debugger
+     err
+     (`In cisf.A(typesArray, ...values)
+       -call the typesArray has more than 2
+       more elements than there are values
+       -arguments. 
+      `
+     );
+   }
+  values.map
+  ( (v, j, all) =>
+    { let eType  = exampleTypes[j];
+
+      if (is (v, eType))
+      { return;
+      }
+      throw [exampleTypes, values] ;
+    }
+  );
+
+  return [exampleTypes, values];
+}
+
+function neq  (a,b)
+{ try
+  { eq (a,b)
+  } catch (e)
+  { return e;
+  }
+  err
+  (`neq(${ a}, ${ b}) failed because 
+    eq (${ a}, ${ b}) did not.
+    `
+  )
+}
+
 function eq (a, b)
-{ if (a instanceof Array)
+{ if (arguments.length < 2)
+   { err
+     (`eq() called with < 2 arguments`
+     );
+   }
+   if (arguments.length > 2)
+   { err
+     (`eq() called with > 2 arguments`
+     );
+   }
+   if (! a && ! b)
+   { return a;
+   }
+   if (! a  || ! b)
+   { err
+     (`eq(${ a}, ${ b}) 
+       1st argument is not but 2nd is.`
+     );
+   }
+   if (a instanceof Array)
   { for (var j=0; j <  a.length; j++)
     { eq (a[j], b[j]);
     }
     if (a.length === b.length)
-    { return;
+    { return a;
     }
   }
   if (a instanceof Object)
-  { for (let p in  a)
+  { if (! (b instanceof Object) )
+    { err
+      (`eq(${ a}, ${ b}) 
+        ${ a} is an instacne of Object 
+        but ${ b} is not.
+       `
+     );
+    }
+    for (let p in  a)
     { eq (a[p], b[p]);
     }
     for (let p in  b)
     { eq (a[p], b[p]);
     }
-    return;
+    return a;
   }
   if (a === b)
-  { return true;
+  { return a;
   }
   err
   (`eq() failed: 
@@ -806,3 +1467,11 @@ function zet(owner, key, value, force)
     { throw `zet() almost silently failed to  set the value to property ${ key}.` ;
     }
   }
+
+  function randomIx (leng)
+  { let randix =  Math.floor(Math.random() * leng );
+        return randix;
+  }
+
+  function Null () { }
+  Null.valueOf = _=> null;

@@ -1,4 +1,4 @@
-# Cisf 2
+# Cisf 3
 Support for **Runtime Types**
 in JavaScript.
  
@@ -11,9 +11,10 @@ cisf.js  could be described as "TypeScript Light",
 simple and easy to learn and unobtrusive to use,
 with no effect on your tool-chain(s).
 
-#####USAGE: 
+##### USAGE:
 
     let {ok, not, x, fails, Type, log, warn, err
+        , r, A, eq, neq
         } = require ("cisf");
         
 Or, pick the subset the functions you might need:
@@ -54,9 +55,44 @@ to write (correctly) and easy to
 read and understand (correctly). 
  
 This in turn means that bugs get caught
-early - before they reach your customers.
+early, which is good.
  
- 
+##### Motivating example 2:
+
+You want to catch the error of somebody
+calling your function with wrong types
+of argument. At same time you want to
+make it clear to all would-be callers
+of you function what exactly are the
+correct types of arguments it can be
+called with.
+
+You could write a lot of comments and
+documentation that tells what kind
+of arguments your function should be
+called with. But that takes a lot of
+effort to write and read, and in the
+end documentation often has errors too.
+
+With the A() -primitive of Cisf you can
+DECLARE your argument-types succinctly,
+and know that you get an error if the
+function is called with incorrect
+types of arguments:
+
+    function AExample (s, n)
+	{ A([String, Number], s, n);
+	}
+
+See test.js for more examples of using A().
+But it's really simple: Give it an array
+of types as 1st argument, then pass all
+arguments of your function as rest
+of the arguments to A() .
+
+
+
+
  
 #### 1. INSTALLATION
     npm install cisf
@@ -376,6 +412,85 @@ but that's the tradeoff we made between
 keeping Cisf simple and making reducing
 the number of require-statements you and
 us havce to make every day.
+
+##### 3.9 r()
+
+cisf.r() takes as argument a module-path which
+it interprets as relative to process.cwd()
+and then tries to require. If the path does
+not exist there will be an error like there
+would be with normal require().
+
+r() can also be used with Node.js internal
+paths and module-names that exist in node_modules.
+So for instance:
+
+      ok(r('fs') === require('fs'))
+
+Where r() differes from standard require is
+for paths which start with '.', in other words
+"module relative paths". For those rather than
+intrerpreting the argument-path relative to the
+current module it is interpreted relative to
+process.cwd().
+
+"r" has 2 helper-methods you may find useful:
+
+1. **cisf.r.abs() :** Returns the absolute path of
+its argument, which if relative is interpreted
+relative to process.cwd().
+
+2. **cisf.r.rel() :** Returns the relative path
+of its argument relative to process.cwd().
+
+
+The next code-excerpt shows the main reason why r() exists
+as part of cisf: You can require modules by
+giving r() their path relative to the cwd,
+so you don't need to type out the full
+host-specific abspath, nor use fragile
+non-portable module-relative upward paths.
+
+    let relPath = r.rel(__filename);
+    ok (r (relPath) === require (__filename));
+
+Note above does nothing because
+it requires the same module you are
+already in. We just use that as a
+test becaseu we know that module
+must exist , so the test does
+not crash like it would if the file
+did not exist.
+
+
+##### 3.10 A()
+
+The last API A() takes as argument
+an Array of Types and then same number
+or few more values. It causes an
+error if the values are not instances
+of the corresponding types.
+
+A() is useful for declaring the types of your
+argument sin a single statement. You would
+use it like this:
+
+    function AExample (s, n)
+	{ A([String, Number], s, n);
+	}
+	...
+	AExample ("yeah", 123); // works
+	fails (_=> AExample ("yeah", "BAD"));
+
+You would probably not write the
+fails-call like we did.
+We just added it to prove to ourselves
+that A() would catch the error of
+being called with 2nd argument which
+is not a Number.
+
+
+
 
 #### 4. Tests
 The file test.js in the same directory as CISF.js
