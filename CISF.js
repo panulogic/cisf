@@ -1,4 +1,6 @@
 /* =========================================
+   cisf.js v. 3.0.1B
+
    Copyright 2018 Class Cloud LLC
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +40,7 @@ if (typeof require === "function")
 }
 const DATA = Symbol('CISF');
 var CISF   = CISF_inner ();
+CISF.v     = "3.0.1";
 
 if (typeof module !== "undefined")
 { module.exports =  CISF;
@@ -204,7 +207,9 @@ function _ObjectType ($obSpec )
      if (! obSpec)
      { return `Incomplete ObjectType`;
      }
-     let s  = "{ ";
+     let s  = "{ " .trim() ;
+     let V = CISF.v ;
+
      let entries
      = Object.entries (obSpec)
        . map

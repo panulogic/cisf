@@ -40,7 +40,7 @@ Type              .bind 	(cisf) ();
 A             	  .bind 	(cisf) ();
 
 
-msg ("cisf.js 3.0.0 all tests passed. ");
+msg (`cisf.js V. ${cisf.v} all tests passed. `);
 
 return;
 
