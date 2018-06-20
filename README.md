@@ -31,8 +31,9 @@ https://twitter.com/ClassCloudLLC
 
 You want to make sure you get
 an early warning whenever your 
-function is called with wrong
-type(s) of arguments. You might 
+function is called with
+something that is not a Number
+and not a String.  You might
 write something like this:  
 
     if ( arg.constructor !== Number &&   
@@ -51,45 +52,57 @@ remaining arguments.
  
 You are more likely to put such checks
 into your code when they are easy
-to write (correctly) and easy to 
-read and understand (correctly). 
+to write  and easy to read and understand.
  
 This in turn means that bugs get caught
 early, which is good.
  
-##### Motivating example 2:
+#### Motivating example 2:
 
-You want to catch the error of somebody
-calling your function with wrong types
-of argument. At same time you want to
-make it clear to all would-be callers
-of you function what exactly are the
-correct types of arguments it can be
-called with.
+Your function has many arguments and
+you want to DECLARE what the types of
+those arguments should be. You want
+a clear simple way of expressing, and
+enforcing the types of several arguments
+at once.
+
+So not only dio you want to catch the
+error of being called with wrong
+arguments early, you also want to make
+it simple for everybody to understand
+what type those arguments should be.
 
 You could write a lot of comments and
-documentation that tells what kind
-of arguments your function should be
-called with. But that takes a lot of
-effort to write and read, and in the
-end documentation often has errors too.
+documentation that tells that  but
+writing and reading documentation takes
+time. You'd ratherr be coding. You would
+rather have the code itself make it clear
+what types of arguments it can be called
+with.
+
+In statically typed languages like
+Java and C# you must declare the types
+of your arguments. In JavaScript you don't
+but it would still seem like a good idea
+to tbe ABLE to do that when you want to.
+For instance for the PUBLIC interface
+of your module. Leave your private
+inner functions as they are, but declare
+the types of your public methods.
 
 With the A() -primitive of Cisf you can
-DECLARE your argument-types succinctly,
+now declare your argument-types succinctly
 and know that you get an error if the
-function is called with incorrect
+function is called with wrong
 types of arguments:
 
     function AExample (s, n)
-	{ A([String, Number], s, n);
+	{ A ([String, Number], s, n);
 	}
 
-See test.js for more examples of using A().
-But it's really simple: Give it an array
-of types as 1st argument, then pass all
-arguments of your function as rest
-of the arguments to A() .
-
+It could not get much simpler. And unlike
+with Java or #C this is optional. Use it
+when it helps.
 
 
 
@@ -454,7 +467,7 @@ non-portable module-relative upward paths.
     let relPath = r.rel(__filename);
     ok (r (relPath) === require (__filename));
 
-Note above does nothing because
+Note above does nothing, because
 it requires the same module you are
 already in. We just use that as a
 test becaseu we know that module
@@ -472,7 +485,7 @@ error if the values are not instances
 of the corresponding types.
 
 A() is useful for declaring the types of your
-argument sin a single statement. You would
+arguments in a single statement. You would
 use it like this:
 
     function AExample (s, n)
@@ -482,12 +495,12 @@ use it like this:
 	AExample ("yeah", 123); // works
 	fails (_=> AExample ("yeah", "BAD"));
 
-You would probably not write the
-fails-call like we did.
-We just added it to prove to ourselves
+You probably  wouldnot write the
+fails() -call like we did.
+We added it to prove to ourselves
 that A() would catch the error of
-being called with 2nd argument which
-is not a Number.
+AExample() being called with
+wrong types of arguments.
 
 
 

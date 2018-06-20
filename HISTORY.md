@@ -1,7 +1,8 @@
 # cisf.js release notes
 
-For future information about future releases
-see https://twitter.com/ClassCloudLLC
+Latest build:  v.3.0.3.
+For information about future releases
+follow https://twitter.com/ClassCloudLLC.
 
 
 ####  Version 3: More Support for Types

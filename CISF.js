@@ -40,7 +40,7 @@ if (typeof require === "function")
 }
 const DATA = Symbol('CISF');
 var CISF   = CISF_inner ();
-CISF.v     = "3.0.2";
+CISF.v     = "3.0.3";
 
 if (typeof module !== "undefined")
 { module.exports =  CISF;
