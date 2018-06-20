@@ -4,10 +4,7 @@ For future information about future releases
 see https://twitter.com/ClassCloudLLC
 
 
-#####  Version 3.0.1:
-Fixed a simple test-problem in 3.0.0
-
-####  Version 3.0: More Support for Types
+####  Version 3: More Support for Types
 
 This latest version bumps the version
 number all the way to 3 because the way
