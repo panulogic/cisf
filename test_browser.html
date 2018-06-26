@@ -19,7 +19,7 @@ console in the browser dev-tools.
 
 testCisf ();
 
-function testCisf ()
+ function testCisf ()
 {
   let cisf;
   if (typeof require === "function")
@@ -887,8 +887,41 @@ function r ()
 
 function log()
 { let  ok=this.ok, log=this.log;
+
   let s = log (`Test-method log() executed`);
   ok (s.match(/Test-method log\(\) executed/));
+
+   let s2 = log (`
+
+           Test-method log() executed.
+
+   yes
+
+           yes2
+   `);
+
+/*
+
+##### v. 3.0.4: Better log()
+
+As before log() removes whitespace from the
+beginning of NON-empty lines in its argument.
+That makes it convenient to format a multi-line
+log-message aligned with the code-block it
+exists in.
+
+in v.3.0.4 it no longer trims the argument-string
+as a whole . Which means you can put empty lines
+at the beginning and end of your log-message
+if you want to.
+
+This often makes sense as it allows you
+to make specific important log-messages
+to stand out from the crowd when inspecting
+a long log.
+
+ */
+
 }
 
 /**
@@ -1082,8 +1115,6 @@ fails() is mostly useful in tests to show
 /* ----------------------------------------- */
 
 }
-
-
 
 
 </script>

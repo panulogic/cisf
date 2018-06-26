@@ -31,6 +31,9 @@
 */
 
 "use strict"
+
+let CISF_VERSION = "3.0.4" ;
+
 let path, fs, Path, Fs;
 if (typeof require === "function")
 { path = require ("path");
@@ -40,7 +43,7 @@ if (typeof require === "function")
 }
 const DATA = Symbol('CISF');
 var CISF   = CISF_inner ();
-CISF.v     = "3.0.3";
+CISF.v     = CISF_VERSION;
 
 if (typeof module !== "undefined")
 { module.exports =  CISF;
@@ -96,7 +99,7 @@ function _Xer()
 function trimLineBeginnings (s)
 { let pat = /\n[ \t]+(\S+)/g;
   let s2 =
- (s + "").trim()
+ (s + "")
          .replace (pat, `\n$1`);
 
   return s2;
@@ -751,7 +754,7 @@ function _Canary ()
        return rp;
      }
 
-     function cwdRequireResolve (path="")
+     function cisfRequireResolve (path="")
      { let cwd = process.cwd();
        if (Path.isAbsolute (path))
        { return path;
@@ -763,11 +766,11 @@ function _Canary ()
 function assignMethods (Canary)
 { var C      = Canary;
   if (typeof require !== "undefined" &&  require.main)
-  { cwdRequire.abs   = cwdRequireResolve;
-     cwdRequire.rel   = rRelative;
-     cwdRequire.linux = rLinux;
+  { cisfRequire.abs   = cisfRequireResolve;
+     cisfRequire.rel   = rRelative;
+     cisfRequire.linux = rLinux;
 
-     C.r  =  cwdRequire;
+     C.r  =  cisfRequire;
   }
   C.ok       = ok    ;
   C.x        = x      ;
@@ -783,7 +786,7 @@ function assignMethods (Canary)
 
   return;
 
-function cwdRequire  (path)
+function cisfRequire  (path)
 { let home     = process.cwd();
   if (path.match (/^\w+$/))
   { return require (path);

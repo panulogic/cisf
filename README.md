@@ -17,7 +17,7 @@ with no effect on your tool-chain(s).
         , r, A, eq, neq
         } = require ("cisf");
         
-Or, pick the subset the functions you might need:
+Or, pick just the subset of the API you might need:
 
     let {ok, x, r} = require ("cisf");
 
@@ -524,11 +524,18 @@ if your assumptions about the context your
 program is working in are incorrect.  
 
 In a coal-mine you would of course make the
-assumption that air is good to breathe, 
-the canaries would tell you it is by
-staying alive. If CISF assertions fail
-it is the equivalanet of a canary dying.
-Something is wrong.
+assumption that air is good to breathe.
+The canaries you put into the mine would
+tell you it is by staying alive. If CISF
+assertions fail it is like a canary dying.
+Something is wrong. A Canary stopped singing.
+
+Putting Canaries into a coalmine is an
+investment, it takes effort to put
+them there and you need to feed them.
+But it is a small investment compared
+to the cost of detecting that something
+is wrong too late.
 
 
 
