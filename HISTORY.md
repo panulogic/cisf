@@ -1,6 +1,6 @@
 # cisf.js release notes
 
-Latest build:  v.3.0.3.
+Latest build is v.3.0.4.
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
