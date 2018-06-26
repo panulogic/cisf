@@ -1,11 +1,11 @@
 # cisf.js release notes
 
-Latest build is v.3.0.4.
+Latest build is v.3.0.5.
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
-##### v. 3.0.4: Better log()
+##### v. 3.0.5: Better log()
 
 As before log() removes whitespace from the
 beginning of NON-empty lines in its argument.

@@ -1,5 +1,5 @@
 /* =========================================
-   cisf.js v. 3.0.1B
+   cisf.js v. 3.0.5
 
    Copyright 2018 Class Cloud LLC
 
@@ -32,7 +32,7 @@
 
 "use strict"
 
-let CISF_VERSION = "3.0.4" ;
+let CISF_VERSION = "3.0.5" ;
 
 let path, fs, Path, Fs;
 if (typeof require === "function")
