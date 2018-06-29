@@ -1,57 +1,86 @@
 ﻿<!DOCTYPE html>
 <!--
-Copyright 2018 Class Cloud LLC
-SPDX-License-Identifier: Apache-2.0.
+   cisf/test_btowser.html v. 3.1.0
 
-To run these tests open this file
-in your browser and obser the
-console in the browser dev-tools.
+   Copyright 2018 Class Cloud LLC
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 -->
 
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>cisf test_browser</title>
+<meta charset="UTF-8">
+<title>cisf/test_browser</title>
 
-    <script src="cisf.js"></script>
+<style>
+body
+{ font-family: Verdana;
+}
+</style>
+
+<script src="cisf.js"></script>
 
 <script type="text/javascript">
 
-testCisf ();
 
- function testCisf ()
+testCisf ();
+function testCisf ()
 {
   let cisf;
   if (typeof require === "function")
   { cisf = require ("./cisf");
   } else
-  { cisf = CISF; // for the browser
+  { cisf = CISF; // in the browser
   }
 
-eq                .bind   (cisf) ();
-path              .bind 	(cisf) ();
-fs                .bind 	(cisf) ();
 
-x             	  .bind 	(cisf) ();
-r           	    .bind 	(cisf) ();
+/* Below we bind each test- function to the
+   exports of the module 'cisf' then call
+   each of them.
 
-ok              	.bind 	(cisf) ();
-not             	.bind 	(cisf) ();
-fails           	.bind 	(cisf) ();
+   That way each test-function has access to
+   the cisf functions ok, not, x(), fails(),
+   eq(), etc. which are well-suited for testing
+   themselves and their peers.
+*/
 
-log             	.bind 	(cisf) ();
-err             	.bind 	(cisf) ();
+  x       .bind (cisf) ();
+  ok      .bind (cisf) ();
+  not     .bind (cisf) ();
+  fails   .bind (cisf) ();
+  eq      .bind (cisf) ();
 
-Type              .bind 	(cisf) ();
-A             	  .bind 	(cisf) ();
+  Type    .bind (cisf) ();
+  A       .bind (cisf) ();
 
+  log     .bind (cisf) ();
+  err     .bind (cisf) ();
 
-msg (`cisf.js V. ${cisf.v} all tests passed. `);
+  path    .bind (cisf) ();
+  fs      .bind (cisf) ();
+  r       .bind (cisf) ();
 
-return;
+  w       .bind (cisf) ();
 
-function msg (s)
-{
+  tell_tests_passd ();
+  return;
+
+function tell_tests_passd (s)
+{ s = `<h1>Cisf v. ${cisf.v} testCisf () passed.</h1>
+<pre><tt>
+${testCisf}
+</tt></pre>
+`;
   console.log("");
   console.log (s);
   console.log("");
@@ -60,17 +89,147 @@ function msg (s)
     setTimeout
     ( function ()
       { if (doc && doc.body && doc.body.innerHTML)
-         {  doc.body.innerHTML += "<h1>" + s +   "</h1>";
+         {  doc.body.innerHTML +=  s  ;
          }
       }
     , 1000
     );
   }
 }
-// -----------------------------------------------
+
+function w ()  // w for 'wrapper'
+{
+  let {fails, ok, eq, neq, w} = this;
+
+  // LAST, FIRST, CAR, CDR:
+  let a = [1,2,3];
+  ok (w(a) . last()  === 3);
+  ok (w(a) . first() === 1);
+  ok (w(a) . car()  === 1);
+  eq (w(a) . cdr(), [2,3]);
+
+  // MAP AN ARRAY LIKE ORDINARILY:
+  // Point is this allows you to treat
+  // arrays and objects with the same
+  // piece of code without you knowing
+  //
+  eq (w(a).map (e=>e+1), [2,3,4]);
+
+
+  // MAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
+  let ob  = {a:22, b: 33};
+  let kvs = w(ob).map
+  ( key  =>  key + ob[key]
+  );
+  eq (kvs, ["a22", "b33"]);
+
+
+
+  // MAP A STRING TO LOOP OVER ITS CHARS:
+  let asciis = w("ABC").map (e=>e.codePointAt(0));
+  eq (asciis, [65, 66, 67]);
+
+
+
+  // MAP A NUMBER TO REPEAT  N times:
+  // (return the indexes as array)
+
+  let digits = w(10).map (e=>e);
+  eq (digits, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+
+
+  // WRAP A FUNCTION TO PRODUCE A SERIES:
+  //
+
+  let wf     = w (a=>a*10);
+  let series = wf.map (5, 3) ; // (firstArg, howManyResults)
+  eq (series, [50, 500, 5000]);
+
+  eq (wf.map (), [0,0,0,0,0  ,0,0,0,0,0]);
+  // The default for first arg is 0 and the
+  // default for how many is 10. So if we
+  // multiply 0 by 10 ten times we get an
+  // array of 10 0s.
+
+  // Create an array of 10 1s:
+  eq ( w(_=> 1).map()
+     , [1,1,1,1,1, 1,1,1,1,1]
+     );
+
+  // Create an array of 3 xs:
+  eq ( w(_=> 'x').map( 0, 3)
+     , ['x', 'x', 'x']
+     );
+
+
+   // WRAP A BOOLEAN TO GET INDEXES WHICH ARE TRUTHY OR FALSY:
+
+    let truthyIndexes
+     = w(true).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq (truthyIndexes, [0,2]);
+
+    let falsyIndexes
+     = w(false).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq (falsyIndexes, [1,3,4,5,6]);
+
+   let valuesWithProperties
+     = w(null).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+   eq
+   ( valuesWithProperties
+   , [1,0,2,false,""]
+   );
+   let classes = valuesWithProperties.map(e=>e.constructor);
+   eq
+   ( classes
+   , [Number, Number, Number, Boolean, String]
+   );
+
+  // WRAP A REGEXP TO FIND ALL ITS MATCHES.
+  //
+  // The 1st arg to map is a string to
+  // find the matches in, not a function.
+  // This because regexp kind of is a
+  // function itself.
+
+		eq ( "Get My UPPer-Case-Letters".match(/[A-Z]+/g)
+			 , ['G', 'M', 'UPP', 'C', 'L']
+			 );
+
+   // Above shows that using plain match() with
+   // -g-flag does give you all matched strings.
+   // But it does NOT give you the match-Objects
+   // so  the information match-locations and
+   // matched groups are lost. So for instance
+   // if you wanted to replaces the matches with
+   // your own algorithm that depends on all
+   // matches found and their locations you could
+   // not do that simply.
+
+  let ups  = w ( /[A-Z]+/
+               ).map ("Get My UPPer-Case-Letters"
+                     );
+  ok (ups[2][0] === 'UPP');
+
+  // Note w(regExp).map() always adds the g-flag
+  // to a copy of the argument-regexp so it will
+  // find all matches, not juts the first. If you
+  // add 'g' yourwself it has no extra effect. You
+  // can add other flags like 'i' for instance and
+  // have them take effect.
+
+  debugger
+  // todo:
+  // copy the tests here to the browser-test html-file
+  // and test it.
+
+  return;
+
+
+}  // end function w()
+
 
 // eq() also tests neq() which is simply the negation of eq().
-
 function eq ()
 { let {fails, ok, eq, neq} = this;
 
@@ -1103,7 +1262,7 @@ function fails()
  If the arugmetn function does not throw
  an error then fials() does.
 
-fails() is mostly useful in tests to show
+ fails() is mostly useful in tests to show
  what arguments cause some function to fail.
  In many cases it does not make sense to
  provide default values for all arguments
@@ -1112,10 +1271,8 @@ fails() is mostly useful in tests to show
  to cause errors.
 */
 
-/* ----------------------------------------- */
-
+// Copyright 2018 Class Cloud LLC
 }
-
 
 </script>
 

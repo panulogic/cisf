@@ -5,6 +5,165 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
+##### v. 3.1.0: w()
+
+w() is a new API in 3.1.0. "w" stands for
+"wrapper".  This API was inspired by
+the question how best to access the
+last element of an Array. We know it
+would be nice if there was a built-in-method
+of Array.prototype called "last()"
+but there isn't.
+
+You could add to
+Array.prototype but problem is
+what somebody else's program
+might have their own definition of
+last() which differs from yours.
+So your definition could break
+their program.
+
+The cisf.js solution is here:
+
+    let {w, ok} = cisf  ;
+    let last = w([1,2,3]).last();
+    ok (last === 3);
+
+So w() creates and easy-to use wrapper
+around arrays which allows you to
+easily ask for the last element of the
+array. Notice above is almost as short
+as "[1,2,3].last()" would be.
+
+But at the same time w() will add
+other methods to arrays, and different
+versions of such methods for different
+types of wrappees. The current set
+of things you can do with w() are shown
+in the next excerpt from the test-file
+test.js:
+
+
+
+    // LAST, FIRST, CAR, CDR:
+    let a = [1,2,3];
+    ok (w(a) . last()  === 3);
+    ok (w(a) . first() === 1);
+    ok (w(a) . car()  === 1);
+    eq (w(a) . cdr(), [2,3]);
+
+    // MAP AN ARRAY LIKE ORDINARILY:
+    // Point is this allows you to treat
+    // arrays and objects with the same
+    // piece of code without you knowing
+    //
+    eq (w(a).map (e=>e+1), [2,3,4]);
+
+
+    // MAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
+    let ob  = {a:22, b: 33};
+    let kvs = w(ob).map
+    ( key  =>  key + ob[key]
+    );
+    eq (kvs, ["a22", "b33"]);
+
+
+
+    // MAP A STRING TO LOOP OVER ITS CHARS:
+    let asciis = w("ABC").map (e=>e.codePointAt(0));
+    eq (asciis, [65, 66, 67]);
+
+
+
+    // MAP A NUMBER TO REPEAT  N times:
+    // (return the indexes as array)
+
+    let digits = w(10).map (e=>e);
+    eq (digits, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+
+
+    // WRAP A FUNCTION TO PRODUCE A SERIES:
+    //
+
+    let wf     = w (a=>a*10);
+    let series = wf.map (5, 3) ; // (firstArg, howManyResults)
+    eq (series, [50, 500, 5000]);
+
+    eq (wf.map (), [0,0,0,0,0  ,0,0,0,0,0]);
+    // The default for first arg is 0 and the
+    // default for how many is 10. So if we
+    // multiply 0 by 10 ten times we get an
+    // array of 10 0s.
+
+    // Create an array of 10 1s:
+    eq ( w(_=> 1).map()
+     , [1,1,1,1,1, 1,1,1,1,1]
+     );
+
+    // Create an array of 3 xs:
+    eq ( w(_=> 'x').map( 0, 3)
+     , ['x', 'x', 'x']
+     );
+
+
+    // WRAP A BOOLEAN TO GET KEYS WHICH ARE TRUTHY OR FALSY:
+
+    let truthyIndexes
+     = w(true).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq (truthyIndexes, [0,2]);
+
+    let falsyIndexes
+     = w(false).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq (falsyIndexes, [1,3,4,5,6]);
+
+    let valuesWithProperties
+     = w(null).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq
+    ( valuesWithProperties
+    , [1,0,2,false,""]
+    );
+    let classes = valuesWithProperties.map(e=>e.constructor);
+    eq
+    ( classes
+    , [Number, Number , Number, Boolean, String]
+    );
+
+    // WRAP A REGEXP TO FIND ALL ITS MATCHES.
+    //
+    // The 1st arg to map is a string to
+    // find the matches in, not a function.
+    // This because regexp kind of is a
+    // function itself.
+
+        eq ( "Get My UPPer-Case-Letters".match(/[A-Z]+/g)
+             , ['G', 'M', 'UPP', 'C', 'L']
+             );
+
+    // Above shows that using plain match() with
+    // -g-flag does give you all matched strings.
+    // But it does NOT give you the match-Objects
+    // so  the information match-locations and
+    // matched groups are lost. So for instance
+    // if you wanted to replaces the matches with
+    // your own algorithm that depends on all
+    // matches found and their locations you could
+    // not do that simply.
+
+    let ups  = w ( /[A-Z]+/
+               ).map ("Get My UPPer-Case-Letters"
+                     );
+    ok (ups[2][0] === 'UPP');
+
+    // Note w(regExp).map() always adds the g-flag
+    // to a copy of the argument-regexp so it will
+    // find all matches, not juts the first. If you
+    // add 'g' yourwself it has no extra effect. You
+    // can add other flags like 'i' for instance and
+    // have them take effect.
+    return;
+
+
 ##### v. 3.0.5: Better log()
 
 As before log() removes whitespace from the
@@ -13,7 +172,7 @@ That makes it convenient to format a multi-line
 log-message aligned with the code-block it
 exists in.
 
-in v.3.0.4 it no longer trims the argument-string
+in v.3.0.5 it no longer trims the argument-string
 as a whole . Which means you can put empty lines
 at the beginning and end of your log-message
 if you want to.

@@ -1,20 +1,42 @@
 # Cisf 3
-Support for **Runtime Types**
-in JavaScript.
+Support for simple **Runtime Type-Assertions **
+in JavaScript, and assorted simple utilitites
  
 Cisf.js allows you to add type-checks to your
-JavaScript code  with minimal syntax. 
-No transpiling to JavaScript is needed
+JavaScript code with minimalistic syntax.
+It also provides a few additional utilities
+to make the programmer's life easier.
+
+cisf.js could be described as "TypeScript Light",
+simple and easy to learn and unobtrusive to use.
+No transpiling to JavaScript is needed since
 you do it all in JavaScript.
 
-cisf.js  could be described as "TypeScript Light",
-simple and easy to learn and unobtrusive to use,
-with no effect on your tool-chain(s).
+The "utilities" -part we try to
+keep very limited in scope yet provide
+some things we need in our own daily
+JavaScript and Node.js programming:
+log, err, r, w.
+
+The latest addition 'w()' is actually
+a minimalistic framework for adding
+extensions to JavaScript base-classes.
+Since cisf is open source you can modify
+cisf.js  and add your own favcorite
+extensions as needed.
+
+Cisf comes with several useful
+JS-extensions already such as
+ **last()** -method for Arrays,
+ and **map()** for Objects.
+ More but not many more
+ may be added in the future.
+See documentation of w() below.
 
 ##### USAGE:
 
-    let {ok, not, x, fails, Type, log, warn, err
-        , r, A, eq, neq
+    let { ok, not, x, fails, eq, neq, A, Type,
+          log, err, r, path, fs, r, w
         } = require ("cisf");
         
 Or, pick just the subset of the API you might need:
@@ -22,7 +44,7 @@ Or, pick just the subset of the API you might need:
     let {ok, x, r} = require ("cisf");
 
 
-##### TO BE RELEASE-ANNOUNCEMENTS:
+##### RELEASE-ANNOUNCEMENTS:
    
 https://twitter.com/ClassCloudLLC
    
@@ -503,15 +525,171 @@ AExample() being called with
 wrong types of arguments.
 
 
+##### 3.11 w()
+
+ "w" stands for "wrapper". This API was inspired by
+the question how best to get the
+last element of an Array. We know it
+would be nice if there was a built-in-method
+of Array.prototype called "last()"
+but there isn't.
+
+You could add to
+Array.prototype but problem is
+what somebody else's program
+might have their own definition of
+last() which differs from yours.
+So your definition could break
+their program.
+
+The cisf.js solution is here:
+
+    let {w, ok} = cisf  ;
+    let last = w([1,2,3]).last();
+    ok (last === 3);
+
+So w() creates and easy-to use wrapper
+around arrays which allows you to
+easily ask for the last element of the
+array. Notice above is almost as short
+as "[1,2,3].last()" would be.
+
+But at the same time w() will add
+other methods to arrays, and different
+versions of such methods for different
+types of wrappees. The current set
+of things you can do with w() are shown
+in the next excerpt from the file
+cisf/test.js:
+
+
+    // LAST, FIRST, CAR, CDR:
+    let a = [1,2,3];
+    ok (w(a) . last()  === 3);
+    ok (w(a) . first() === 1);
+    ok (w(a) . car()  === 1);
+    eq (w(a) . cdr(), [2,3]);
+
+    // MAP AN ARRAY LIKE ORDINARILY:
+    // Point is this allows you to treat
+    // arrays and objects with the same
+    // piece of code without you knowing
+    //
+    eq (w(a).map (e=>e+1), [2,3,4]);
+
+
+    // MAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
+    let ob  = {a:22, b: 33};
+    let kvs = w(ob).map
+    ( key  =>  key + ob[key]
+    );
+    eq (kvs, ["a22", "b33"]);
+
+
+
+    // MAP A STRING TO LOOP OVER ITS CHARS:
+    let asciis = w("ABC").map (e=>e.codePointAt(0));
+    eq (asciis, [65, 66, 67]);
+
+
+
+    // MAP A NUMBER TO REPEAT  N times:
+    // (return the indexes as array)
+
+    let digits = w(10).map (e=>e);
+    eq (digits, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+
+
+    // WRAP A FUNCTION TO PRODUCE A SERIES:
+    //
+
+    let wf     = w (a=>a*10);
+    let series = wf.map (5, 3) ; // (firstArg, howManyResults)
+    eq (series, [50, 500, 5000]);
+
+    eq (wf.map (), [0,0,0,0,0  ,0,0,0,0,0]);
+    // The default for first arg is 0 and the
+    // default for how many is 10. So if we
+    // multiply 0 by 10 ten times we get an
+    // array of 10 0s.
+
+    // Create an array of 10 1s:
+    eq ( w(_=> 1).map()
+     , [1,1,1,1,1, 1,1,1,1,1]
+     );
+
+    // Create an array of 3 xs:
+    eq ( w(_=> 'x').map( 0, 3)
+     , ['x', 'x', 'x']
+     );
+
+
+    // WRAP A BOOLEAN TO GET KEYS WHICH ARE TRUTHY OR FALSY:
+
+    let truthyIndexes
+     = w(true).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq (truthyIndexes, [0,2]);
+
+    let falsyIndexes
+     = w(false).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq (falsyIndexes, [1,3,4,5,6]);
+
+    let valuesWithProperties
+     = w(null).map ( [1, 0, 2, false, null, undefined, ""] ) ;
+    eq
+    ( valuesWithProperties
+    , [1,0,2,false,""]
+    );
+    let classes = valuesWithProperties.map(e=>e.constructor);
+    eq
+    ( classes
+    , [Number, Number , Number, Boolean, String]
+    );
+
+    // WRAP A REGEXP TO FIND ALL ITS MATCHES.
+    //
+    // The 1st arg to map is a string to
+    // find the matches in, not a function.
+    // This because regexp kind of is a
+    // function itself.
+
+        eq ( "Get My UPPer-Case-Letters".match(/[A-Z]+/g)
+             , ['G', 'M', 'UPP', 'C', 'L']
+             );
+
+    // Above shows that using plain match() with
+    // -g-flag does give you all matched strings.
+    // But it does NOT give you the match-Objects
+    // so  the information match-locations and
+    // matched groups are lost. So for instance
+    // if you wanted to replaces the matches with
+    // your own algorithm that depends on all
+    // matches found and their locations you could
+    // not do that simply.
+
+    let ups  = w ( /[A-Z]+/
+               ).map ("Get My UPPer-Case-Letters"
+                     );
+    ok (ups[2][0] === 'UPP');
+
+    // Note w(regExp).map() always adds the g-flag
+    // to a copy of the argument-regexp so it will
+    // find all matches, not juts the first. If you
+    // add 'g' yourwself it has no extra effect. You
+    // can add other flags like 'i' for instance and
+    // have them take effect.
+    return;
 
 
 #### 4. Tests
 The file test.js in the same directory as CISF.js
-contains the tests which in effect specify what 
-CISF functions do in particular. 
+contains the tests to run on Node.js and the
+file cisf/test_browser.html contains the
+tests to run on the browser. Simply open
+it in your browser to run the tests on it.
 
-tests.js is the de facto "User's manual 
-for CISF". Not too long.
+
    
    
 #### 5. What does CISF mean?

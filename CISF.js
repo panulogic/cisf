@@ -1,5 +1,5 @@
 /* =========================================
-   cisf.js v. 3.0.5
+   cisf.js v. 3.1.0
 
    Copyright 2018 Class Cloud LLC
 
@@ -18,7 +18,7 @@
    =============================================
    USAGE:
    let {ok, x, r, not, fails, log, warn, err, Type, is
-       , A, eq, neq
+       , A, eq, neq, w
        } = require ("cisf");
 
    Or pick just the functions you need
@@ -32,7 +32,7 @@
 
 "use strict"
 
-let CISF_VERSION = "3.0.5" ;
+let CISF_VERSION = "3.1.0" ;
 
 let path, fs, Path, Fs;
 if (typeof require === "function")
@@ -63,9 +63,113 @@ function CISF_inner  ()
 
   let api =
   { ok, x, is, not, Type, fails, log, err, r
-  , path, fs, A, eq, neq
+  , path, fs, A, eq, neq, w
   }
   return api;
+
+  function w (anArray)
+  { return (
+    { last() { return anArray[anArray.length - 1]}
+    , first() { return anArray[0]}
+    , car () { return anArray[0]}
+    , cdr () { return anArray.slice(1)}
+    , map (... mapArgs )
+      { if (anArray instanceof Array)
+        { return anArray.map (...mapArgs);
+        }
+        if (typeof anArray === "number")
+        { let  arr = [];
+           for (let j=0; j < anArray; j++)
+           { arr[j] = j;
+           }
+           return arr.map (...mapArgs);
+        }
+        if (typeof anArray === "string")
+        { let arr = anArray.split("");
+           return arr.map (...mapArgs);
+        }
+        if (typeof anArray === "function")
+        { let first   = mapArgs[0];
+          let howMany = mapArgs[1];
+          if (! howMany)
+          { howMany = 10;
+          }
+          if (! first)
+          { first = 0;
+          }
+          let funk   = anArray;
+          let arg    = first;
+          let values = [];
+          for (let j=0; j<howMany; j++)
+          { let v = funk(arg);
+            values.push(v);
+            arg = v;
+          }
+          return values;
+        }
+        if (   anArray === null ||   anArray === undefined)
+        { let array = mapArgs[0];
+            let valuesWithProperties = [];
+            for (let j=0; j< array.length; j++)
+            { let v = array[j] ;
+              if (v === null)
+              { continue;
+              }
+              if (v === undefined)
+              { continue;
+              }
+              valuesWithProperties.push(v);
+            }
+            return valuesWithProperties;
+        }
+        if ( typeof anArray === "boolean")
+        { if (anArray === true)
+          { let array = mapArgs[0];
+            let truthyIndexes = [];
+            for (let j=0; j< array.length; j++)
+            { if (array[j])
+              { truthyIndexes.push(j);
+              }
+            }
+            return truthyIndexes;
+          }
+          if (anArray === false)
+          { let array = mapArgs[0];
+            let falsyIndexes = [];
+            for (let j=0; j<array.length; j++)
+            { if (! array[j])
+              { falsyIndexes.push(j);
+              }
+            }
+            return falsyIndexes;
+          }
+        }
+        if ( anArray instanceof RegExp)
+        { let see = 'sfAvEhRRihTT7Ai'.match(/[A-Z]+/g) ;
+
+ let see2 = 'sfAvEhRRihTT7Ai'.match(/[A-Z]+/) ;
+
+let reg     = new RegExp (anArray, anArray.flags + 'g');
+
+let s       = mapArgs[0];
+let matches = [];
+
+while (true)
+{ let m =  reg.exec (s);
+  if (m)
+  { matches.push(m);
+  } else
+  { return matches;
+  }
+}
+        }
+      let keys     = Object.keys (anArray);
+      let mappedOb = keys.map (... mapArgs)
+
+      return   mappedOb
+      }
+    }      )
+  }
 
 function notXer(v )
 { if (! ( v instanceof Xer))
