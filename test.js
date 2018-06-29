@@ -62,11 +62,16 @@ function testCisf ()
   return;
 
 function tell_tests_passd (s)
-{ s = `<h1>Cisf v. ${cisf.v} testCisf () passed.</h1>
+{ s = `<h1>Cisf v. ${cisf.v} testCisf () passed.</h1> `;
+
+if (typeof require === 'undefined')
+{ s += `
 <pre><tt>
 ${testCisf}
 </tt></pre>
 `;
+}
+
   console.log("");
   console.log (s);
   console.log("");

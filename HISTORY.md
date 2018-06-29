@@ -5,6 +5,15 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
+##### v. 3.1.1:  Removed limits on log-entry size
+In previous versions the size of log-entries
+was 2k or so. The idea was to prevent some
+error-messages from bloating up the log.
+But we realized that meant some information
+could be lost, so no more artificial limits
+on log-entry-size.
+
+
 ##### v. 3.1.0: w()
 
 w() is a new API in 3.1.0. "w" stands for

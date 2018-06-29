@@ -1,5 +1,5 @@
 /* =========================================
-   cisf.js v. 3.1.0
+   cisf.js v. 3.1.1
 
    Copyright 2018 Class Cloud LLC
 
@@ -32,7 +32,7 @@
 
 "use strict"
 
-let CISF_VERSION = "3.1.0" ;
+let CISF_VERSION = "3.1.1" ;
 
 let path, fs, Path, Fs;
 if (typeof require === "function")
@@ -1393,7 +1393,7 @@ function deepCopy (ob, level=0)
     }
     msg = msg.replace (/<\w+>/, "");
     msg = msg.replace (/<\/\w+>/, "");
-    var s =  trimLineBeginnings (msg + ``) .slice(0,2048);
+    var s =  trimLineBeginnings (msg + ``);
 
     let date = new Date();
     let ms =  date.getMilliseconds();
