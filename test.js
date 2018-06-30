@@ -128,8 +128,6 @@ function w ()  // w for 'wrapper'
   let digits = w(10).map (e=>e);
   eq (digits, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-
-
   // WRAP A FUNCTION TO PRODUCE A SERIES:
   //
 
@@ -338,13 +336,79 @@ function fs ()
 
 
 function A ()
-{ let {ok, x, A, Type, fails, is, eq, neq } = this;
+{ let {ok, not, x, A, Type, fails, is, eq, neq } = this;
   let StringOrNull = Type (String, null);
 
   let ex = fails (a => a.yah() );
 
   A     (        [String, Number], "good", 123   );
   fails (_=> A ( [String, Number], "good", "BAD" ));
+
+
+
+function divide (a, b)
+{ x (a, Number);
+  x (b, Number);
+  not (b === 0);
+
+  return a / b;
+}
+
+function divideSH (a, b)
+{ x (a, 1);  // unboxed numbers strings and booleans
+  x (b, 1);  // are shorthands for their constructor
+  not (b === 0);
+
+  return a / b;
+}
+
+function divideSH2 (a, b)
+{ A ([1,1], a, b);
+  not (b === 0);
+
+  return a / b;
+}
+
+
+let c = divide (4, 2);
+ok (c === 2);
+fails (_=> divide (4, 0));
+fails (_=> divide ("abc", 2));
+
+c = divideSH (4, 2);
+ok (c === 2);
+
+c = divideSH2 (4, 2);
+ok (c === 2);
+
+debugger
+// But JavaScript allows you to calculate
+// 2/0, it returns Infinity for that.
+// Why not be happy with that? The
+// answer tells us why assertions are
+// useful in the first place: They
+// tells us sooner rather than later
+// that something is wrong. Canaries
+// die sooner than the miners do,
+// that is how they help.
+//
+// In this example we want to
+// be notified sooner rather than later
+// if the result is meaningless infinity.
+// We want to document that the fact that
+// you should only call the function with
+// 2nd argument !== 0 because that really
+// makes no sense. If instead the function
+// returned Infinity that would not cause
+// an error and would probably later produce
+// more inifiniies and then looking at your
+// results you would no they make no sense
+// but you would have hard time fioguring
+// out where Infinity entered the picture
+// in the first place.
+//
+//  ( 2 / 0  ) + 5 === Infinity
+
 
 
   function AExample (s, n) { A([String, Number], s, n) }
@@ -410,7 +474,13 @@ argument-types in a single statement.
 
 
 function Type ()
-{ let {Type, ok, not, fails, x, is, err, log} = this;
+{ let {Type, A, ok, not, fails, x, is, err, log} = this;
+
+
+// todo: Below we have sections for testing
+// different types os types. Should create
+// an inner function for each of them to
+// make code better organized.
 
 	let CtorType = Type (String);
 	let ctorT    = new CtorType();
@@ -457,9 +527,24 @@ exactly same type to use in their own applications.
   x (111, NumberYes);
 
   // interperting 1 as a type means it is
-  // a SHORTHAND for its constructor in the context
-  // where a type is expected.
+  // a SHORTHAND for its constructor in the
+  // context where a type is expected.
 
+ // Since 3.1.2 this also works:
+  x( 111, 5);
+  // and:
+  ok (is( 111, 5));
+  ok (is(new Number(111), 5));
+
+  // But not everything can be turned into a type:
+
+   fails (_=> x("".toString, "".toString) );
+   // above fails for 2 reasons.
+   // 1.  "".toString() is not a predicate function
+   //     because it can not be called wiothout argument
+   //     to return an example instance of it and
+   //  2. And even if it was calling it with itself
+   //     as argumewnt woujld not reurn === true.
 
    let S2 = Type ("abc");
    ok (S2 !== String);
@@ -469,7 +554,15 @@ exactly same type to use in their own applications.
 
    // Note this applies only to
    // unboxed numbers, unboxed strings and
-   // unboxed booleans, not to {} etc. :
+   // unboxed booleans, not to BOXED Numbers
+   // Strings or anything that is instacneof
+   // Object.
+   //
+   // This is simply a shorthand. We dont apply
+   // the same shorthand to objects because
+   // for them {} and [] have special meaning
+   // already and every Function is a type of
+   // its own already.
 
 
 /* ==================================
@@ -586,7 +679,7 @@ that IF something is NOT null THEN it mus be
 a value of a specific type:
 */
 
-  let StringOrNull         = Type(String, null);
+  let StringOrNull         = Type (String, null);
   ok (StringOrNull.name === "Type(String, null)" );
 
   x (null     , StringOrNull);
@@ -706,14 +799,27 @@ ok  (is (value, Odd));
 
 /* ==================================
    OBJECT TYPES
+
+   {} means a type whose members must
+   have the same keys as the spec-{}
+   from which the type is created,
+   and whose values are of the type
+   that was used as the value of that
+   field in the spec.
  */
 
   let XObType = Type ({x: 1});
 
-  ok  (is ({x:777}  , XObType));
+  ok (is ({x:777} , XObType));
+  x  ({x:777}     , XObType);
+
   not (is ({x:"abc"}, XObType));
   not (is ({x:null} , XObType));
   not (is ({y:777}  , XObType));
+
+
+
+
 
 let OT = Type ({a: Number, b: Type(String, null)});
 ok (OT.name === "Type({a: Type(Number), b: Type(String, null)})" );
@@ -752,11 +858,47 @@ x ({a: {b: {c: 77}}}, OB3);
 
 /* ==================================
    ARRAY TYPES
+
+   [] specifies a type whose members
+   are arrays whose elements are of
+   one of the types given as elements
+   of the spec-array.
+
  */
 
-  // For arrays if there are multiple types
-  // given inside the array those are alternative
-  // element types. For instance [String, null]
+
+x ( [1, "A"],  Type ([String, Number]) );
+// Note String and Number in the type are alternative
+// element types, their order does not matter.
+
+x(123, Type (5));
+
+fails (_=> Type (new Number(5) ));
+// Above fails because a boxed number
+// is not a legal argument of Type().
+// That is because Type recognizes only
+// very specific types of objects as its
+// argument: {}, [] and specific types
+// of Functions. These all are instances
+// of Object, so only specific types
+// of objuect-instances are allowed.
+//
+// If any instanceof Object would be
+// turned into the type that is its
+// constructor  then a {} would be turned
+// into Object which is not the same thing
+// as the type we create from a {}, which
+// checks field-names and value-types of
+// its members.
+
+// Also if predicate-functions were turned
+// sinmply into the type Function, they would
+// not be turned into a PredicateType which
+// is not same type as Function.
+//
+
+
+x ( [1, "A"],  [String, Number] );
 
   let NA  = Type ([Number]);
   ok (NA.name = 'Type([Number])');
@@ -794,6 +936,7 @@ ok ("abc" instanceof  Type(String, null) );
 
 
 
+
 // MULTI-D ARRAYS:
 
 let A2 = Type( [ [1] ] ) ;
@@ -817,6 +960,29 @@ ok (
   , [7, 8]
   ]
 ] instanceof A3);
+
+
+// TUPLE-TYPES:
+// So above is the ArrayType which has
+// N alternative element-types What about
+// TUP)LE=-types? Well that is a subtype
+// of some array-type where each element
+// must be a memeber of one of the alternative
+// element-types but also they muts be in
+// correct order. That could be spcified
+// with a predicate-type OR MORE SIMPLY
+// we can use the A-api for testing for
+// that:
+
+let arr = [1, "abc"];
+
+A ([Number, String],  ... arr);
+A ([1, ""],  ... arr);
+
+fails
+(_=>
+  A ([String, Number],  ... arr)
+);
 
 
 
@@ -944,7 +1110,6 @@ for (let j = 0; j<22; j++)
 	fails (()=> Type (new Boolean()));
 	fails (()=> Type (undefined));
 
-
 // end test.js::Type()
 return;
 
@@ -960,28 +1125,67 @@ function x ()
   let x=this.x, ok=this.ok, fails=this.fails;
 
 
-  x (""   , String);
-  x (0    , Number);
-  x (false, Boolean);
-
-
-  x (null     , null);
-  x (undefined, null);
-  fails (() => x(33, null));
-
-  x (null     , Number, null);
-  x (undefined, Number, null);
-
+  // BASICS:
   x (3, Number);
-  fails (() =>   x("3", Number));
-  x ("3", Number, String);
+  x ("3", Number, String); // because "3" is a Number OR is a String.
 
   fails (() => x(null     , Number));
   fails (() => x(undefined, Number));
+  fails (() => x("3", Number));  // because "3" is a String
 
 
 
-  // How you use it often:
+  // New in v. 3.1.2:
+  // A number, string or boolean can be used
+  // as a shorthand for its constructor as
+  // 2nd argument of x(). This is how they
+  // behave with Type() too.
+
+  x (0, 1)
+  x ("s", "")
+  x (true, false)
+  x (new Number(5), 1);
+  // That makes it unnecessary to type Number and
+  // String too many times.
+
+  // The next fails because the point is to
+  // provide a shorthand and creating a boxed
+  // number does not make it shorter but longer:
+
+  fails (_=>  x(123, new Number(5)));
+
+
+  x (""   , String);
+  x (0    , Number);
+  x (false, Boolean);
+  // So the above can be said shorter:
+  x (""   , ""   );
+  x (0    , 0    );
+  x (false, false);
+
+
+  // When x() is called with a SINGLE ARGUMENT
+  // it succeeds as long as that single argument
+  // is not undefined or null:
+
+  x(0); x(1); x(false); x("");
+  fails (_=> x(null));
+  fails (_=> x(undefined));
+  fails (_=> x());
+
+  // null denotes the null-type which includes
+  // only null and undefined as its memebers:
+  x(null     , null);
+	x(undefined, null);
+	fails (_=> x(false, null));
+
+  // But note that undefined is nothing,
+  // it is not interpreted as a type:
+	fails (_=> x(null, undefined));
+	fails (_=> x(undefined, undefined));
+	fails (_=> x(0, undefined));
+
+  // How we use x() often:
   let arg = 3;
   let someVar = x(arg, Number);
   ok (someVar === 3);

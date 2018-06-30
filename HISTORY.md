@@ -5,6 +5,52 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
+##### v. 3.1.2:   Type() to convert 2nd arg of x() if needed
+
+ If the 2nd argument of x() does not recognize
+ the 1st argument of x() as its instance, we
+ try to transform the 2nd argument to a Type
+ by calling Type(the2ndArg).
+
+ Same transformation is applied to 2nd argument
+ of is() as well.
+
+ Because an unboxed number, string or boolean
+ produces a corresponding type when passed to
+ Type() as argument this means they can conveiently
+ be used as  shorthands for their constructor as
+ a type:
+
+      x (0, 1)
+      x ("s", "")
+      x (true, false)
+      x (new Number(5), 1)
+
+So, that makes it unnecessary to type Number and
+String too many times. Shorter is better
+
+The next fails because new Number(5)  is not
+a valid argument of Type() - because Type()
+has specific rules of how it interprets its
+arguments of type "object", it allows
+{}, [], and specifc types of functions
+as its argument.
+
+  fails (_=>  x(123, new Number(5) );
+
+
+If any instanceof Object would be
+automatically turned into the type
+that is its constructor then a {}
+would be turned into Object,  which
+as a Type is not the same thing
+as the type we create from a {},
+which we call ObjectType which checks
+field-names and value-types to decide
+is some value is an instance of it.
+
+
+
 ##### v. 3.1.1:  Removed limits on log-entry size
 In previous versions the size of log-entries
 was 2k or so. The idea was to prevent some

@@ -1,5 +1,5 @@
 /* =========================================
-   cisf.js v. 3.1.1
+   cisf.js v. 3.1.2
 
    Copyright 2018 Class Cloud LLC
 
@@ -32,144 +32,208 @@
 
 "use strict"
 
-let CISF_VERSION = "3.1.1" ;
+let CISF_VERSION = "3.1.2" ;
 
 let path, fs, Path, Fs;
-if (typeof require === "function")
+if (typeof require === "function") // in the browser it is not
 { path = require ("path");
   Path = path;
-  fs   = require ("fs");
-  Fs   = fs;
+	fs   = require ("fs");
+	Fs   = fs;
 }
+
+
+// CISF will be global in the browser,
+// but not in Node.js. Users need it
+// on the browser to access the cisf
+// APIs therefore it must be named simply.
+
+
 const DATA = Symbol('CISF');
 var CISF   = CISF_inner ();
 CISF.v     = CISF_VERSION;
 
-if (typeof module !== "undefined")
+if (typeof module !== "undefined")  // in the browser it is undefined
 { module.exports =  CISF;
 }
+
+// ----------------------------------------
+
 
 function CISF_inner  ()
 { var C          = _Canary()    ;
   let ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is, r=C.r;
 
   let Type = _Type;
-  Type[DATA] =  { };
+  Type[DATA] =  {};
 
   let $SuperType = _Type ();
 
   let Xer = _Xer();
   let AssertError = class AssertError extends Error { };
 
+
   let api =
   { ok, x, is, not, Type, fails, log, err, r
   , path, fs, A, eq, neq, w
   }
+
   return api;
 
-  function w (anArray)
-  { return (
-    { last() { return anArray[anArray.length - 1]}
-    , first() { return anArray[0]}
-    , car () { return anArray[0]}
-    , cdr () { return anArray.slice(1)}
-    , map (... mapArgs )
-      { if (anArray instanceof Array)
-        { return anArray.map (...mapArgs);
-        }
-        if (typeof anArray === "number")
-        { let  arr = [];
-           for (let j=0; j < anArray; j++)
-           { arr[j] = j;
-           }
-           return arr.map (...mapArgs);
-        }
-        if (typeof anArray === "string")
-        { let arr = anArray.split("");
-           return arr.map (...mapArgs);
-        }
-        if (typeof anArray === "function")
-        { let first   = mapArgs[0];
-          let howMany = mapArgs[1];
-          if (! howMany)
-          { howMany = 10;
-          }
-          if (! first)
-          { first = 0;
-          }
-          let funk   = anArray;
-          let arg    = first;
-          let values = [];
-          for (let j=0; j<howMany; j++)
-          { let v = funk(arg);
-            values.push(v);
-            arg = v;
-          }
-          return values;
-        }
-        if (   anArray === null ||   anArray === undefined)
-        { let array = mapArgs[0];
-            let valuesWithProperties = [];
-            for (let j=0; j< array.length; j++)
-            { let v = array[j] ;
-              if (v === null)
-              { continue;
-              }
-              if (v === undefined)
-              { continue;
-              }
-              valuesWithProperties.push(v);
-            }
-            return valuesWithProperties;
-        }
-        if ( typeof anArray === "boolean")
-        { if (anArray === true)
-          { let array = mapArgs[0];
-            let truthyIndexes = [];
-            for (let j=0; j< array.length; j++)
-            { if (array[j])
-              { truthyIndexes.push(j);
-              }
-            }
-            return truthyIndexes;
-          }
-          if (anArray === false)
-          { let array = mapArgs[0];
-            let falsyIndexes = [];
-            for (let j=0; j<array.length; j++)
-            { if (! array[j])
-              { falsyIndexes.push(j);
-              }
-            }
-            return falsyIndexes;
-          }
-        }
-        if ( anArray instanceof RegExp)
-        { let see = 'sfAvEhRRihTT7Ai'.match(/[A-Z]+/g) ;
+ // You dont need w() to get hte 0th element
+ // but if you already have it wrapped then
+ // you can not use [] so its good to have 'first()'.
 
+	function w (anArray)
+	{ return (
+		{
+		  last() {return anArray[anArray.length - 1]}
+    , first() {return anArray[0]}
+
+		, car () {return anArray[0]}
+		, cdr () {return anArray.slice(1)}
+
+		, map (... mapArgs )
+		  { if (anArray instanceof Array)
+			  { return anArray.map (...mapArgs);
+			  }
+			  if (typeof anArray === "number")
+			  {  let  arr = [];
+			     for (let j=0; j < anArray; j++)
+					 { arr[j] = j;
+					 }
+			     return arr.map (...mapArgs);
+			  }
+
+			  if (typeof anArray === "string")
+			  {  let arr = anArray.split("");
+			     return arr.map (...mapArgs);
+			  }
+
+			  if (typeof anArray === "function")
+			  { let first   = mapArgs[0]; // more natural to have the first first
+			    let howMany = mapArgs[1];
+			    if (! howMany)
+					{ howMany = 10;
+					}
+					if (! first)
+					{ first = 0;
+					}
+					let funk   = anArray;
+					let arg    = first;
+					let values = [];
+          for (let j=0; j<howMany; j++)
+					{ let v = funk(arg);
+						values.push(v);
+						arg = v;
+					}
+			    return values;
+			  }
+
+			  if (   anArray === null ||   anArray === undefined)
+			  {
+						let array = mapArgs[0];
+						let valuesWithProperties = [];
+						for (let j=0; j< array.length; j++)
+						{ let v = array[j] ;
+						  if (v === null)
+							{  continue;
+							}
+							if (v === undefined)
+							{  continue;
+							}
+							valuesWithProperties.push(v);
+						}
+						return valuesWithProperties;
+				}
+
+
+			  if ( typeof anArray === "boolean")
+			  {
+					if (anArray === true)
+					{
+						let array = mapArgs[0];
+						let truthyIndexes = [];
+						for (let j=0; j< array.length; j++)
+						{ if (array[j])
+							{  truthyIndexes.push(j);
+							}
+						}
+						return truthyIndexes;
+					}
+					if (anArray === false)
+					{ let array = mapArgs[0];
+						let falsyIndexes = [];
+						for (let j=0; j<array.length; j++)
+						{ if (! array[j])
+							{  falsyIndexes.push(j);
+							}
+						}
+						return falsyIndexes;
+					}
+			  }
+
+			  if ( anArray instanceof RegExp)
+			  {
+
+
+
+ let see = 'sfAvEhRRihTT7Ai'.match(/[A-Z]+/g) ;
+ // Above is a simple way to get all
+ // matched strings from the source-string,
+ // in order, with duplicates if those exist.
+ // What it does NOT give us is the array of
+ // all the matches as match-objects which know
+ // their position, sub-froups etc. That can be
+ // had fopr a SINGLE match by omitting the
+ // g-flag but that gives us only a single matche
  let see2 = 'sfAvEhRRihTT7Ai'.match(/[A-Z]+/) ;
 
-let reg     = new RegExp (anArray, anArray.flags + 'g');
+ // with the g-flag above produces all matches
+ // as an array. But this could seem simpler:
+ //         w(/[A-Z]/).map('sfvEhRihTT7Ai')
+ // no need
+ // to remember to use the flag or know what it means.
 
+let reg     = new RegExp (anArray, anArray.flags + 'g');
+// Means user does not need to add the g-flag we do.
+// Without it the loop below could produce only one match ever.
 let s       = mapArgs[0];
 let matches = [];
 
 while (true)
 { let m =  reg.exec (s);
   if (m)
-  { matches.push(m);
-  } else
-  { return matches;
-  }
+	{ matches.push(m);
+	} else
+	{ return matches;
+	}
 }
-        }
-      let keys     = Object.keys (anArray);
-      let mappedOb = keys.map (... mapArgs)
+/*
+ what can this mean?
+ w(/abc/).map(  "someString" )
+
+ ANSWER:
+ Get all the matches from the string as array.
+ note we dont take ina function to map with
+ because the result is an array so you can
+ easily do that yourself.
+
+  */
+			  }
+
+
+//			let values = Object.entries (anArray)
+//					           .map (e => e[1]);
+			let keys     = Object.keys (anArray);
+    	let mappedOb = keys.map (... mapArgs)
 
       return   mappedOb
-      }
-    }      )
-  }
+		  }
+
+		}      )
+	}
+
 
 function notXer(v )
 { if (! ( v instanceof Xer))
@@ -203,16 +267,21 @@ function _Xer()
 function trimLineBeginnings (s)
 { let pat = /\n[ \t]+(\S+)/g;
   let s2 =
- (s + "")
+ (s + "") // .trim()
          .replace (pat, `\n$1`);
 
   return s2;
 }
 
-function _ArrayType (  $elementTypes )
-{ return  class  ArrayType
+
+function _ArrayType (  $elementTypes ) // it muts be a single array
+{
+
+  return  class  ArrayType
         extends $SuperType
-  { constructor (   )
+  {
+
+    constructor (   )         // of ArrayType
     { super( );
       let types =  this.constructor[DATA].elementTypes;
 
@@ -226,45 +295,77 @@ function _ArrayType (  $elementTypes )
         let ElemType   = types[randTypeIx];
         let value      = new ElemType();
         it.push(value);
-      }
-      return it;
+			}
 
-  function rix (leng)
+			return it;
+
+
+	function  rix (leng)
   { let randix =  Math.floor(Math.random() * leng );
         return randix;
   }
     }
-   static toString()
-   { let ets = this[DATA].elementTypes;
+
+
+   static toString()  // of ArrayType
+   {
+     let ets = this[DATA].elementTypes;
      if (! ets)
      { return `Incomplete array type`;
-     }
+       // the name muts be assigned
+       // again in the array=-type class  after super.inity() has ocmpletet
+		 }
      let etNames = ets.map (e=> e !== null && e !== undefined
                                 ? e.name
                                 : 'null'
                            ).join (', ');
-     let s = `Type([${ etNames}])`;
+     let s = `Type([${etNames}])`;
      return s;
-   }
-    static [Symbol.hasInstance] (shouldBeArray)
-    { if (shouldBeArray && shouldBeArray.constructor === this)
-       { return true;
-       }
-       if (! (shouldBeArray instanceof Array))
-       { return false;
-       }
-       let elemTypes =  this[DATA].elementTypes;
 
-       for (var e of shouldBeArray)
-       { let itsType = elemTypes.find(et => is(e, et) );
+     /*
+     note how now we dont confuse the alternative
+     element-types with the actual elements. We used to
+      */
+	 }
+
+    static [Symbol.hasInstance] (shouldBeArray)
+    {
+
+       if (shouldBeArray && shouldBeArray.constructor === this)
+       {  return true;
+         // when we create new Odd(3)
+         // we want it, the boxed value,
+         // to also be instanceof Odd,
+         // not juts the unboxed value 3.
+			 }
+			 // beware:  (! "b"  === false)
+			 // therefore next we need 2 levels of parens:
+			 if (! (shouldBeArray instanceof Array))
+       { return false;
+			 }
+			 let elemTypes =  this[DATA].elementTypes;
+
+			 for (var e of shouldBeArray)
+       { // do not use instacenof here because unboxed numbers
+         // are not instanceof Number
+         let itsType = elemTypes.find(et => is(e, et) );
          if (! itsType)
-         { return false;
-         }
-       }
-       return true;
+         { // argument has an element which is not
+           // an instance of any of the element-types.
+           return false;
+				 }
+			 }
+			 // found no bad elements so yes the arg-array
+			 // is my instance
+			 return true;
     }
-    static init ()
-    { super.init();
+
+    static init ()  // of ArrayTyppe
+    {
+      super.init();
+      // we need to store the predicate
+      // function and the example unboxed instance
+      // so that my instanceof anbd constructor
 
       let realElemTypes
       = $elementTypes.map (e=> Type(e));
@@ -274,18 +375,32 @@ function _ArrayType (  $elementTypes )
       let typeName =  this + "" ;
       zet (this, 'name', typeName, "force");
 
+      // note element-types means the alternative
+      // types of each element, not types of
+      // different elements. This is NOT A TUPLE-TYPE.
+      // Tuple-types you must do with p[redicate-types
+      // there is no special syntax for them.
+
       return this;
-    }
+		}
   } .init()
 }
 
+
 function _ObjectType ($obSpec )
-{ return  class  ObjectType
+{
+ // calling the predicateFunk wihtout arguments
+ // gives the example member of the type.
+
+
+  return  class  ObjectType
         extends $SuperType
-  { constructor (   )
+  {
+
+    constructor (   )  // of ObjectType
     { super();
       let spec = this.spec ();
-      let  ob   = { };
+      let  ob   = {};
       for (var p in spec)
       { let fieldType = spec[p];
         let fieldValue = (new fieldType()).valueOf() ;
@@ -293,49 +408,88 @@ function _ObjectType ($obSpec )
       }
       return ob;
     }
-    static [Symbol.hasInstance] (value)
-    { if (value && value.constructor === this)
-       { return true;
-       }
-       let spec = x(this[DATA]. unfoldedSpec);
-       for (var p in  spec )
-       { let fieldType  = spec [p];
 
-         let fieldValue = value[p];
+    static [Symbol.hasInstance] (value)  // of ObjectType
+    {
+
+       if (value && value.constructor === this)
+       {  return true;
+         // when we create new Odd(3)
+         // we want it, the boxed value,
+         // to also be instanceof Odd,
+         // not juts the unboxed value 3.
+			 }
+
+       let spec = x(this[DATA]. unfoldedSpec);
+			 for (var p in  spec )
+       { let fieldType  = spec [p];
+         // IT MUTS BE A SINGLE TYPE BY NOW
+         // but also there is no reason why 1 coudl not be
+         // a shorthand for Number etc. Only point is that
+         // {x:1} is not shorthand for Object.
+
+				 let fieldValue = value[p];
          if ( is (fieldValue, fieldType))
          { continue;
          }
-         return false;
-       }
-       return true;
+				 return false;
+			 }
+
+
+			 return true;
     }
-   static toString()
-   { let obSpec  = this[DATA].unfoldedSpec ;
+
+   static toString()  // of ObjectType
+   {
+
+     let obSpec  = this[DATA].unfoldedSpec ;
      if (! obSpec)
      { return `Incomplete ObjectType`;
-     }
-     let s  = "{ " .trim() ;
-     let V = CISF.v ;
+       // the name muts be assigned
+       // again in the array=-type class  after super.inity() has ocmpletet
+		 }
 
-     let entries
-     = Object.entries (obSpec)
+
+		 let s  = "{" .trim() ;
+		 // somehow the minifier added a extra space above
+		 let V = CISF.v ;
+
+		 let entries
+		 = Object.entries (obSpec)
        . map
        ( ([k, v]) =>
-         { return `${ k}: ${ v.name}`;
-         }
+         { return `${k}: ${v.name}`;
+				 }
        ) ;
      s +=  entries.join (`, `) + `}`
 
-     let s2 = `Type(${ s})`;
+     let s2 = `Type(${s})`; // so it looks like the code to create it
      return s2;
-   }
-    static init ()
-    { super.init();
 
-      let unfoldedSpec  = { };
+     /*
+     note how now we dont confuse the alternative
+     element-types with the actual elements. We used to
+      */
+	 }
+
+    static init ()          // of ObjectType
+    {
+      super.init();
+
+// yes get the real types so if a value is []
+// it bceoms array type and if it is {}
+// it becomes ob ject-type.
+
+      let unfoldedSpec  = {};
       for (var p in $obSpec)
-      { let TheType = Type ($obSpec[p]) ;
-
+      {
+        let TheType = Type ($obSpec[p]) ;
+         // The trick is that if it was already
+         // a type it remains itself. If it is
+         // an Array or Object it becomes Arry or Object type.
+         // If it is  atom it becomes its constructor
+         // so 1 can be a shorthand for Number and
+         // "" shorthand for String.
          unfoldedSpec[p] =  TheType;
       }
       this[DATA].unfoldedSpec =  unfoldedSpec;
@@ -343,28 +497,45 @@ function _ObjectType ($obSpec )
       let typeName =  this + "" ;
       zet (this, 'name', typeName, "force");
       return this;
-    }
-    spec ()
+		}
+
+		spec ()
     { return this.constructor[DATA].unfoldedSpec;
-    }
+
+		}
+
   } .init()
 }
 
 function _FunkType ($namelessFunk )
-{ return  class   FunkType
+{
+ // Calling the predicateFunk wihtout arguments
+ // must give an example member of the type.
+
+
+
+  return  class   FunkType
           extends $SuperType
-  { constructor ( value )
-    { super(value);
+  {
+
+    constructor ( value )
+    {
+      super(value); // catches the error of value not undefined
       let ResultType = this.constructor [DATA].resultType;
 
       let funk =  () => new ResultType();
       return funk;
     }
+
+
    static toString()
-   { return `Type(${ $namelessFunk.name})`;
-   }
-    static [Symbol.hasInstance] (value)
-    { let argTypes   = this [DATA].argTypes  ;
+   { return `Type(${$namelessFunk.name})`;
+	 }
+
+
+    static [Symbol.hasInstance] (value) // of FunkType
+    {
+      let argTypes   = this [DATA].argTypes  ;
       let ResultType = this [DATA].resultType;
       let argValues  = argTypes.map
       ( ET =>
@@ -379,15 +550,17 @@ function _FunkType ($namelessFunk )
         { return true;
         }
         return false;
-      } catch (e)
+			} catch (e)
       { return false;
-      }
-    }
-    static init ()
-    { super.init();
-       let argsAndResultType ;
+			}
 
-       try
+    }
+
+    static init ()
+    { super.init(); // DATA, name,  etc.
+			 let argsAndResultType ;
+
+			 try
        { argsAndResultType = $namelessFunk ( );
        } catch (e)
        { debugger
@@ -397,38 +570,53 @@ function _FunkType ($namelessFunk )
            argument. Therefore that function 
            does not specify a valid predicate 
            type:      
-           ${ $namelessFunk}.
+           ${$namelessFunk}.
            `
          );
-       }
-        if (! (argsAndResultType instanceof Array))
-        { err
+			 }
+			  if (! (argsAndResultType instanceof Array))
+        {
+          err
           (`Function-type's defining function returns
             a non-array. It should return an array of
             the types which are the argument- and 
             result-types of functions that would be 
             instances of the function-type being created.
-
-            Bad defining function: ${ $namelessFunk}
+            
+            Bad defining function: ${$namelessFunk}
             `
           )
         }
-       let  argTypes   = argsAndResultType.slice (0, -1);
-       let  resultType = argsAndResultType.slice (-1)[0];
+
+			 let  argTypes   = argsAndResultType.slice (0, -1);
+			 let  resultType = argsAndResultType.slice (-1)[0];
+
+// [1,2,3] [-1]
+			 // For the spec to mean that result should be nothing
+			 // you must spec null-type as the result-type.
 
        this[DATA].argTypes   = argTypes;
        this[DATA].resultType = resultType;
 
        return this;
-    }
+		}
+
+
   } .init()
 }
 
 function _PredicateType ($predicateFunk )
-{ return  class   PredicateType
+{
+ // Calling the predicateFunk without arguments
+ // must give an example member of the type.
+
+  return  class   PredicateType
           extends $SuperType
-  { constructor ( value )
-    { super(value);
+  {
+
+    constructor ( value )
+    {
+      super(value);
       if (value !==  undefined)
       { ok (value instanceof  PredicateType)
       };
@@ -436,10 +624,15 @@ function _PredicateType ($predicateFunk )
       let pf =  this.constructor[DATA].predicateFunk
       let exampleInstance = pf ();
 
+      // Now that predicate function can return
+      // many different values it is important
+      // that we make sure they are actually
+      // instances of the type:
+
       ok (is (exampleInstance, PredicateType)
          , `The example-instance of a PredicateType
             is not an instance of it:
-            ${ exampleInstance} 
+            ${exampleInstance} 
             !
             `
          );
@@ -449,126 +642,218 @@ function _PredicateType ($predicateFunk )
       { err
         (`Predicate function's member-function
           return undefined. The function:
-          ${ pf} 
+          ${pf} 
          `) ;
+        // This must be an error because
+        // constructors can never return
+        // undefined so you could never
+        // CONSTRUCT such a memeber.
       }
+
       if ( exampleInstance === null
          )
       { return exampleInstance;
+        // because predicate can be arbitrary
+        // members can be arbitrary.
       }
       if (typeof exampleInstance === "object")
       { return exampleInstance;
       }
+      // constructors can notr return unboxed
+      // values  so we must convert it to its
+      // boxed version:
+
+      // let obv = new (exampleInstance.constructor)();
+      // was wrong. Instead muts fo:
       let obv = new (exampleInstance.constructor)
                      (exampleInstance);
 
       return obv;
+
     }
+
    static toString()
-   { return `Type(${ $predicateFunk.name})`;
-   }
-    static [Symbol.hasInstance] (value)
-    { if ( value !== undefined
+   {
+     return `Type(${$predicateFunk.name})`;
+	 }
+
+    static [Symbol.hasInstance] (value)       // of PredicateType
+    {
+
+      if ( value !== undefined
          && value !== null
          && value.constructor === this
           )
-       { debugger
+       {  debugger
           return true;
+         //  not sure if this is needed but makes
+         // sens that if you are constructed by me
+         // then you are my instance. But this should
+         // really not happen because constructor
+         // should return instances of the base-type.
+			 }
+
+			 let see;
+			 if (value === undefined)
+       { // undefined can never be an instacne of predicate types
+         // because their constructor could never return it.
+         // The error is caught already in the constructor
+         // but maybe not because there can be inifnite number
+         // of them.
+          return false;
        }
-       let see;
-       if (value === undefined)
-       { return false;
-       }
+
        if (value !== null)
        { value =  value.valueOf();
-       }
-       try
+         // because when we give the example instance
+         // out from the constructor we muts have made
+         // it sure it is boxedf, constructors
+         // can not return unboxed values.
+
+			 }
+			 try
        { see = $predicateFunk (value);
        } catch (e)
        { debugger
          return false;
-       }
-       if (see)
+			 }
+			 // 3.2.1: Predicate functions
+			 // must return === true for all
+			 // their members. Else you would
+			 // too easily have x(Math.random, Math.random)
+			 // in other words EVERY lowercased function
+			 // which returns non-null zero or false would
+			 // grant memebership to all their arguments.
+
+			 if (see === true)
        { return true;
        } else
        { return false;
        }
+
     }
+
     static init ()
-    { super.init();
-       let see;
-       try
+    { super.init(); // DATA, name,  etc.
+			 let see;
+			 try
        { see = $predicateFunk ( );
        } catch (e)
-       { debugger
+       {
          err
          ( `PredicateType -argument-function
            causes an error when called without
            argument. Therefore that function 
            does not specify a valid predicate 
            type:      
-           ${ $predicateFunk}.
+           ${$predicateFunk}.
            `
          );
-       }
+
+         /*
+         We dont store the example instance
+         anywhere because we can always call the
+         predicate function without arguments
+         again. Tha leaves open the possibility
+         that the predicate function returns a new
+         random or generator-based member each time
+         it is called.  That can be later used when
+         analyzing function type-=declarations to
+         see that the function whose argument is
+         such a type can be tested with MANY different
+         instances of that type.
+          */
+			 }
        this[DATA].predicateFunk = $predicateFunk;
+       // note it gets stored into the Type, not its instances
       return this;
-    }
+		}
+
+
   } .init()
 }
 
+
+      // But what about random TREES of objects and arrays?
+      // Well we could have  new Type(Object)() return those.
+      // But note field-names would be random as well then.
+      // Whereas Type({...}) always returns the same
+      // structure.
+      // But you know new Type ( [Something] )
+      // could and should easily have a random number
+      // of elemnents. There it works fine. At least
+      // have 0, 1, 2, many
+      //
+
+
 function _AtomicType ( $atomicCtor )
-{ if (  $atomicCtor === null || $atomicCtor === undefined  )
-  { }
+{
+  if (  $atomicCtor === null || $atomicCtor === undefined  )
+  { // this only happens because our test calls
+    // 	fails (()=> Type (undefined));
+	}
+
   x ($atomicCtor);
   if (typeof $atomicCtor !== "function")
   { $atomicCtor = $atomicCtor.constructor;
-  }
-  return  class  AtomicType extends $SuperType
-  { constructor ( value  )
-    { super (value);
+	}
+
+  // what is Type? That was the bug it is _Type:
+  return  class  AtomicType extends $SuperType  // Type
+  {
+    constructor ( value  )
+    {
+      super (value);
 
       let ub;
-      let it = new $atomicCtor();
+      let it = new $atomicCtor(); // the default
       if ($atomicCtor === String)
       { ub =  randString ();
-      }
-      if ($atomicCtor === Number)
+			}
+			if ($atomicCtor === Number)
       { ub =  randNumber ();
-      }
-      if ($atomicCtor === Boolean)
+			}
+			if ($atomicCtor === Boolean)
       { ub =  randBool();
-      }
-      it = new $atomicCtor(ub);
-      return it;
+			}
 
-      function randBool ()
+			it = new $atomicCtor(ub);
+			return it;
+
+
+			function randBool ()
       { if (rix(2) === 0)
         { return false;
         }
         return true;
-      }
+			}
 
-    function randNumber ()
-    { let max    = Number.MAX_SAFE_INTEGER  ;
+		function randNumber ()
+		{ // let max    = Math.floor (Number.MAX_SAFE_INTEGER / 2)  ;
+		  let max    = Number.MAX_SAFE_INTEGER  ;
 
-      let it  = Math.random() * max   ;
+		  let it  = Math.random() * max   ;
 
-      if (rix(9) > 4)
-      { it =  [max, 0, 0, 0, 1, 1, 2, 3, 3,4,5,6,7,8,9,11,13,15,17
-              ] [rix(9)];
-      }
-      if (rix(2) > 0)
-      { it = it  + Math.random();
-      }
-      if (rix(2) > 0)
-      { it = it * -1;
-      }
+		  if (rix(9) > 4)
+			{ // it is important that edge-cases
+			  // get testing in a limited test-run.
+				it =  [max, 0, 0, 0, 1, 1, 2, 3, 3,4,5,6,7,8,9,11,13,15,17
+				      ] [rix(9)];
+			}
+			if (rix(2) > 0)
+			{ it = it  + Math.random();
+			}
+		  if (rix(2) > 0)
+			{ it = it * -1;
+			}
       return it;
-    }
+		}
+
 
       function randString ()
-      { let maxCodePoint = 0xFFFF;
+      {
+        let maxCodePoint = 0xFFFF;
+        // Unicode basic multi-lilngiual plane
 
         let siz = rix (90);
         if (rix(9) === 1)
@@ -579,32 +864,50 @@ function _AtomicType ( $atomicCtor )
         }
         let s = "";
         for (let j = 0; j < siz; j++)
-        { let codePoint = Math.floor(Math.random()* 299);
+        {
+           let codePoint = Math.floor(Math.random()* 299);
            if (rix(9) === 1)
            { codePoint =    Math.floor(Math.random()* maxCodePoint);
-           }
+					 }
            let randChar  = String.fromCodePoint (codePoint);
            s += randChar;
-        }
+				}
         return s;
-      }
+			}
 
-    function rix (leng)
-    { let randix =  Math.floor (Math.random() * leng ) ;
-      return randix;
+			/**
+			 * Rix returns an interger
+			 * from 0 to leng-1 so it can
+			 * be used as a randomg index to
+			 * an array of length leng.
+			 * If leng === 0 then it will
+			 * always return 0.
+ 			 */
+	  function rix (leng)
+		{ let randix =  Math.floor (Math.random() * leng ) ;
+			return randix;
     }
-    }
-    static [Symbol.hasInstance] (value)
-    { if (value && value.constructor === this)
-       { return true;
-       }
+
+    } // end constructor
+
+
+    static [Symbol.hasInstance] (value)  // of  AtomicType
+    {
+       if (value && value.constructor === this)
+       {  return true;
+         // when we create new Odd(3)
+         // we want it, the boxed value,
+         // to also be instanceof Odd,
+         // not juts the unboxed value 3.
+			 }
        value = value.valueOf();
-       if (value === undefined)
+			 if (value === undefined)
        { return false;
        }
-       if (value === null)
+			 if (value === null)
        { return false;
        }
+
        if (value instanceof $atomicCtor)
        { return true;
        }
@@ -612,64 +915,108 @@ function _AtomicType ( $atomicCtor )
        if (C ===  $atomicCtor)
        { return true;
        }
-       return false;
+			 return false;
     }
-    static init ()
-    { let typeName =  this + "" ;
+
+    static init ()  // of AtomicType
+    {
+      let typeName =  this + "" ;  //  "Type(null)" ;
       zet (this, 'name', typeName, "force");
       return this;
-    }
+		}
+
     static toString ()
-    { return `Type(${ $atomicCtor.name})`;
-    }
+    {  return `Type(${$atomicCtor.name})`;
+		}
+
   } .init();
+
   }
 
 function _NullType ( )
-{ return  class  NullType
-  { constructor ( value )
-    { }
-    static [Symbol.hasInstance] (value)
-    { if (value && value.constructor === this)
+{
+
+  return  class  NullType
+  {
+    constructor ( value )
+    {
+
+    }
+
+    static [Symbol.hasInstance] (value)  // of NullType
+    {
+       if (value && value.constructor === this)
+       {  return true;
+         // when we create new Odd(3)
+         // we want it, the boxed value,
+         // to also be instanceof Odd,
+         // not juts the unboxed value 3.
+			 }
+
+			 if (value === undefined)
        { return true;
        }
-       if (value === undefined)
-       { return true;
-       }
-       if (value === null)
+			 if (value === null)
        { return true;
        }
        let vof = value.valueOf();
+       // see the functon Null() at the end
        if (vof === null)
        { return true;
        }
        if (vof === undefined)
        { return true;
        }
-       return false;
+
+			 return false;
     }
+
     static toString ()
-    { debugger
+    {
+    debugger
       return "Type(null)"
-    }
-    static init ()
-    { let typeName =   "Type(null)" ;
+		}
+
+    static init ()  // of NullType
+    {
+      let typeName =   "Type(null)" ;
       zet (this, 'name', typeName, "force");
       return this;
-    }
+		}
+
     valueOf ()
     { return null;
-    }
+     // nulltype must differe from all others
+     // in that it has a special valueOf() Why?
+     // Well atomic types maybe too
+     // But other in general reurn an instance
+     // of basetype when call their constructor
+     // with NulLT%ype you can not do that.
+		}
+
   } .init();
+
   }
 
 function _Type (... $compTypes )
-{ return  class SumType
-  { constructor ( value )
-    { if (! (this.constructor [DATA])  )
-{ debugger
+{
+
+  return  class SumType
+  { // a type is a class
+     // we can isnantiate it
+     // but if there are components
+     // we will insatiate the first one
+
+    constructor ( value )     // of SumType
+    {
+if (! (this.constructor [DATA])  )
+{
+  debugger
 }
+
       let COMPS = this . constructor [DATA] . compTypes ;
+      // do nmot realy o9n scpop[e variable which is
+      // MODIFIED BY LATER CALLS
 
       if (value !== undefined)
       { err
@@ -680,91 +1027,180 @@ function _Type (... $compTypes )
           actual values.
          `
         );
-    }
+
+		}
+
       if (value !== undefined)
       { ok (value instanceof SumType);
       }
+
        let len = 0;
        if (COMPS)
        { len =  COMPS.length ;
        }
+
        if (len >= 1)
-       { let ix       = randomIx (len);
+       { let ix       = randomIx (len); // should work for 0 as well
          let CompType = COMPS[ix];
 
          if (CompType === null)
-         { let Null = { valueOf: ()=>null }
-           return Null;
-         }
-         let maybeBoxed = new CompType();
+         {
+           // here we had an issue because
+           // constructors can never return null.
+           // Now we instead reurn something whose
+           // valueOf() is null. So when testing
+           // is a test does not pass we should take
+           // the value of.
+//         return null;    // Happens for new NumberOrNothing()
 
-         let ub =  maybeBoxed;
+           let Null = { valueOf: ()=>null }
+           return Null;
+             // Happens for new NumberOrNothing() etc.
+         }
+
+         let maybeBoxed = new CompType();
+         // if the type is String etc. it is better
+         // to always try to use unboxeds?
+         // YES BUT BIG BUT. If you try to return
+         // a non-Object from new your return value
+         // is disregarded and the system returns
+         // an object instance in stead in our case here
+         // it would return an instacne of SumType.
+         let ub =  maybeBoxed;  // .valueOf();
          return ub ;
-       }
+			 }
+
       if (len)
-      { return new COMPS[0]();
-      }
-      return null;
+      {  return new COMPS[0]();
+			}
+			// below happens for subtypes like PredicateType
+			// which have no comp-types.
+		  return null;
+
+
+
     }
-   static [Symbol.hasInstance] (value)
-    { if (value && value.constructor === this)
-       { return true;
-       }
+
+   static [Symbol.hasInstance] (value)         // of SumType
+    {
+       if (value && value.constructor === this)
+       {  return true;
+         // when we create new Odd(3)
+         // we want it, the boxed value,
+         // to also be instanceof Odd,
+         // not juts the unboxed value 3.
+			 }
+
       let gompTypes = this [DATA] . compTypes;
+      // use the above to get them in the form in which
+      // nulls and predicate have also turned
+      //  into functions which can be simply
+      // queried with insaceof .
 
   let ItsType
   = gompTypes.find
     (et =>
-     { let b = is (value, et);
+     {
+       // let b = value instanceof et;
+       // above will not work for unboxed numbers strings
+       // and booleans. Instead muts use:
+       let b = is (value, et);
        return b;
      }
     );
   if (ItsType)
   { return  ItsType;
   }
+  // if it is an instance of our type it is also nice
+  // to say which subtype it is an instance of.
+
   return;
+
+
 }
-  static init ()
-  { this [DATA] = { };
+
+  static init ()        // of SumType
+  {
+
+  // HERE IT IS OK TO USE $compTypes
+  // because it was juts written by my caller.
+
+    this [DATA] = {};
     this [DATA] . isType  = true;
+
+    // WRONG: let typeName =  SumType + "" ;
     let typeName =  this + "" ;
     zet (this, 'name', typeName, "force");
 
     if (! $compTypes.length)
-    { return this;
+    {
+       return this;
+
+
+      // if there are no component then the
+      // type can not represent anything.
+      // But we still create such a thing to
+      // serve as a superclass of all other
+      // types so we can inherit some code.
     }
+
+
+
 let readyTypes =
     $compTypes.map
     ( et =>
-      { if (et === 1)
-        { }
+      {
+
+        if (et === 1)
+        {
+        }
+
         if (et === null)
         { let NullType = _NullType ();
           return NullType;
+
+         // not sure if this is going to work
+         // or do we loop back here? Maybew we
+         // need simply also a parallel class with
+         // its own insaceof method. Sounds that
+         // is the simples
         }
+
         if (  et instanceof Function &&
             ! et.name
            )
-        { let FType = _FunkType (et);
+        { // namesles sfunction including all
+          // arrow-functions represent function-types
+          // which speicify the arg-types and the result
+          // with the arroe returned by tha namesless
+          // function when it is called without an argument.
+
+          let FType = _FunkType (et);
           return FType;
         }
+
         if (  et instanceof Function &&
             ! et.name.match (/^[A-Z]/)
            )
         { let PType = _PredicateType (et);
           return PType;
         }
+
         if (et === String || et === Number || et === Boolean   )
         { return _AtomicType (et);
         }
+
         if (et instanceof Function  &&
             et.name.match (/^[A-Z]/)
            )
         { return et;
         }
+
         if (typeof et !== "object")
         { return _AtomicType (et);
         }
+
+
         if (et .constructor === Array)
         { let ArrayType = _ArrayType ( et);
           return ArrayType;
@@ -773,9 +1209,10 @@ let readyTypes =
         { let ObjectType = _ObjectType ( et);
           return ObjectType;
         }
+
         err
         (`In valid Type -argument:  
-          ${ et}. 
+          ${et}. 
           Check the documetnation of 
           cisf.Type() for what can be
           its valid arguments.
@@ -784,33 +1221,86 @@ let readyTypes =
       }
     );
 
+
     if (readyTypes.length === 1)
-    { let OBT  = readyTypes[0];
+    {  let OBT  = readyTypes[0];
        if ( OBT  !== Number
          && OBT  !== String
          && OBT  !== Boolean
          )
-       { return  OBT;
+       { // but this is fine it should be wrappere into atomic type already
+          return  OBT;
        }
     }
-    this [DATA] . compTypes = readyTypes ;
+
+
+
+    this [DATA] . compTypes = readyTypes ; // $compTypes;
+    // the aboe is not enough because we still use the scope variable
+    // maybe should not but now we do so:
+
+    //    below assignment screw things up BADLY because
+    // the value would persist eveyr time this
+    // function is called to create different types.
+
+    // $compTypes = readyTypes;
+
 
    if ($compTypes[0] === undefined)
-    { debugger
-    }
+    { // why
+      debugger
+		}
+
     return this;
+
+      /* NO MORE. Now even if there is o9nly
+         one base-type we wrap it into the sumtype
+         so that when you call the cosntructor
+         of the sumtype it can produce random values
+         for the base-types String, Number, Boolean
+         thus facilitating random testing.
+
+      Then even FunctionType can be nmade to
+      produce random results of the correct type
+      and so can array and object-types. Predicate
+      types can easily too if they first create
+      a Type for their result.
+
+      ---------------------------
+         Returning a single base-type directly
+         WAS a simplifying trick which makes the
+         types more debuggable. Type() CAN take N
+         arguments and if N > 1 then we can only create
+         a Type with component types. And if the component-
+         type is a normal constructor then there is
+         no need to call Type() at all juts use the
+         constructor, is() and x() can workj with that.
+         So Type() was originally created to allow for
+         SumTypes, then for NullType the PredicateType.
+         But when you create a NullType or PredicateT%ype
+         it would be confusing if it was the the only
+         component of a wrapper type. Therefore if so
+         we not instead juts return that component-type
+         above
+         */
+
   }
-    static toString ()
-    { if (! $compTypes.length)
+
+    static toString ()            // of SumType
+    {
+       if (! $compTypes.length)
        { return "Type()";
-       }
+         // but therefore most type-classes
+         // like PredicateType better define their own.
+
+			 }
        let typeNames = $compTypes .map
       ( e =>
         { if (typeof e === "function")
           { if (! e.name)
             { return "=>";
-            }
-            return `${ e.name}`  ;
+					  }
+            return `${e.name}`  ;
           }
           if (e === null)
           { return 'null';
@@ -825,16 +1315,23 @@ let readyTypes =
             return '[ ... ]'
           }
           if (e.constructor === Object)
-          { return '{ ...}'
+          { return '{...}'
           }
         }
       );
       let s  = typeNames.join (', ');
-      let s2 = `Type(${ s})`;
+      let s2 = `Type(${s})`;
       return s2;
+
     }
+
+
+
   }.init() ;
+
+
 }
+
 
 function _Canary ()
 { assignMethods (Canary);
@@ -845,37 +1342,47 @@ function _Canary ()
 }
 
      function rLinux (path)
-     { return path.replace(/\\/g, "/");
-     }
+		 { return path.replace(/\\/g, "/");
+		 }
 
      function rRelative (path)
-     { let full = this.abs(path);
-       let base = this.abs();
-       let rp   = full.replace(base, "");
-
-       rp = rp.slice(1);
-       rp =  "." + Path.sep + rp;
-       return rp;
-     }
+		 { let full = this.abs(path);
+		   let base = this.abs();
+		   let rp   = full.replace(base, "");
+		   // Above will start with \ or /
+		   // but since my result should not
+		   // be interpreted as absolute path
+		   // which everything starting with '/'
+		   // is on Linux we must not allow that
+		   rp = rp.slice(1);
+		   rp =  "." + Path.sep + rp;
+		   return rp;
+		 }
 
      function cisfRequireResolve (path="")
-     { let cwd = process.cwd();
-       if (Path.isAbsolute (path))
-       { return path;
-       }
-        let pp2 = Path.resolve (cwd, path);
-        return pp2;
-     }
+		 { let cwd = process.cwd();
+		   if (Path.isAbsolute (path))
+			 { return path;
+			 }
+		 	 let pp2 = Path.resolve (cwd, path);
+		 	 return pp2;
+		 }
+		  // let pp3 = this.linux(pp2);
+		  // no that would make our test comparing it
+		  // tpo [rocess.cwd() not work.
 
 function assignMethods (Canary)
 { var C      = Canary;
   if (typeof require !== "undefined" &&  require.main)
-  { cisfRequire.abs   = cisfRequireResolve;
+  {  // in the browser there is no require.
+
+     cisfRequire.abs   = cisfRequireResolve;
      cisfRequire.rel   = rRelative;
      cisfRequire.linux = rLinux;
 
      C.r  =  cisfRequire;
   }
+
   C.ok       = ok    ;
   C.x        = x      ;
   C.fails    = fails  ;
@@ -891,13 +1398,23 @@ function assignMethods (Canary)
   return;
 
 function cisfRequire  (path)
-{ let home     = process.cwd();
+{
+
+	let home     = process.cwd();
   if (path.match (/^\w+$/))
-  { return require (path);
+	{ // it is path etc.
+	  return require (path);
+    // but any ref which does start with
+    // a word-char should be found by normal
+    // require from node_modules :
+	}
+	if (path.match (/^\w+[\s\S]*$/))
+	{ // as long as it starts with word-char it is something
+	  // that should be looked up by normal require
+	  // from node_modules
+	  return require (path);
   }
-  if (path.match (/^\w+[\s\S]*$/))
-  { return require (path);
-  }
+
   let absPath = Path.resolve (home, path);
   let imports = require(absPath);
   return imports;
@@ -921,7 +1438,9 @@ function cisfRequire  (path)
 
   function not  (aBoolean=false, msg )
   { if (aBoolean)
-      { var m = `not(): ${ msg}) 
+      { // var loc = getCallingLine();
+        // getCallingLine() could not work on the browser.
+         var m = `not(): ${ msg}) 
 `;
         err   (m);
       }
@@ -930,6 +1449,7 @@ function cisfRequire  (path)
 
   function is (value, ... types)
   { let b = false;
+    // value instanceof  types[0]
     try
     { x (value, ... types);
       return true;
@@ -943,10 +1463,13 @@ function x (value, ... typesArg)
   if (! arguments.length)
   { err (`x() called without arguments.`);
   }
+
   if (! types.length)
-  { if (value === null || value === undefined)
+  { // x() called with a single argument, it
+    // can be anything except null or undefined.
+    if (value === null || value === undefined)
     { err (`x() called with null or undefined as the its argument.`);
-     }
+    }
     return value;
   }
   let e2, r;
@@ -962,6 +1485,10 @@ function x (value, ... typesArg)
     }
   };
 
+// if none of the types matched
+// we did not return above and are here
+// and this is an error.
+
 let typeNames =
 typesArg.map
 ( et =>
@@ -975,41 +1502,95 @@ typesArg.map
 let em =
 `x() type-check failed. 
 The 1st argument in 
-x (${ value}, ${ typeNames})
+x (${value}, ${typeNames})
 is not an instance of  
 any of the rest.
 .
 `;
 
-err (em);
+err (em); // shoudl throw but juts in case it does not:
 throw em;
+
+
+
 }
 
+function typeFromSpec (type)
+{
+		let T =  Type(type);
+		return T;
+}
+
+
   function xSingle (value, type )
-  { try
-    { if (value instanceof type)
+  {
+
+    if (type === undefined )
+		{  throw new Error
+		   ('cisf.x() type-error, type === undefined'
+		   );
+		}
+
+    try
+    {
+      if (value instanceof type)
       { return value;
       }
     } catch (ee)
     { }
+
     if  (value === undefined || value === null)
-    { if (type === null)
+    { if (type === null  )
       { return value;
       }
       throw new Error ('cisf.x() undefined or null value type-error');
-    }
-    if ( value !== null &&
-         value !== undefined  &&
-         value.constructor === type
-        )
-    { return value;
-    }
-    if (type === null)
+		}
+    if (type === null  )
     { if (value === null || value === undefined)
       { return value;
       }
+      throw new Error ('cisf.x() type-error');
+		}
+    if (value === null || value === undefined)
+    { // since above type was not null the
+      // value can not be null or undefined.
+
+     throw new Error ('cisf.x() type-error');
+
     }
-    throw new Error ('cisf.x() type-error');
+
+let TypeC = type.constructor;
+let typeS = typeof type;
+if ( type instanceof Array ||
+     TypeC === Object      ||
+     typeS === "string"    ||
+     typeS === "number"    ||
+     typeS === "number"
+   )
+{
+}
+
+		if ( value !== null &&
+		     value !== undefined  &&
+		     value.constructor === type
+		    )
+    { return value;
+    }
+
+
+	let type2 = typeFromSpec (type);
+
+	if (value instanceof type2)
+  { return value;
+  }
+
+
+		throw new Error ('cisf.x() type-error');
+		// does not matter what the error says
+		// because there can be many type-args
+		// and it is only an error if NONE of
+		// them not causes an error
+
   }
 
   function checkAndReturn (a, b)
@@ -1391,9 +1972,12 @@ function deepCopy (ob, level=0)
   { if (typeof msg !== "string")
     { msg = "" + msg;
     }
+
     msg = msg.replace (/<\w+>/, "");
     msg = msg.replace (/<\/\w+>/, "");
-    var s =  trimLineBeginnings (msg + ``);
+
+    // var s =  trimLineBeginnings (msg + ``) .slice(0,377);
+    var s =  trimLineBeginnings (msg + ``); //  .slice(0,2048);
 
     let date = new Date();
     let ms =  date.getMilliseconds();
@@ -1414,11 +1998,14 @@ function deepCopy (ob, level=0)
  }
 
   function err ( errorOrString = "", ErrorClass = AssertError  )
-  { let stack;
+  {
+    let stack;
+    // the stack here
     let err =    errorOrString;
     let s = errorOrString;
     if (typeof s === "string")
-    { stack =  (new Error ()).stack ;
+    {
+      stack =  (new Error ()).stack ;
       s   =  `` + trimLineBeginnings (s + `
 `);
      s += `
@@ -1426,7 +2013,8 @@ function deepCopy (ob, level=0)
       err = new ErrorClass ( s );
     } else
     { stack = err.stack;
-    }
+		}
+
     Error.stackTraceLimit = Infinity;
 
     if ( stack . match (/fails\s*\(/)   )
@@ -1437,85 +2025,116 @@ function deepCopy (ob, level=0)
       = stack.match (/ xSingle /) ||
         stack.match (/ is /) ;
     }
-    if (this === "no stack")
-    { err = err.message;
-    }
+
+		if (this === "no stack")
+		{ err = err.message;
+		}
     throw (err);
    }
 
+
+
 function A (typesArray, ... values)
-{ let exampleTypes = typesArray.map
-  ( ex => Type (ex)
+{
+  let exampleTypes = typesArray.map
+	( ex => Type (ex)
   );
 
    if (values.length > exampleTypes.length)
-   { debugger
-     err
-     (`cisf.A(typesArray, ...values)
-       -call has fewer elements in typeArray
-       than there are values. Every 
-       value-argument must have its
-       corresponding Type in the 1st
-       argument which must be an Array. `
-     );
-   }
-   if (exampleTypes.length > values.length + 2 )
-   { debugger
-     err
-     (`In cisf.A(typesArray, ...values)
-       -call the typesArray has more than 2
-       more elements than there are values
-       -arguments. 
-      `
-     );
-   }
+	 { debugger
+	   err
+		 (`cisf.A(typesArray, ...values)
+		   -call has fewer elements in typeArray
+		   than there are values. Every 
+		   value-argument must have its
+		   corresponding Type in the 1st
+		   argument which must be an Array. `
+		 );
+
+	 }
+	 if (exampleTypes.length > values.length + 2 )
+	 { debugger
+	   err
+		 (`In cisf.A(typesArray, ...values)
+		   -call the typesArray has more than 2
+		   more elements than there are values
+		   -arguments. 
+		  `
+		 );
+	 }
+
   values.map
   ( (v, j, all) =>
     { let eType  = exampleTypes[j];
 
-      if (is (v, eType))
-      { return;
-      }
+			if (is (v, eType))
+      { return; // from map()
+			}
       throw [exampleTypes, values] ;
+
     }
   );
 
   return [exampleTypes, values];
 }
 
+
+
 function neq  (a,b)
-{ try
-  { eq (a,b)
-  } catch (e)
-  { return e;
-  }
-  err
-  (`neq(${ a}, ${ b}) failed because 
-    eq (${ a}, ${ b}) did not.
-    `
-  )
+{
+	try
+	{ eq (a,b)
+	} catch (e)
+	{ return e;
+	}
+
+	err
+	(`neq(${a}, ${b}) failed because 
+	  eq (${a}, ${b}) did not.
+	  `
+	)
 }
 
 function eq (a, b)
-{ if (arguments.length < 2)
-   { err
-     (`eq() called with < 2 arguments`
-     );
-   }
-   if (arguments.length > 2)
-   { err
-     (`eq() called with > 2 arguments`
-     );
-   }
+{
+   if (arguments.length < 2)
+	 { err
+	   (`eq() called with < 2 arguments`
+	   );
+	 }
+	 if (arguments.length > 2)
+	 { err
+	   (`eq() called with > 2 arguments`
+	   );
+	 }
+
    if (! a && ! b)
-   { return a;
-   }
-   if (! a  || ! b)
-   { err
-     (`eq(${ a}, ${ b}) 
-       1st argument is not but 2nd is.`
-     );
-   }
+	 { return a;
+	 }
+	 if (! a  || ! b) // after previous test
+	 { err
+	   (`eq(${a}, ${b}) 
+	     1st argument is not but 2nd is.`
+	   );
+	 }
+
+	 /*
+	  now we know they both have a constructor
+	  BUT we dont compare constructorsd because
+	  WE ONLY COMPARE ENUMERABLE PRTOPERTIES,
+	  in other words properties that are looped
+	  over by the for-in -loop.
+
+	 if ( a.constructor !== b.constructor) // after previous test
+	 { err
+	   (`eq(${a}, ${b}) 
+	     constructors are not the same:
+	     ${a.constructor.name} !== ${b.constructor.name}`
+	   );
+	 }
+   */
+
+
    if (a instanceof Array)
   { for (var j=0; j <  a.length; j++)
     { eq (a[j], b[j]);
@@ -1524,18 +2143,22 @@ function eq (a, b)
     { return a;
     }
   }
+
+
   if (a instanceof Object)
   { if (! (b instanceof Object) )
-    { err
-      (`eq(${ a}, ${ b}) 
-        ${ a} is an instacne of Object 
-        but ${ b} is not.
-       `
-     );
-    }
+	  { err
+	    (`eq(${a}, ${b}) 
+	      ${a} is an instacne of Object 
+	      but ${b} is not.
+	     `
+	   );
+	  }
+
     for (let p in  a)
     { eq (a[p], b[p]);
     }
+
     for (let p in  b)
     { eq (a[p], b[p]);
     }
@@ -1552,38 +2175,51 @@ function eq (a, b)
 }
 }
 
+
+
 function zet(owner, key, value, force)
-  { if (! owner)
-    { throw "zet() called without owner"
-    }
-    if (owner.hasOwnProperty(key))
-    { if (!force)
-      { err
-        ("Trying to double-bind " + key + ` to ${ value}`
-        )
-        return;
-      }
-    }
-   let temp =     Object.getOwnPropertyDescriptor(owner, key);
+	{
+		if (! owner)
+		{ throw "zet() called without owner"
+		}
 
-    Object.defineProperty
-    ( owner, key
-    , { value        : value
-      , enumerable   : false
-      , writable     : false
-      , configurable : true
-      }
-    );
+		if (owner.hasOwnProperty(key))
+		{
+			if (!force)
+			{	err
+				("Trying to double-bind " + key + ` to ${value}`
+				)
+				return;
+			}
+		}
 
-    if (owner[key] !== value)
-    { throw `zet() almost silently failed to  set the value to property ${ key}.` ;
-    }
-  }
+   let temp = 		Object.getOwnPropertyDescriptor(owner, key);
+   // Above is how we can read the meta-information.
+   // writable is false by default
+   // but so is configurable.
+   // So unless we set configurable to true
+   // we can not change the value again ever.
+   // This CHANGED  at some point in Node.js
 
-  function randomIx (leng)
+		Object.defineProperty
+		( owner, key
+		, { value        : value
+		  , enumerable   : false
+		  , writable     : false
+		  , configurable : true
+		  }
+		);
+
+		if (owner[key] !== value)
+		{	throw `zet() almost silently failed to  set the value to property ${key}.` ;
+		   // beware of silent failure with defineProperty
+		}
+	}
+
+	function randomIx (leng)
   { let randix =  Math.floor(Math.random() * leng );
         return randix;
   }
 
-  function Null () { }
-  Null.valueOf = _=> null;
+  function Null () {}
+	Null.valueOf = _=> null;
