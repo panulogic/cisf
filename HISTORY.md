@@ -1,9 +1,17 @@
 # cisf.js release notes
 
-Latest build is v.3.0.5.
+Latest build is v.3.1.3.
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+
+##### v. 3.1.4:
+Updated HISOTRY.md.
+
+
+##### v. 3.1.3:
+Updated the browser-tests to have the same code
+as Node.js tests in test.js
 
 ##### v. 3.1.2:   Type() to convert 2nd arg of x() if needed
 
