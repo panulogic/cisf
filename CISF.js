@@ -1,5 +1,5 @@
 /* =========================================
-   cisf.js v. 3.1.4
+   cisf.js v. 3.1.5
 
    Copyright 2018 Class Cloud LLC
 
@@ -32,7 +32,7 @@
 
 "use strict"
 
-let CISF_VERSION = "3.1.4" ;
+let CISF_VERSION = "3.1.5" ;
 
 let path, fs, Path, Fs;
 if (typeof require === "function") // in the browser it is not
@@ -62,7 +62,11 @@ if (typeof module !== "undefined")  // in the browser it is undefined
 
 function CISF_inner  ()
 { var C          = _Canary()    ;
+
   let ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is, r=C.r;
+
+  let isNot=C.isNot ;
+  let isEq=C.isEq, isNeq=C.isNeq ;
 
   let Type = _Type;
   Type[DATA] =  {};
@@ -74,9 +78,11 @@ function CISF_inner  ()
 
 
   let api =
-  { ok, x, is, not, Type, fails, log, err, r
-  , path, fs, A, eq, neq, w
-  }
+  { Type
+  , ok, not, x, A, eq, neq, fails
+  , is, isNot, isEq, isNeq
+  , w,  log, err, r, path, fs
+  };
 
   return api;
 
@@ -613,7 +619,6 @@ function _PredicateType ($predicateFunk )
   return  class   PredicateType
           extends $SuperType
   {
-
     constructor ( value )
     {
       super(value);
@@ -735,9 +740,11 @@ function _PredicateType ($predicateFunk )
 
     static init ()
     { super.init(); // DATA, name,  etc.
-			 let see;
+			 let exampleInstance ;
+			 let pf = $predicateFunk;
+
 			 try
-       { see = $predicateFunk ( );
+       { exampleInstance = pf ( );
        } catch (e)
        {
          err
@@ -757,33 +764,44 @@ function _PredicateType ($predicateFunk )
          again. Tha leaves open the possibility
          that the predicate function returns a new
          random or generator-based member each time
-         it is called.  That can be later used when
-         analyzing function type-=declarations to
-         see that the function whose argument is
-         such a type can be tested with MANY different
-         instances of that type.
+         it is called.
           */
 			 }
-       this[DATA].predicateFunk = $predicateFunk;
-       // note it gets stored into the Type, not its instances
+       this[DATA].predicateFunk = pf;
+       try
+			 { x (exampleInstance, this)
+			 } catch (e)
+			 {
+
+			 	err
+         ( `PredicateType -argument-function
+           ${pf} when called without argument 
+           returns  a value which is NOT an
+           instance of the purported predicate 
+           type. In other words the type-definition
+           is invalid.
+           
+           Why is this required? Because we
+           want to test that the type-definition
+           defines a type with at least one 
+           existing instance, we dont know
+           what that might be so ytou should
+           provide it by reurni8ng it if the
+           type-predicate is called without 
+           argument.  
+           `
+         );
+
+			 }
+
+
+
       return this;
 		}
-
 
   } .init()
 }
 
-
-      // But what about random TREES of objects and arrays?
-      // Well we could have  new Type(Object)() return those.
-      // But note field-names would be random as well then.
-      // Whereas Type({...}) always returns the same
-      // structure.
-      // But you know new Type ( [Something] )
-      // could and should easily have a random number
-      // of elemnents. There it works fine. At least
-      // have 0, 1, 2, many
-      //
 
 
 function _AtomicType ( $atomicCtor )
@@ -1196,6 +1214,11 @@ let readyTypes =
         { return et;
         }
 
+if (et === null || et === undefined)
+{
+	debugger
+}
+
         if (typeof et !== "object")
         { return _AtomicType (et);
         }
@@ -1386,7 +1409,6 @@ function assignMethods (Canary)
   C.ok       = ok    ;
   C.x        = x      ;
   C.fails    = fails  ;
-  C.is       = is    ;
   C.not      = not    ;
 
   C.log      = log    ;
@@ -1394,8 +1416,15 @@ function assignMethods (Canary)
   C.err      = err    ;
 
   C.eq       = eq;
+  C.neq      = neq;
+
+  C.is       = is    ;
+  C.isNot    = isNot ;
+  C.isEq     = isEq  ;
+  C.isNeq    = isNeq  ;
 
   return;
+
 
 function cisfRequire  (path)
 {
@@ -1420,43 +1449,68 @@ function cisfRequire  (path)
   return imports;
 }
 
-  function ok
-  ( aBoolean=false, msg="ok() failed"
-  )
-  { if (aBoolean)
-   { return true;
-   }
-     var loc = new Error("ok() failed").stack ;
+function ok
+( aBoolean=false, msg="ok() failed"
+)
+{ if (aBoolean)
+ { return true;
+ }
+	 var loc = new Error("ok() failed").stack ;
 
-    var em   = `
-    ok() failed  
-    Message: ${ msg}
-    At: ${ loc}
-    `;
-    err   (em);
-  }
+	var em   = `
+	ok() failed  
+	Message: ${ msg}
+	At: ${ loc}
+	`;
+	err   (em);
+}
 
-  function not  (aBoolean=false, msg )
-  { if (aBoolean)
-      { // var loc = getCallingLine();
-        // getCallingLine() could not work on the browser.
-         var m = `not(): ${ msg}) 
+function not  (aBoolean=false, msg )
+{ if (aBoolean)
+		{ // var loc = getCallingLine();
+			// getCallingLine() could not work on the browser.
+			 var m = `not(): ${ msg}) 
 `;
-        err   (m);
-      }
-    return true;
-  }
+			err   (m);
+		}
+	return true;
+}
 
-  function is (value, ... types)
-  { let b = false;
-    // value instanceof  types[0]
-    try
-    { x (value, ... types);
-      return true;
-    } catch (e)
-    { return false;
-    }
-  }
+function is (value, ... types)
+{ let b = false;
+	// value instanceof  types[0]
+	try
+	{ x (value, ... types);
+		return true;
+	} catch (e)
+	{ return false;
+	}
+}
+
+function isNot (... args)
+{ return ! is (... args);
+
+}
+
+
+function isEq (...args)
+{
+	let m =  eqMsg (...args) ;
+	if (m)
+	{ return false;
+	}
+	return true;
+}
+
+function isNeq (...args)
+{
+	let m =  eqMsg (...args) ;
+	if (m)
+	{ return true;
+	}
+	return false;
+}
+
 
 function x (value, ... typesArg)
 { let  types = [... typesArg];
@@ -2095,8 +2149,19 @@ function neq  (a,b)
 	)
 }
 
-function eq (a, b)
+
+
+function eq (... args )
 {
+
+		if (true)
+		{ let m = eqMsg (... args);
+			if (! m)
+			{ return args[0];
+			}
+			err (m);
+		}
+
    if (arguments.length < 2)
 	 { err
 	   (`eq() called with < 2 arguments`
@@ -2173,6 +2238,101 @@ function eq (a, b)
    `
   );
 }
+
+
+function eqMsg (a, b)
+{
+   if (a === b)
+   { return;
+   }
+
+   if (arguments.length < 2)
+	 { return  (`eq() called with < 2 arguments`
+	   );
+	 }
+	 if (arguments.length > 2)
+	 { return (
+	   `eq() called with > 2 arguments`
+	   );
+	 }
+
+   if ( a === undefined &&  b === undefined)
+	 { return;
+	 }
+
+	 /*
+	  now we know they both have a constructor
+	  BUT we dont compare constructorsd because
+	  WE ONLY COMPARE ENUMERABLE PRTOPERTIES,
+	  in other words properties that are looped
+	  over by the for-in -loop.
+
+	 if ( a.constructor !== b.constructor) // after previous test
+	 { return (
+	   `eq(${a}, ${b})
+	     constructors are not the same:
+	     ${a.constructor.name} !== ${b.constructor.name}`
+	   );
+	 }
+   */
+
+
+   if (a instanceof Array)
+   {
+     if (!  (b instanceof Array))
+     { return (
+       `Arg 1 of eq() is an Array but 2nd is not`);
+	   }
+
+    let maxLeng =  Math.max (a.length, b.length);
+    for (var j=0; j < maxLeng; j++)
+    { let m =  eqMsg (a[j], b[j]);
+      if (m)
+			{ return m;
+			}
+    }
+    if (a.length === b.length)
+    { return ;
+    }
+
+
+  }
+
+
+  if (a instanceof Object)
+  { if (! (b instanceof Object) )
+	  { return (
+	     `eq(${a}, ${b}) 
+	      ${a} is an instacne of Object 
+	      but ${b} is not.
+	     `
+	   );
+	  }
+
+    for (let p in  a)
+    { let m =  eqMsg (a[p], b[p]);
+      if (m)
+			{ return m;
+			}
+    }
+
+    for (let p in  b)
+    { let m =  eqMsg (a[p], b[p]);
+      if (m)
+			{ return m;
+			}
+    }
+    return;
+  }
+
+  return (
+	 `eq() failed: 
+    ${a} !== ${b}
+   `
+  );
+}
+
+
 }
 
 

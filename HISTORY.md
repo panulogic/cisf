@@ -1,12 +1,22 @@
 # cisf.js release notes
 
-Latest build is v.3.1.3.
+
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+##### v. 3.1.5:
+Added API-functions
+* isNot ()
+* isEq  ()
+* isNeq ()
+
+This makes Cisf-API more symmetric,
+you have x(), is(), isNot() and
+eq(), isEq(), isNeq()
+
 
 ##### v. 3.1.4:
-Updated HISOTRY.md.
+Updated HISTORY.md.
 
 
 ##### v. 3.1.3:

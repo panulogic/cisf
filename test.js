@@ -46,6 +46,10 @@ function testCisf ()
   fails   .bind (cisf) ();
   eq      .bind (cisf) ();
 
+
+  is      .bind (cisf) ();
+  isEq    .bind (cisf) ();
+
   Type    .bind (cisf) ();
   A       .bind (cisf) ();
 
@@ -62,10 +66,11 @@ function testCisf ()
   return;
 
 function tell_tests_passd (s)
-{ s = `<h1>Cisf v. ${cisf.v} testCisf () passed.</h1> `;
+{ s = `Cisf v. ${cisf.v} tests passed.`;
 
 if (typeof require === 'undefined')
 { s += `
+<h2>${s}</h2>
 <pre><tt>
 ${testCisf}
 </tt></pre>
@@ -207,27 +212,48 @@ function w ()  // w for 'wrapper'
   // can add other flags like 'i' for instance and
   // have them take effect.
 
-  debugger
-  // todo:
-  // copy the tests here to the browser-test html-file
-  // and test it.
-
   return;
 
 
 }  // end function w()
 
 
+function is()                 // tests also isNot()
+{ let {is, isNot, ok} = this;
+
+  ok (is (1, Number));
+  ok (is (1, String, Number));
+
+  ok (isNot ("abc", Number));
+  ok (isNot (true, Number, String));
+}
+
+
+// isEq() also tests isNeq() which is simply the negation of isEq().
+function isEq ()
+{  let {isEq, isNeq, ok, not } = this;
+
+  not ([1,2,3] == [1,2,3]) ;
+
+  ok  (isEq ([1,2,3], [1,2,3   ]));
+  not (isEq ([1,2,3], [1,2,3, 4]));
+
+  not  (isNeq ([1,2,3], [1,2,3]));
+  not  (isEq ([1,2,3 ], [1,2,3, 4]));
+
+}
+
+
 // eq() also tests neq() which is simply the negation of eq().
 function eq ()
 { let {fails, ok, eq, neq} = this;
 
-  fails (_=> eq());
+  eq () ; // if both args are undefined they are equal
   fails (_=> eq(1));
   fails (_=> eq(1,2,3));
 
-  eq (1,1); // YES!
-  eq ("1", "1"); // YES!
+  eq (1,1);
+  eq ("1", "1");
   fails (_=> eq(1,2));
   fails (_=> eq("1", "2"));
 
@@ -301,11 +327,17 @@ eq  ({}, {});
 return;
 
   /**
+
   You would rarely check that your arguments are
   a given fixed array or object. But eq() is part
   of the API because it  supports the 2nd major
-  user-case of cisf: Writing the  documentary tests
+  user-case of cisf: Writing documentary tests
   for your  API, including the API of cisf itself.
+
+  When you write unit-tests for methods that
+  return arrays or objects you typically want
+  to use eq eo to check the result is what you
+  expect.
 
   So in this sense eq() is in same group as fails().
   You typically only call fails() in your API-doc
@@ -381,7 +413,7 @@ ok (c === 2);
 c = divideSH2 (4, 2);
 ok (c === 2);
 
-debugger
+
 // But JavaScript allows you to calculate
 // 2/0, it returns Infinity for that.
 // Why not be happy with that? The
@@ -474,7 +506,9 @@ argument-types in a single statement.
 
 
 function Type ()
-{ let {Type, A, ok, not, fails, x, is, err, log} = this;
+{ let {Type, A, ok, not, fails, x, is, err, log
+      , eq, neq, isEq, isNeq
+      } = this;
 
 
 // todo: Below we have sections for testing
@@ -523,6 +557,7 @@ exactly same type to use in their own applications.
 /* ==================================
    ATOMIC TYPES
 */
+
   let NumberYes = Type (123);
   x (111, NumberYes);
 
@@ -576,6 +611,22 @@ exactly same type to use in their own applications.
    used as "types" as is.
  */
 
+
+// JS-PROBLEM:
+not (123   instanceof Number);
+not ("abc" instanceof String);
+
+// JS-PROBLEM 2:  'instanceof' easy to mistype
+
+// cisf SOLUTION:
+ok (123   instanceof Type(Number));
+ok ("abc" instanceof Type(String));
+
+// cisf SOLUTION 2: cisf type-checking Shorthands:
+x (123   , Number);
+x ("abc" , String);
+
+
   x (1, Number);
 
    let O = Type (Object);
@@ -605,8 +656,6 @@ exactly same type to use in their own applications.
    x (Type, AnyOb); // Because Type is a Function
                     // and all Functions are instances
                     // of Object
-
-
 
 
 
@@ -767,34 +816,70 @@ a value of a specific type:
   let Odd  = Type (odd_p);
   ok (Odd.name === "Type(odd_p)");
 
+	let anOdd = new Odd ();   // boxed number
+	let value = anOdd.valueOf();
+	ok (value % 2 === 1 || value % 2 === -1 );
 
-let anOdd = new Odd ();   // boxed number
-let value = anOdd.valueOf();
-ok (value % 2 === 1 || value % 2 === -1 );
+	ok  (is (anOdd, Odd));
+	ok  (is (value, Odd));
 
-ok  (is (anOdd, Odd));
-ok  (is (value, Odd));
-
-
-// BEWARE: It deos not make a predicate=-type
-// if the argument of Type() is a NAMELESS
-// function. That creates a Funk-Type.
-// And the function then must return
-// an Array of arg-types + result-type
-// of the function that are to be memebers
-// of that type.
+	// BEWARE: It does not make a predicate-type
+	// if the argument of Type() is a NAMELESS
+	// function. That would create a Function-Type
+	// instead.
 
 
-  fails (_ => Type (n => n % 2 === 1));
-  // You can not create predicate functions
-  // from nameless functions. And if you
-  // want to create a Functon-type then the
-  // function you pass as argument must
-  // return an array of types to tell the
-  // argument- and result-types required
-  // of the instances of that Function-type.
+		fails (_ => Type (n => n % 2 === 1));
+		// You can not create predicate functions
+		// from nameless functions. And if you
+		// want to create a Functon-type then the
+		// function you pass as argument must
+		// return an array of types to tell the
+		// argument- and result-types required
+		// of the instances of that Function-type.
 
 
+/* =====================================
+   DEPENDENT TYPES
+   mean type the memebershow of which
+   depends on some data expressed outside
+   the would-be member.
+
+   You can implement dependent types
+   as predicate types in Cisf.
+ */
+
+  function biggerThan ($y=0)
+	{ return isBigger;
+
+		function isBigger (x)
+		{ if (x === undefined )
+			{  return $y + 1;
+				// If first arg is undefined then the
+				// predicate-function of every predicate
+				// type must return a value that is an
+				// instance of the type. We will then
+				// internally TEST that it is indeed an
+				// instance of that type. This way we can
+				// give this predicate-type some internal
+				// integrity testing. This is a bit like
+				// saying that new Number() must return
+				// SOME default number even if you did
+				// not say which one.
+			}
+			return x > $y;
+		}
+	}
+
+	testDependentType (1, 2);
+	fails (_=> testDependentType (1, 1));
+	fails (_=> testDependentType (2, 1));
+
+
+  function testDependentType (a, b)
+	{ let BiggerThanA = Type (biggerThan(a));
+	  x (b, BiggerThanA);
+	}
 
 
 /* ==================================
@@ -816,9 +901,6 @@ ok  (is (value, Odd));
   not (is ({x:"abc"}, XObType));
   not (is ({x:null} , XObType));
   not (is ({y:777}  , XObType));
-
-
-
 
 
 let OT = Type ({a: Number, b: Type(String, null)});
@@ -1088,14 +1170,14 @@ for (let j = 0; j<22; j++)
    NON-TYPES
 
    Calling Type() with no argument creates
-   a type which is npobody's type.
+   a type which is nobody's type.
    It is not very useful but it is possible
    you might find a use for it.
 
 */
 
    let NBT = new Type();
-   not (is (123, NBT));   // but we cant test them all
+   not (is (123, NBT));   // but we can't test them all
 
 	/*
    You can not call Type with just
@@ -1111,6 +1193,28 @@ for (let j = 0; j<22; j++)
 	fails (()=> Type (undefined));
 
 // end test.js::Type()
+
+
+// EQUALS TYPE
+// Equals-type is something which
+// has as its member all values which
+// are equal to a specific value.
+// NOte equal is not the same as  == or ===.
+//
+// We dont' create EqualsType as a
+// Type of its own because you really
+// want to test whether something is
+// a memeber of the type or not and
+// you can do that with eq(), isEq()
+// neq(), isNeq().
+
+
+eq  ([1,2,3], [1,2,3]);
+neq ([1,2,3], [1,2,3,4]);
+
+ok (isEq  ([1,2,3], [1,2,3  ]));
+ok (isNeq ([1,2,3], [1,2,3,4]));
+
 return;
 
 
