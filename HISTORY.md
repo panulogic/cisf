@@ -4,6 +4,169 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+
+#### v. 4.0.0:
+This version does away with the "shorthand types"
+for Number String and Boolean. They were confusing
+because they statements like:
+
+    x(true, false);
+
+In 4.x you muste express what the above meant
+in 3.x as:
+
+    x(true, Boolean);
+
+This means 4.x is not fully backwards comptible
+with versions 3.x and therefore the major
+version-number was bumped up to 4.
+
+The main reason for the change is that
+now numbers, strings and booleans
+can  be usedfor new ways
+of expressing types in Cisf 4.x.
+
+Most
+significantly we can now have the
+"TruthyType" which means that the
+allowed argument-types of ok() and
+not() can be declared using
+cisf itself. ok() and not() are
+now written like this:
+
+    function ok (arg)
+    { x (arg, true);
+    }
+
+    function not (arg)
+    { x (arg, false);
+    }
+
+
+Using the newly available semantic space
+v. 4.0.0  can now provide
+five (5) new types of types:
+
+##### TruthyType:
+
+Using true as a type-specifier creates
+a type who memebers are all "truthy"
+values of JavaScript, meaning anything
+except false, null, 0, "" or undefined:
+
+    x (-1  , true);
+    x ("s" , true);
+    x (true, true);
+    x ({}  , true);
+    x ([]  , true);
+    x (x   , true);
+
+    fails (_=> x (0    		 , true));
+    fails (_=> x (""   		 , true));
+    fails (_=> x (false		 , true));
+    fails (_=> x (null 		 , true));
+    fails (_=> x (undefined, true));
+
+In JavaScript there is often little
+need to use pure Boolean values since
+all truthy values behave in most ways
+the same as true. Falsy values
+behave like false, for instance as
+operand of if -statement.
+
+Instead of returning false it
+shortens code if you return nothing.
+But whosever check the type of such
+a result muts then allow for the
+fact that it might be false, or
+undefined, or null etc. Truthiness
+and Falsyness is very much built in
+to JavaScript so its best to have
+types for truthy and falsy.
+
+
+##### FalsyType:
+
+Using false as a type-specifier creates
+a type whose instances are
+false, null, 0, "" and  undefined:
+
+    x (0                , false);
+    x (""               , false);
+    x (false            , false);
+    x (null             , false);
+    x (undefined        , false);
+
+    fails (_=> x (1     , false));
+    fails (_=> x ("s"   , false));
+    fails (_=> x (true  , false));
+    fails (_=> x ({}    , false));
+    fails (_=> x ([]    , false));
+    fails (_=> x (x     , false));
+
+
+##### RegExpType:
+
+    x       ('A'  , /A/);
+    x       ('bAb', /A/);
+    x       ('A'  , /a/i);
+    fails   (_=> x ('a' , /A/));
+    fails   (_=> x ('bb', /A/));
+    fails   (_=> x (''  , /A/));
+
+Using a RegExp as a type-specifier
+makes it easy to say something must
+match a RegularExpression. The
+wolloginc two are equal but using
+x() is shorter:
+
+    'A'.match(/A/)
+
+    x('A',/A/)
+
+The RegExp type also first always
+converts its argument to String
+which measn it can be used with
+other types of arguments:
+
+    x (5, /\d/);
+    fails (_=> 5 . match(/\d/));
+
+##### StartsWithType:
+
+RegExp type can be used for checking
+that a string starts with a certain prefix,
+if you know how to write such a RegExp
+(use '^'). But since testing for a prefix
+is quite common  that can now be done by
+using an unboxed string as type-specifier:
+
+    x ("abc", "");
+    x ("abc", "a");
+    x ("abc", "ab");
+    x ("abc", "abc");
+
+    fails (_=> x ("Abc", "a"));
+    fails (_=> x ("", "a"));
+
+
+##### BiggerOrEqualType:
+
+Using an unboxed number as type-specifier
+creates atype whose instances are all numbers
+equal or bigger than the type-specifier::
+
+x     ( 0, 0);
+x     ( 0.001, 0);
+fails (_=> x ( -0.001, 0));
+
+
+
+
+
+##### v. 3.1.6:
+Improved tests
+
 ##### v. 3.1.5:
 Added API-functions
 * isNot ()

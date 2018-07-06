@@ -1,37 +1,36 @@
-# Cisf 3
+# Cisf 4
+
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites
  
 Cisf.js allows you to add type-checks to your
 JavaScript code with minimalistic syntax.
-It also provides a few additional utilities
-to make the programmer's life easier.
 
 cisf.js could be described as "TypeScript Light",
 simple and easy to learn and unobtrusive to use.
 No transpiling to JavaScript is needed since
 you do it all in JavaScript.
 
-The "utilities" -part we try to
-keep very limited in scope yet provide
-some things we need in our own daily
-JavaScript and Node.js programming:
-log, err, r, w.
+Cisf also provides a select few a
+dditional utilities
+for making programmers' lives easier:
+log, err, r, w, fs, path.
 
-The latest addition 'w()' is actually
+'w()' is actually
 a minimalistic framework for adding
 extensions to JavaScript base-classes.
 Since cisf is open source you can modify
-cisf.js  and add your own favcorite
+cisf.js  and add your own favorite
 extensions as needed.
 
 Cisf comes with several useful
-JS-extensions already such as
+JS-extensions already such as the
  **last()** -method for Arrays,
  and **map()** for Objects.
  More but not many more
  may be added in the future.
-See documentation of w() below.
+See documentation of w().
+
 
 ##### USAGE:
 
@@ -39,7 +38,7 @@ See documentation of w() below.
           log, err, r, path, fs, r, w
         } = require ("cisf");
         
-Or, pick just the subset of the API you might need:
+Or, pick just the subset of API-functions you need:
 
     let {ok, x, r} = require ("cisf");
 
@@ -122,9 +121,8 @@ types of arguments:
 	{ A ([String, Number], s, n);
 	}
 
-It could not get much simpler. And unlike
-with Java or #C this is optional. Use it
-when it helps.
+Unlike with Java or #C this is optional.
+Use it when and where it helps.
 
 
 
@@ -136,25 +134,28 @@ when it helps.
 
 ##### A) With Node.js
 
-    const { ok, not, x, is, fails, Type} 
+    const
+    { ok, not, x, fails, eq, neq, A, Type,
+      log, err, r, path, fs, r, w
+     }
     = require ('CISF');
 
 The module CISF.js exports an object
-with 6 methods shown above. But you 
-can  easily take in just the functions
-you want to use with the ES6 destructuring
+with the API-functions shown above.
+You  can  easily take in just the functions
+you want  with  ES6 destructuring
 assignment. For instance:
 
     const { ok, x }  = require ('CISF');
 
-might be all you mostly use.
+might be what you mostly use.
 
 ##### B) With  browser
 
-If CISF.js detects it is not
+If cisf.js detects it is not
 running in Node.js it stores its API-functions
-into the global variable "CISF" which you
-can then access like shown here from within an
+into  global variable "CISF", which you
+can then access from within your
 HTML-page:
 
     <script src="CISF.js"></script>
@@ -191,9 +192,12 @@ FireFox and Chrome but not in IE-11.
 
 
 ##### 3.2 not ( nonTruthy )
-not() returns true if ok()
-would cause an error, and causes
-an error if ok() would not cause an error.
+not() succeeds if ok()
+would cause an error.
+
+not() causes an error if ok()
+would not cause an error for the
+same argument.
 
     not (0);
     not ("");
@@ -205,10 +209,10 @@ an error if ok() would not cause an error.
 
 ###### 3.3.0 Zero arguments
 
-Callin g() without arguments
+Calling x() without arguments
 throws an error, because doing
-that ius same as calling
-x(undefined)*[]:
+that is same as calling
+x (undefined):
 
 ###### 3.3.1 One x() argument
  If called with  one argument x()
@@ -226,7 +230,7 @@ x(undefined)*[]:
     fails (_=> x (undefined));
     fails (_=> x ());
 
-A spdecial case ius using null as
+A special case is using null as
 type-argument. It allows values that
 are either null or undefined, but
 nothing else:
@@ -248,19 +252,20 @@ or undefined:
   x (undefined, null);
   fails (() => x(33, null));
 
-You will not be testing that somnething
-is null or undefined, but the opposite.
-So why have this "null type"? It is because
+You will typically not be testing that
+somnething is null or undefined,
+but the opposite.
+
+So why have a "null type"? It is because
 you may often want to assert that IF
 something is not null or undefined,
-TEHN it muts of a specific type,
-which you can do by having
+THEN it must be of some specific type.
+That you can do by having
 more thna one type argument:
 
   x (3   , Number, null);
   x (null, Number, null);
 
-That is actually explained next ...
 
 
 ###### 3.3.3  Many x() arguments
@@ -294,6 +299,7 @@ it returns its first argument.
 
    
 ##### 3.4 is (value, Type)
+
 is() returns true if x() called with the
 same arguments would not fail, and false
 otherwise:
@@ -302,35 +308,68 @@ otherwise:
     ok  (is (123, Number) === true);
 
 You can thus use the same type-machinery
-as x() does, to make branching  decisions
+as x() does to make branching  decisions
 within your program.
 
 
 ##### 3.5 fails (aFunction)
+
 Above you have already seen use of fails().
 It assumes it is called with a function
 as argument which it will call without
 arguments. If the argument -function throws
-an error fails() returns true, else it
-causes an error.
+an error fails() returns that error, else
+it causes an error.
 
 fails() may not be  used much
-in runtime code but it is useful when writing
-tests for functions we know should and will fail
-under certain conditions.  It  is good to tell
-the users of your API what such
-cases are.
+at runtime but it is useful when writing
+tests for functions we know should and
+will fail under certain conditions.
+It  is good to tell the users of your API
+what such cases are.
 
-    fails ( a => throw "");
-    fails ( b => fails ( a => 123));
+The function argument to fails is most
+simply expressed as an ES6 arrow-function.
+To make it as short as possible we typically
+use '_' as  the argument-name of the arrow-function:
+
+    fails (_ => throw "");
+    fails (_ => fails ( arg => 123));
+    fails (_ => divide (n, 0))
+
+
 
 
 ##### 3.6 Type ()
 Type is a constructor for creating new  types.
+Cisf supports the following types of types:
+
+1. ConstructorType
+2. SumType
+3. NullType
+4. ArrayType
+5. ObjectType
+6. FunctionType
+7. PredicateType
+
+8.  TruthyType
+9.  FalsyType
+10. RegExpType
+11. StartsWithType
+12. BiggerOrEqualType
+
+At the time of this writing the best
+documentation for how to use them
+all is to read the tests in test.js.
+But we are working on more documentation.
+
+There are two type-types worthy of special
+mention for now:
+
 
 ###### 3.6.1 (Named) Sum-Types ()
 
-Type can be used tpo combe
+Type() can be used to combine
 existing types into a "sum type"
 which accepts anything that
 is accepted by one of its components.
@@ -351,71 +390,62 @@ commonly referred to as a
 Note, null as 2nd argument accepts  null or
 undefined as value. See test.js.
 
+
 ###### 3.6.2 Dependent Types ()
 
-This is the 2nd use of Type, pertaining
-to advanaced type-theory made simple:
-Dependent Types.
+A DependentType is something whose
+memebership depends on some other
+value.
 
-Wheter a value is a member of
-a dependent type depends on
-some other value.
+A function might take two numbers
+as argument but require that 2nd one
+is always bigger than the first.
 
-Let's say we  define a function
-whose argument-type is basically
-Number, but then we realize it can
-only accept Positive numbers as
-its argument. Cisf can declare
-such a type easily:
+This can be expressed by creating
+a Dependent Type where the type
+of the 2nd argument depends on the
+first one. An example of such is
+tested in test.js.
 
-    let Positive = Type (n => n > 0);
+In practice it is often simpler to
+juts use ok() to express the relationship
+between the arguments:
 
-    function dependable (n)
-    { x(n, Positive);
+    function fu (a, b)
+    { ok (a < b);
     }
 
-Be aware, above the function that
-defines a type must either start
-lowercase, or have no name at all.
+Dependent Types are not part of
+mainstream programming languages
+because when "type-checking"
+usually refers to  static type-checking.
+That means dependent-types must be
+verified by the comnpiler when the
+progrma is compiled without access
+to the inputs the program will be run with.
+That makes it difficult to create compilers
+to support checking of types like
+(a, b, where a < b) at compile-time.
 
-If a function starts with uppercase
-it is a 'constructor' or 'class'
-and its membership will be checked
-more simply with 'instanceof',  i
-nstead of calling it. All constructors
-say String and Number are
-functions, and we  can not
-decide if something is their
-instance or not by calling them.
+But if we allow for the fact that
+"type-checking" is useful also at runtime
+then dependent types are trivial really.
+"ok()" does not return a Type, but it
+does "check the type of its argument".
+And it typically expresses how the type
+of one thing must depend on some other thing.
 
-For non-title-cased functions we
-adopt the rule that they are not
-to be used as 'types'. They are
-to be passed as arguments to Type()
-to create types from them.
-
-
-The Point: You can use
-Type() to define a "type" based on
-arbitrary logic which  determines
-whether some value is its member
- or not.
-
-For instance you could define
-the type PrimeNumber  which
-accepts only prime numbers as
-its members.
 
 ##### 3.7 path ()
 The value of require("cisf").path
-is the value of the standard
+is the same as the Node.js standard
 require("path");
 
-You get 'path' along with cisf
+You get 'path' easily along with cisf
 so you don't have to require it yourself.
 You just refer to it as one of the
 fields of your structuring require
-assignment:
+-assignment:
 
     let {ok, x, path} = require('cisf');
 
@@ -424,7 +454,7 @@ Note 'cisf.path' is not available on browser.
 
 ##### 3.8 fs ()
 The value of require("cisf").fs
-is the value of the standard
+is the value of the Node.js standard
 require("fs");
 
 You get 'fs' along with cisf so you
@@ -437,16 +467,13 @@ assignment:
 
 Note 'cisf.fs' is not available on browser.
 
-Notee 'fs' and 'path' are (currently)
+'fs' and 'path' are (currently)
 the only two  Node.js core APIs available
-via cisf. We added those two
-because we think they are the most
-useful and most frequently used core APIs.
-That may or may not apply ot your application
-but that's the tradeoff we made between
-keeping Cisf simple and making reducing
-the number of require-statements you and
-us havce to make every day.
+via cisf and it will likely remain that way.
+
+We added those two because we think they are
+the most useful and most frequently used core APIs.
+
 
 ##### 3.9 r()
 
@@ -454,20 +481,14 @@ cisf.r() takes as argument a module-path which
 it interprets as relative to process.cwd()
 and then tries to require. If the path does
 not exist there will be an error like there
-would be with normal require().
+would be with standard Node.js require().
 
 r() can also be used with Node.js internal
 paths and module-names that exist in node_modules.
-So for instance:
+For instance:
 
-      ok(r('fs') === require('fs'))
+      ok (r('fs') === require('fs'))
 
-Where r() differes from standard require is
-for paths which start with '.', in other words
-"module relative paths". For those rather than
-intrerpreting the argument-path relative to the
-current module it is interpreted relative to
-process.cwd().
 
 "r" has 2 helper-methods you may find useful:
 
@@ -480,7 +501,7 @@ of its argument relative to process.cwd().
 
 
 The next code-excerpt shows the main reason why r() exists
-as part of cisf: You can require modules by
+in cisf: You can require modules by
 giving r() their path relative to the cwd,
 so you don't need to type out the full
 host-specific abspath, nor use fragile
@@ -489,20 +510,20 @@ non-portable module-relative upward paths.
     let relPath = r.rel(__filename);
     ok (r (relPath) === require (__filename));
 
-Note above does nothing, because
+Above test in fact does nothing because
 it requires the same module you are
-already in. We just use that as a
+already in. We use that as a
 test becaseu we know that module
-must exist , so the test does
+must exist, so the test does
 not crash like it would if the file
 did not exist.
 
 
 ##### 3.10 A()
 
-The last API A() takes as argument
+API A() takes as argument
 an Array of Types and then same number
-or few more values. It causes an
+or  more values. It causes an
 error if the values are not instances
 of the corresponding types.
 
@@ -517,9 +538,9 @@ use it like this:
 	AExample ("yeah", 123); // works
 	fails (_=> AExample ("yeah", "BAD"));
 
-You probably  wouldnot write the
-fails() -call like we did.
-We added it to prove to ourselves
+You probably would not write the
+fails() -call  we did.
+We just added it to prove to ourselves
 that A() would catch the error of
 AExample() being called with
 wrong types of arguments.
@@ -534,31 +555,31 @@ would be nice if there was a built-in-method
 of Array.prototype called "last()"
 but there isn't.
 
-You could add to
+You could add such a method to the
 Array.prototype but problem is
-what somebody else's program
+somebody else's program
 might have their own definition of
 last() which differs from yours.
-So your definition could break
+Your definition could then break
 their program.
 
-The cisf.js solution is here:
+Cisf.js solution is to provide
+an easy way to wrap any array-instance
+such that the wrapper has the method
+last():
 
     let {w, ok} = cisf  ;
     let last = w([1,2,3]).last();
     ok (last === 3);
 
-So w() creates and easy-to use wrapper
-around arrays which allows you to
-easily ask for the last element of the
-array. Notice above is almost as short
-as "[1,2,3].last()" would be.
+Above is almost as short as "[1,2,3].last()"
+would be.
 
 But at the same time w() will add
 other methods to arrays, and different
 versions of such methods for different
 types of wrappees. The current set
-of things you can do with w() are shown
+of things w()  can do are shown
 in the next excerpt from the file
 cisf/test.js:
 
@@ -684,10 +705,10 @@ cisf/test.js:
 
 #### 4. Tests
 The file test.js in the same directory as CISF.js
-contains the tests to run on Node.js and the
-file cisf/test_browser.html contains the
+contains the tests to run on Node.js.
+The file cisf/test_browser.html contains the
 tests to run on the browser. Simply open
-it in your browser to run the tests on it.
+it in your browser to run the tests in it.
 
 
    
@@ -697,20 +718,20 @@ it in your browser to run the tests on it.
 CISF stands for **"Canary In Software Factory"**.
 The idea is that CISF assertions do a
 similar job for your code as canaries do
-in coal-mines. They give an early warning
+for coal-miners. They give an early warning
 if your assumptions about the context your 
 program is working in are incorrect.  
 
 In a coal-mine you would of course make the
 assumption that air is good to breathe.
 The canaries you put into the mine would
-tell you it is by staying alive. If CISF
-assertions fail it is like a canary dying.
+tell you it is so by staying alive. If Cisf
+assertions fail, it is like a canary dying.
 Something is wrong. A Canary stopped singing.
 
 Putting Canaries into a coalmine is an
-investment, it takes effort to put
-them there and you need to feed them.
+investment, there is a cost associated
+with it.
 But it is a small investment compared
 to the cost of detecting that something
 is wrong too late.

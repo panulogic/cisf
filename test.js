@@ -20,6 +20,7 @@
 
 
 testCisf ();
+
 function testCisf ()
 {
   let cisf;
@@ -246,7 +247,7 @@ function isEq ()
 
 // eq() also tests neq() which is simply the negation of eq().
 function eq ()
-{ let {fails, ok, eq, neq} = this;
+{ let {fails, ok, not, eq, neq, isEq, isNeq} = this;
 
   eq () ; // if both args are undefined they are equal
   fails (_=> eq(1));
@@ -266,8 +267,23 @@ function eq ()
   fails (_=> eq([1], [2]));
   fails (_=> eq([1], 1));
 
-  eq([1,2,3], [1,2,3]);
-  eq([1,[2,[3]]], [1,[2,[3]]]);
+
+not ([1,2,3] === [1,2,3]);
+
+eq  ([1,2,3], [1,2,3]);
+ok  (isEq ([1,2,3], [1,2,3]));
+
+neq (       [1,2,3], [1,2]  );
+ok  (isNeq ([1,2,3], [1,2]));
+
+eq  ( [1,[2,[3]] ]
+		, [1,[2,[3]] ]
+		);
+
+not  ({} == {}      );
+eq   ({}    , {}    );
+neq  ({}    , {a:{}});
+eq   ({a:{}}, {a:{}});
 
  let ob =
  { a: {b: [1,2, {c:3}]}
@@ -281,8 +297,10 @@ function eq ()
 
  eq (ob, ob2);
  eq (ob2, ob);
- fails (_=> eq(ob,ob3 ));
- fails (_=> eq(ob2,ob3));
+ fails (_=> eq (ob,ob3 ));
+ fails (_=> eq (ob2,ob3));
+
+ neq (ob,ob3)
 
  eq (new Object(), new Object());
  // Because they must have all the same fields
@@ -447,10 +465,8 @@ ok (c === 2);
 	AExample ("yeah", 123);
 	fails (_=> AExample ("yeah", "BAD"));
 
-
   A     (        ["", 1], "good", 123   );
   fails (_=> A ( ["", 1], "good", "BAD" ));
-
 
   let [types, values]
   =  A ( [1, StringOrNull ]
@@ -459,9 +475,12 @@ ok (c === 2);
 
   eq  (values, [1,  "abc"]);
   neq (types, [1, StringOrNull] );
-  // Above neq() because the 1 has by now
-  // been converted to Type(Number).
-  ok  (types[0].name === "Type(Number)" );
+  // Above neq() because the 1 has
+  // been replaced by Type(Number)
+  // in 'types'.
+
+  ok  (types[0].name === "Type(1)" );
+    StringOrNull = Type (String, null);
 
   A ( [1, StringOrNull ]
     , 1,  null
@@ -471,18 +490,12 @@ ok (c === 2);
     , 1   // nulltype accepts undefined
     );
 
-
- [types, values] = fails
+ fails
  ( _=>
    A ( [1, StringOrNull ]
      , 1,  321
      )
  );
-
-eq (values, [1,  321]);
-ok (types[0].name === "Type(Number)");
-ok (types[1].name === "Type(String, null)"  );
-
 
               A([Number, String], 123, "123");
    fails (_=> A([Number, String], 123, 123  ));
@@ -493,7 +506,6 @@ ok (types[1].name === "Type(String, null)"  );
    */
    A([ [Number] ], [555] );
    A([ [0]    ]  , [555] );
-
    return;
 
 /*
@@ -539,8 +551,9 @@ function Type ()
   //  TYPES' NAME IS THEIR SERIALIZATION:
 
   let A3b = Type( [[[ 1 ]]] ) ;
-  ok (A3b.name === "Type([Type([Type([Type(Number)])])])" );
-  let GetBack     = Type([Type([Type([Type(Number)])])]);
+
+  ok (A3b.name === "Type([Type([Type([Type(1)])])])" );
+  let GetBack     = Type([Type([Type([Type(1)])])]);
   ok (GetBack.name  ===  A3b.name );
 
 /*
@@ -552,23 +565,183 @@ exactly same type to use in their own applications.
  */
 
 
+/* ==================================
+   TRUTHY TYPE
+ */
+
+let TT = Type (true);
+
+x (-1  , TT)
+x ("s" , TT)
+x (true, TT)
+x ({}  , TT)
+x (x   , TT)
+
+fails (_=> x (0    			, TT));
+fails (_=> x (""   			, TT));
+fails (_=> x (false			, TT));
+fails (_=> x (null 			, TT));
+fails (_=> x (undefined, TT));
+
+// Because x() converts its
+// 2nd arg to type when it's not
+// the next will work also:
+
+x (-1  , true);
+x ("s" , true);
+x (true, true);
+x ({}  , true);
+x ([]  , true);
+x (x   , true);
+
+fails (_=> x (0    		 , true));
+fails (_=> x (""   		 , true));
+fails (_=> x (false		 , true));
+fails (_=> x (null 		 , true));
+fails (_=> x (undefined, true));
 
 
 /* ==================================
-   ATOMIC TYPES
+   FALSY TYPE
+ */
+let FT = Type (false);
+
+x (0    , FT);
+x (""   , FT);
+x (false, FT);
+x (null , FT);
+x (undefined, FT);
+
+fails (_=> x (1     , FT));
+fails (_=> x ("s"   , FT));
+fails (_=> x (true  , FT));
+fails (_=> x ({}    , FT));
+fails (_=> x (x     , FT));
+
+
+// Because x() converts its
+// 2nd arg to type when it's not
+// the next must work also:
+
+x (0    		, false);
+x (""   		, false);
+x (false		, false);
+x (null 		, false);
+x (undefined, false);
+
+fails (_=> x (1     , false));
+fails (_=> x ("s"   , false));
+fails (_=> x (true  , false));
+fails (_=> x ({}    , false));
+fails (_=> x ([]    , false));
+fails (_=> x (x     , false));
+
+
+/* ==================================
+   REGEXP TYPE
+   Using a RegExp as a typer-specifier
+   creates a type whose members are all the
+   strings which match the regexp.
+ */
+
+let BT = Type (Boolean);   // just checking
+x(true, BT);
+x(false, BT);
+fails(_=> x(1, BT));
+
+//     'a' < 'b'
+
+ let HasA = Type (/A/);
+
+ x ('A'  , HasA);
+ x ('bAb', HasA);
+ fails(_=> x ('a' , HasA));
+ fails(_=> x ('bb', HasA));
+ fails(_=> x (''  , HasA));
+
+// Using implicit type-creation:
+ x ('A'  , /A/);
+ x ('bAb', /A/);
+ fails (_=> x ('a' , /A/));
+ fails (_=> x ('bb', /A/));
+ fails (_=> x (''  , /A/));
+
+// Using RegExp flags:
+ x ('A'  , /a/i);
+
+x (5, /\d/);
+fails (_=> 5 . match(/\d/));
+
+
+/* ==================================
+   BIGGER OR EQUAL TYPE
+
+*/
+x     ( 0, 0);
+x     ( 0.001, 0);
+fails (_=> x ( -0.001, 0));
+
+
+Number(5) >  1;
+x (new Number(5), 1) ; // 5 is >= 1
+
+fails(_=> x (new Number(5), 7));
+fails(_=> x (5, 7));
+
+
+x (new Number(5), 5) ;   // 5 is>= 5
+x (6, 5) ; // 6 is >= 5
+x (5, 5) ; // 5 is >= 5
+
+let smallPositiveReal = 0.0001;
+
+// 0 or bigger:
+x (0, 0);
+x (smallPositiveReal + 0, 0);
+
+// Positive or Negative numbers?
+// Must use combination of booleans
+// but that is easy with ok() and
+// built-in JavaScript logical operators:
+
+ok ( 0.1 === 0 || 0.1 > 0);
+ok ( 0   === 0 || 0   > 0);
+
+
+
+
+/* ==================================
+   STARTS WITH TYPE
+
 */
 
-  let NumberYes = Type (123);
-  x (111, NumberYes);
+
+ // next will work because
+ // because every string has "" as prefix
+
+  x ("abc", "");
+  x ("abc", "a");
+  x ("abc", "ab");
+  x ("abc", "abc");
+
+  fails (_=> x ("Abc", "a"));
+  fails (_=> x ("", "a"));
+
+
+// ------------------- MISC: ----------------------
+
+
 
   // interperting 1 as a type means it is
   // a SHORTHAND for its constructor in the
   // context where a type is expected.
 
- // Since 3.1.2 this also works:
+  // Since 3.1.2 this also works:
   x( 111, 5);
-  // and:
+  // but since 4.x it works for a different reason,
+  // it works because 111 >= 5
   ok (is( 111, 5));
+
   ok (is(new Number(111), 5));
 
   // But not everything can be turned into a type:
@@ -583,21 +756,12 @@ exactly same type to use in their own applications.
 
    let S2 = Type ("abc");
    ok (S2 !== String);
-   x (123  , Type(1));
-   x ( true, Type(false));
-   x ( "a" , Type("b"));
+   x (123  , Type(1)); // 123 >= 1
 
-   // Note this applies only to
-   // unboxed numbers, unboxed strings and
-   // unboxed booleans, not to BOXED Numbers
-   // Strings or anything that is instacneof
-   // Object.
-   //
-   // This is simply a shorthand. We dont apply
-   // the same shorthand to objects because
-   // for them {} and [] have special meaning
-   // already and every Function is a type of
-   // its own already.
+   x ( true, Type(true));
+   fails (_=> x ( "a" , "b" ));
+   fails (_=> x ( "a" , "A" ));
+   x ( "Abc" , "A" );
 
 
 /* ==================================
@@ -670,48 +834,6 @@ x ("abc" , String);
   ST2 = Type (ST, ST);
   not (ST === ST2);
 
-  let sCount=0, nCount=0, st, st2;
-
-  for (let j=0; j<100; j++)
-	{ st  = new ST ();
-	  if (is (st, String))
-		{ sCount++;
-		  continue;
-		}
-		if (is (st, Number))
-		{ nCount++;
-		  continue;
-	  }
-	  debugger
-		err ("Error in test"); // beware not to call err() which is part of the test
-	}
-  ok (sCount + nCount === 100);
-  ok (sCount); // if its 0 you won a cosmic jackpot
-  ok (nCount); // if its 0 you won a cosmic jackpot
-
-  // Next the same but with ST2. But really they
-  // are ther same types internally because when
-  // the type is created the comp-types are resolved
-  // already.
-
-  sCount=0, nCount=0;
-  for (let j=0; j<100; j++)
-	{ st  = new ST2 ();
-	  if (is (st, String))
-		{ sCount++;
-		  continue;
-		}
-		if (is (st, Number))
-		{ nCount++;
-		  continue;
-		}
-		err ("Error in test")
-	}
-
-  ok (sCount + nCount === 100);
-  ok (sCount); // if its 0 you won a cosmic jackpot
-  ok (nCount); // if its 0 you won a cosmic jackpot
-
 
 /* ==================================
    NULL TYPES
@@ -741,18 +863,33 @@ a value of a specific type:
 /* ==================================
    FUNCTION TYPES
  */
-  let  FT = Type ( () =>  [String, Number, String] );
-  // Above describes a function which take 2 arguments
-  // a String and a Number, and returns a String;
 
-  ok (is (()=> "result", FT) );
-  ok (   (()=> "result") instanceof  FT);
+// A Type that describes a function which
+// take 2 arguments String and Number, and
+// returns a Boolean:
 
-  let ft = new FT ();
+const FunkSNB
+= Type ( () => [String, Number, Boolean] );
+
+let funk = (a,b) => true;
+x (funk, FunkSNB);
+
+let funk2 = () => false;
+x (funk2, FunkSNB);
+
+let funk3 = () => 123 ;
+not (is (funk3, FunkSNB));
+
+ok ( (()=> false) instanceof  FunkSNB);
+
+
+  let ft = new FunkSNB ();
   ft();
-  ok (is (ft, FT) );
-  ok (is (ft()     , String));
-  ok (is (ft(1,2,3), String));
+  ok (is (ft, FunkSNB) );
+
+
+  ok (is (ft()     , Boolean));
+  ok (is (ft(1,2,3), Boolean));
 
 
 
@@ -774,7 +911,26 @@ a value of a specific type:
 
 */
 
-  function odd_p (n)
+function odd_p (n)
+{ if (! arguments.length)
+	{ return 7;
+	}
+	if ( Math.abs (n % 2) === 1 )
+	{ return true;
+	}
+}
+
+let Odd = Type (odd_p);
+x   (1     , Odd);
+x   (-1    , Odd);
+not (is(2  , Odd))
+not (is(-2 , Odd))
+not (is(0  , Odd))
+not (is(1.5, Odd))
+
+
+
+  function odd_p2 (n)
   { if (! arguments.length)
     { return example ();
     }
@@ -784,14 +940,14 @@ a value of a specific type:
 
     function example ()
 		{ let max    = Math.floor (Number.MAX_SAFE_INTEGER / 2)  ;
-		  let bigOdd =  max  * 2 - 1 ;
+		  let bigOdd2 =  max  * 2 - 1 ;
 
 		  let it  = rix (max) * 2 - 1 ;
 
 		  if (rix(9) > 4)
 			{ // it is important that edge-cases
 			  // get testing in a limited test-run.
-				it =  [bigOdd, 1,3,5,7,9,11,13,15,17] [rix(9)];
+				it =  [bigOdd2, 1,3,5,7,9,11,13,15,17] [rix(9)];
 			}
 
       // beware rix returns a random index into
@@ -813,15 +969,15 @@ a value of a specific type:
     }
 	}
 
-  let Odd  = Type (odd_p);
-  ok (Odd.name === "Type(odd_p)");
+  let Odd2  = Type (odd_p2);
+  ok (Odd2.name === "Type(odd_p2)");
 
-	let anOdd = new Odd ();   // boxed number
-	let value = anOdd.valueOf();
+	let anOdd2 = new Odd2 ();   // boxed number
+	let value = anOdd2.valueOf();
 	ok (value % 2 === 1 || value % 2 === -1 );
 
-	ok  (is (anOdd, Odd));
-	ok  (is (value, Odd));
+	ok  (is (anOdd2, Odd2));
+	ok  (is (value, Odd2));
 
 	// BEWARE: It does not make a predicate-type
 	// if the argument of Type() is a NAMELESS
@@ -849,37 +1005,39 @@ a value of a specific type:
    as predicate types in Cisf.
  */
 
-  function biggerThan ($y=0)
-	{ return isBigger;
+	// If first arg is undefined then the
+	// predicate-function of every predicate
+	// type must return a value that is an
+	// instance of the type. We will then
+	// internally TEST that it is indeed an
+	// instance of that type. This way we can
+	// give this predicate-type some internal
+	// integrity testing. This is a bit like
+	// saying that new Number() must return
+	// SOME default number even if you did
+	// not say which one.
 
-		function isBigger (x)
-		{ if (x === undefined )
-			{  return $y + 1;
-				// If first arg is undefined then the
-				// predicate-function of every predicate
-				// type must return a value that is an
-				// instance of the type. We will then
-				// internally TEST that it is indeed an
-				// instance of that type. This way we can
-				// give this predicate-type some internal
-				// integrity testing. This is a bit like
-				// saying that new Number() must return
-				// SOME default number even if you did
-				// not say which one.
-			}
-			return x > $y;
+
+function biggerThan ($y=0)
+{ return isBigger;
+
+	function isBigger (x)
+	{ if (x === undefined )
+		{  return $y + 1;
 		}
+		return x > $y;
 	}
+}
 
-	testDependentType (1, 2);
-	fails (_=> testDependentType (1, 1));
-	fails (_=> testDependentType (2, 1));
+					 funkUsingDependentType (1, 2);
+fails (_=> funkUsingDependentType (1, 1));
+fails (_=> funkUsingDependentType (2, 1));
 
 
-  function testDependentType (a, b)
-	{ let BiggerThanA = Type (biggerThan(a));
-	  x (b, BiggerThanA);
-	}
+function funkUsingDependentType (a, b)
+{ let BiggerThanA = Type (biggerThan(a));
+	x (b, BiggerThanA);
+}
 
 
 /* ==================================
@@ -893,15 +1051,14 @@ a value of a specific type:
    field in the spec.
  */
 
-  let XObType = Type ({x: 1});
+let XOb = Type ({x: 2});
 
-  ok (is ({x:777} , XObType));
-  x  ({x:777}     , XObType);
+ok  (is ({x: 777}  , XOb));
+x   ({x: 777}      , XOb );
 
-  not (is ({x:"abc"}, XObType));
-  not (is ({x:null} , XObType));
-  not (is ({y:777}  , XObType));
-
+not (is ({x: "abc"}, XOb));
+not (is ({x: null} , XOb));
+not (is ({Z: 777}  , XOb));
 
 let OT = Type ({a: Number, b: Type(String, null)});
 ok (OT.name === "Type({a: Type(Number), b: Type(String, null)})" );
@@ -931,7 +1088,7 @@ let OB3 = Type
   }
 );
 ok (OB3.name ===
-    "Type({a: Type({b: Type({c: Type(Number)})})})"
+    "Type({a: Type({b: Type({c: Type(1)})})})"
    );
 x ({a: {b: {c: 77}}}, OB3);
 
@@ -982,15 +1139,21 @@ fails (_=> Type (new Number(5) ));
 
 x ( [1, "A"],  [String, Number] );
 
-  let NA  = Type ([Number]);
-  ok (NA.name = 'Type([Number])');
+  const  NArr = Type ([Number]);
+  ok  ([1]      instanceof NArr);
+  not (["a"]    instanceof NArr);
 
-  let NA2  = Type ([1]);
+  ok  ([1,2,3  ] instanceof NArr);
+  not ([1,2,"3"] instanceof NArr);
+  ok  ([]        instanceof NArr);
+
+
+
+  ok (NArr.name = 'Type([Number])');
+
+  const NA2  = Type ([1]);
   ok (NA2.name = 'Type([Number])');
 
-  ok  ([1]       instanceof NA);
-  ok  ([1,2,3]   instanceof NA);
-  not (["a,b,c"] instanceof NA);
 
   let StringOrNullArr  = Type ([String, null]);
   ok (StringOrNullArr.name = 'Type([String,null])' );
@@ -1026,12 +1189,14 @@ ok ([[5]] instanceof A2);
 
 
 let A3 = Type( [[[ 1 ]]] ) ;
-ok (A3.name === "Type([Type([Type([Type(Number)])])])" );
+ok (A3.name === "Type([Type([Type([Type(1)])])])" );
 
 A3 = Type( [[[ 1, "", false ]]] ) ;
+
 ok (A3.name ===
-    "Type([Type([Type([Type(Number), Type(String), Type(Boolean)])])])"
+    "Type([Type([Type([Type(1), Type(``), Type(false)])])])"
     );
+
 ok ([[[5]]] instanceof A3);
 
 ok (
@@ -1073,9 +1238,9 @@ fails
  LEGACY MISC TESTS:
 */
 
-  not (is(2, Odd ));
+  not (is(2, Odd2 ));
 
-fails (()=> x(2, Odd));
+fails (()=> x(2, Odd2));
 
   let NumberOrString  = Type (Number, String);
 
@@ -1245,10 +1410,11 @@ function x ()
   // 2nd argument of x(). This is how they
   // behave with Type() too.
 
-  x (0, 1)
-  x ("s", "")
-  x (true, false)
-  x (new Number(5), 1);
+  // NO MORE: x (0, 1)
+  // The shorthands were confusing
+  // 0 is not 1
+
+
   // That makes it unnecessary to type Number and
   // String too many times.
 
@@ -1261,11 +1427,12 @@ function x ()
 
   x (""   , String);
   x (0    , Number);
-  x (false, Boolean);
-  // So the above can be said shorter:
+  // The above can be said shorter this
+  // shorthand can be used  only for
+  // with atomic strings and numbers
+  // as type:
   x (""   , ""   );
   x (0    , 0    );
-  x (false, false);
 
 
   // When x() is called with a SINGLE ARGUMENT
@@ -1463,16 +1630,26 @@ Using err() gives YOU the control of
 
 /* ----------------------------------------- */
 
+/**
+ ok() throws an error iff
+ it is called with argument
+ which is "falsy".
+*/
+
+
 function ok( )
-{ let ok = this.ok, not=this.not, fails=this.fails, x=this.x;
+{ let ok = this.ok, is=this.is, not=this.not, fails=this.fails
+    , x=this.x, Type=this.Type, isNot=this.isNot;
+
   ok (true);
   ok ("non-empty string");
   ok (1);
   ok ({});
   ok ([]);
-  ok (ok (true) === true) ;
-  ok (ok ("non-empty string") === true);
-  ok (ok (1) === true) ;
+
+  ok ("non-empty string") ;
+  ok (1)   ;
+
   fails ( _ => ok()          );
   fails ( _ => ok(undefined) );
   fails ( _ => ok(false));
@@ -1480,15 +1657,48 @@ function ok( )
   fails ( _ => ok(null) );
   let v = 4;
   let e = fails( e =>  ok(v%2, "v must be odd"));
-  ok (e .toString().includes ("v must be odd"));
+  x (e , Error);
+
+  ok ( ok instanceof Function);
+  ok ( ok instanceof Object);
+
+
+let e33 =
+fails ( _=> "s".noSuch());
+
+ok ( fails ( _=> "s".noSuch())
+     instanceof Error
+   );
+
+ok (is (2, Number) );
+ok (x(2, Number) === 2);
+
+fails(_=>  x("s", Number));
+
+
+fails (_=> fails ( _=>  123 ));
+
+fails (_=> not (ok  ("")));
+
+ok  (ok);
+ok  (is (ok, Function));
+not (is (ok, String)  );
+
+ok  (is (is,  Function));
+ok  (is (not, Function));
+
+const SorN = Type (String, Number);
+not ( is(true, SorN) );
+
+ok (isNot ("s", Number));
+
+
+const  MaybeError = Type(Error, null);
+
+not ( is (0, MaybeError));
   return;
 }
 
-/**
- ok() throws an error iff
- it is called with argument
- which is "falsy".
-*/
 
 /* ----------------------------------------- */
 
@@ -1505,14 +1715,13 @@ function not( )
   [ 0, 1, 5, "", "s", true, false, null, undefined
   ] .map
   ( b =>
-  {
-  try {ok (b)} catch (e)
-  { ok (not (b) === true);
-  }
-  try {not (b)} catch (e)
-  { ok (ok (b) === true);
-  }
-  }
+    { try {ok (b)} catch (e)
+      {  not (b)  ;
+      }
+      try {not (b)} catch (e)
+      {  ok (b)  ;
+      }
+    }
   );
 }
 
@@ -1572,3 +1781,4 @@ function fails()
 
 // Copyright 2018 Class Cloud LLC
 }
+

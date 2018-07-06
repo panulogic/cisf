@@ -1,5 +1,5 @@
 /* =========================================
-   cisf.js v. 3.1.5
+   cisf.js v. 4.0.0
 
    Copyright 2018 Class Cloud LLC
 
@@ -32,7 +32,7 @@
 
 "use strict"
 
-let CISF_VERSION = "3.1.5" ;
+let CISF_VERSION = "4.0.0" ;
 
 let path, fs, Path, Fs;
 if (typeof require === "function") // in the browser it is not
@@ -804,19 +804,176 @@ function _PredicateType ($predicateFunk )
 
 
 
+function _TruthyType (   )
+{
+  return  class  TruthyType extends $SuperType
+  {
+    static [Symbol.hasInstance] (value)
+    { if (value)
+			{ return true;
+			}
+			return false;
+    }
+
+
+    static init ()  // of TruthyType
+    {
+      let typeName =  this + "" ;    ;
+      zet (this, 'name', typeName, "force");
+      return this;
+		}
+
+    static toString ()
+    {  return `Type(true)`;
+		}
+
+  } .init();
+
+  }
+
+function _FalsyType (   )
+{
+  return  class  FalsyType extends $SuperType
+  {
+    static [Symbol.hasInstance] (value)  // of  FalsyType
+    {
+       if (value)
+			 { return false;
+			 }
+			 return true;
+    }
+
+    static init ()  // of FalsyType
+    {
+      let typeName =  this + "" ;
+      zet (this, 'name', typeName, "force");
+      return this;
+		}
+
+    static toString ()
+    {  return `Type(false)`;
+		}
+
+  } .init();
+
+  }
+
+function _RegType (  $reg  )
+{
+  return  class  RegType extends $SuperType
+  {
+    static [Symbol.hasInstance] (value)
+    { let reg = $reg;
+      value = value + "";
+
+     if (value.match (reg))
+			{ return true;
+			}
+			return false;
+    }
+
+
+    static init ()  // of TruthyType
+    { let typeName =  this + "" ;    ;
+      zet (this, 'name', typeName, "force");
+      return this;
+		}
+
+    static toString ()
+    { let reg = $reg;
+      return `Type(${reg})`;   // ->  Type(/a/) etc.
+		}
+
+  } .init();
+
+  }
+
+function _StartsWithType (  $prefix  )
+{
+  return  class  StartsWithType extends $SuperType
+  {
+    static [Symbol.hasInstance] (value)
+    { let prefix = $prefix;
+      value = value + "";
+      if (value.match (prefix))
+			{ return true;
+			}
+			return false;
+    }
+
+    static init ()  // of TruthyType
+    { let prefix   = $prefix;
+      let typeName =  this + "" ;    ;
+      zet (this, 'name', typeName, "force");
+      return this;
+		}
+
+    static toString ()
+    { let prefix = $prefix;
+      if (prefix === "")
+			{ prefix = "``"
+			}
+      let s =  `Type(${prefix})`;   // ->
+      return s;
+		}
+
+  } .init();
+
+  }
+
+function _BiggerOrEqualType (  $n  )
+{
+  return  class  BiggerOrEqualType extends $SuperType
+  {
+    static [Symbol.hasInstance] (value)
+    { let n = $n;
+     if (value >= n)
+			{ return true;
+			}
+			return false;
+    }
+
+
+    static init ()  // of TruthyType
+    { let typeName =  this + "" ;    ;
+      zet (this, 'name', typeName, "force");
+      return this;
+		}
+
+    static toString ()
+    { let n = $n;
+      let s =  `Type(${n})`;   // ->  Type(/a/) etc.
+      return s;
+
+		}
+
+  } .init();
+
+  }
+
 function _AtomicType ( $atomicCtor )
 {
-  if (  $atomicCtor === null || $atomicCtor === undefined  )
-  { // this only happens because our test calls
-    // 	fails (()=> Type (undefined));
-	}
+    if ( $atomicCtor === true)
+		{ return _TruthyType()
+		}
+    if (  $atomicCtor === false)
+		{ return _FalsyType()
+		}
 
-  x ($atomicCtor);
+    if ( typeof $atomicCtor === "string")
+		{ return _StartsWithType($atomicCtor)
+		}
+    if ( typeof $atomicCtor === "number")
+		{ return _BiggerOrEqualType($atomicCtor)
+		}
+
   if (typeof $atomicCtor !== "function")
-  { $atomicCtor = $atomicCtor.constructor;
+  { // this should not happens any more?
+    // Well we come here when testing
+    // fails (()=> Type (undefined));
+    err (`Invalid type=-specifier: ${$atomicCtor}`);
 	}
 
-  // what is Type? That was the bug it is _Type:
   return  class  AtomicType extends $SuperType  // Type
   {
     constructor ( value  )
@@ -1168,11 +1325,6 @@ let readyTypes =
     $compTypes.map
     ( et =>
       {
-
-        if (et === 1)
-        {
-        }
-
         if (et === null)
         { let NullType = _NullType ();
           return NullType;
@@ -1214,36 +1366,35 @@ let readyTypes =
         { return et;
         }
 
-if (et === null || et === undefined)
-{
-	debugger
-}
-
         if (typeof et !== "object")
         { return _AtomicType (et);
         }
-
 
         if (et .constructor === Array)
         { let ArrayType = _ArrayType ( et);
           return ArrayType;
         }
-        if (et .constructor === Object)
+        if (et.constructor === Object)
         { let ObjectType = _ObjectType ( et);
           return ObjectType;
         }
 
+        if (et.constructor === RegExp)
+				{ let RegType = _RegType ( et);
+          return RegType;
+				}
+
+
         err
-        (`In valid Type -argument:  
+        (`Invalid Type -argument:  
           ${et}. 
-          Check the documetnation of 
-          cisf.Type() for what can be
-          its valid arguments.
+          Check the documentaion of 
+          cisf.Type() for what can
+          be used as its argument.
          `
         );
       }
     );
-
 
     if (readyTypes.length === 1)
     {  let OBT  = readyTypes[0];
@@ -1251,12 +1402,10 @@ if (et === null || et === undefined)
          && OBT  !== String
          && OBT  !== Boolean
          )
-       { // but this is fine it should be wrappere into atomic type already
+       { // but this is fine it should be wrapped into atomic type already
           return  OBT;
        }
     }
-
-
 
     this [DATA] . compTypes = readyTypes ; // $compTypes;
     // the aboe is not enough because we still use the scope variable
@@ -1449,12 +1598,12 @@ function cisfRequire  (path)
   return imports;
 }
 
-function ok
+function ok_XXXXXXXXXX
 ( aBoolean=false, msg="ok() failed"
 )
 { if (aBoolean)
- { return true;
- }
+  { return true;
+  }
 	 var loc = new Error("ok() failed").stack ;
 
 	var em   = `
@@ -1465,7 +1614,7 @@ function ok
 	err   (em);
 }
 
-function not  (aBoolean=false, msg )
+function not_XXXXXXXX  (aBoolean=false, msg )
 { if (aBoolean)
 		{ // var loc = getCallingLine();
 			// getCallingLine() could not work on the browser.
@@ -1475,6 +1624,15 @@ function not  (aBoolean=false, msg )
 		}
 	return true;
 }
+
+
+    function ok (arg)
+    { x(arg, true);
+    }
+
+    function not (arg)
+    { x(arg, false);
+    }
 
 function is (value, ... types)
 { let b = false;
@@ -1522,7 +1680,7 @@ function x (value, ... typesArg)
   { // x() called with a single argument, it
     // can be anything except null or undefined.
     if (value === null || value === undefined)
-    { err (`x() called with null or undefined as the its argument.`);
+    { err (`x() called with null or undefined as first argument.`);
     }
     return value;
   }
@@ -1556,35 +1714,43 @@ typesArg.map
 let em =
 `x() type-check failed. 
 The 1st argument in 
-x (${value}, ${typeNames})
+x (${value}, ${typeNames[0]}, ${typeNames[1]} ...)
 is not an instance of  
 any of the rest.
 .
 `;
 
-err (em); // shoudl throw but juts in case it does not:
-throw em;
 
-
-
+err (em);
 }
 
 function typeFromSpec (type)
 {
-		let T =  Type(type);
-		return T;
+	let T =  Type (type);
+	return T;
 }
 
 
   function xSingle (value, type )
   {
+     if (type === true || type === false)
+		 { // It means the Truthy or Falsy type
+		   type = Type (type);
+		 }
+     if (typeof type === "string"
+       || typeof type === "number"
+        )
+		 { // It means StartsWithType or BiggerOrEqualType
+		   type = Type (type);
+		 }
 
+/*
     if (type === undefined )
 		{  throw new Error
 		   ('cisf.x() type-error, type === undefined'
 		   );
 		}
-
+*/
     try
     {
       if (value instanceof type)
@@ -2104,11 +2270,9 @@ function A (typesArray, ... values)
 		   corresponding Type in the 1st
 		   argument which must be an Array. `
 		 );
-
 	 }
 	 if (exampleTypes.length > values.length + 2 )
-	 { debugger
-	   err
+	 { err
 		 (`In cisf.A(typesArray, ...values)
 		   -call the typesArray has more than 2
 		   more elements than there are values
@@ -2116,19 +2280,15 @@ function A (typesArray, ... values)
 		  `
 		 );
 	 }
-
   values.map
   ( (v, j, all) =>
     { let eType  = exampleTypes[j];
-
 			if (is (v, eType))
       { return; // from map()
 			}
       throw [exampleTypes, values] ;
-
     }
   );
-
   return [exampleTypes, values];
 }
 
