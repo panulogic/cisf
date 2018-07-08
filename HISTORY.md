@@ -5,7 +5,29 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
-#### v. 4.0.0:
+##### v. 4.0.1: Better log()
+
+The API-function log() prefixes its output
+with a time-stamp which helps to
+see how long some operations take.
+
+In 4.0.1 the format of the time-stamp
+is changed so the milliseconds-part
+is no longer separated by a space but
+by ':' like the other parts of the
+time-stamp.
+
+This makes it clearer that the milliseconds
+are part of the time-stamp, not part of the
+message being logged.
+
+The log-entries now look like this:
+
+    13:52:10:684 Test-method log() executed
+
+
+#### v. 4.0.0: Truthy and Falsy Types
+
 This version does away with the "shorthand types"
 for Number String and Boolean. They were confusing
 because they statements like:

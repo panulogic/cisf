@@ -1,6 +1,6 @@
-/* =========================================
-   cisf.js v. 4.0.0
+let CISF_VERSION = "4.0.1" ;
 
+/* =========================================
    Copyright 2018 Class Cloud LLC
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,6 @@
 
 "use strict"
 
-let CISF_VERSION = "4.0.0" ;
 
 let path, fs, Path, Fs;
 if (typeof require === "function") // in the browser it is not
@@ -1184,10 +1183,7 @@ function _Type (... $compTypes )
 
     constructor ( value )     // of SumType
     {
-if (! (this.constructor [DATA])  )
-{
-  debugger
-}
+
 
       let COMPS = this . constructor [DATA] . compTypes ;
       // do nmot realy o9n scpop[e variable which is
@@ -2193,18 +2189,26 @@ function deepCopy (ob, level=0)
     { msg = "" + msg;
     }
 
-    msg = msg.replace (/<\w+>/, "");
-    msg = msg.replace (/<\/\w+>/, "");
+//    msg = msg.replace (/<\w+>/, "");
+//    msg = msg.replace (/<\/\w+>/, "");
+//
+// Above removed html tags. But really let
+// the caller do that if they want to, maybe
+// they want to outpu html to the log.
+// Less sueprises is better
 
-    // var s =  trimLineBeginnings (msg + ``) .slice(0,377);
     var s =  trimLineBeginnings (msg + ``); //  .slice(0,2048);
 
     let date = new Date();
     let ms =  date.getMilliseconds();
     if (ms.length === 1) ms = "00" + ms;
     if (ms.length === 2) ms = "0" + ms;
-    let s2 = date. toLocaleTimeString() +   " "
+    let s2 = date. toLocaleTimeString() +   ":"
               + ms  + " "  + s ;
+    // news ms is separated by as well
+    // so it is more clearly part of the
+    // time-stamp, NOT part of the message.
+
     console.log (s2);
     return s2;
   }
