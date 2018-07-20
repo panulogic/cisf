@@ -4,6 +4,13 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+##### v. 4.0.3:  Link to online documentation
+
+The presentation given at NYC Node.js
+summit July 18 2018 is now online at:
+https://panulogic.github.io/cisf/doc/index.htm
+
+
 
 ##### v. 4.0.2: Refactored Type-Tests
 
