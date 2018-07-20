@@ -1,4 +1,4 @@
-# Cisf 4
+# Cisf 4.0.2
 
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites
@@ -35,6 +35,7 @@ See documentation of w().
 ##### USAGE:
 
     let { ok, not, x, fails, eq, neq, A, Type,
+          is, isNot, isEq, isNeq
           log, err, r, path, fs, r, w
         } = require ("cisf");
         

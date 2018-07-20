@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.0.1" ;
+let CISF_VERSION = "4.0.2" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -200,14 +200,43 @@ function CISF_inner  ()
  // no need
  // to remember to use the flag or know what it means.
 
-let reg     = new RegExp (anArray, anArray.flags + 'g');
+
+let reg    ;
+try {
+reg = new RegExp (anArray, anArray.flags + 'g');
 // Means user does not need to add the g-flag we do.
 // Without it the loop below could produce only one match ever.
+} catch (e)
+{
+	console.log(e);
+  reg = anArray;
+  // Creating a new RegExp with different flags
+  // does NOT work on Edge. This just means that
+  // when using w() with a regexp you should put the
+  // g-flag in there yourself else it will
+  // find only one match, on the Edge-browser.
+  let e2 = new Error (
+`KNOWN ISSUE: Do not use
+cisf.w(aRegExp)
+on Edge, causes:
+${e}  
+` );
+   throw e2;
+   // Better to give a clear error-message.
+}
+
+
 let s       = mapArgs[0];
 let matches = [];
-
+let j = 0 ;
 while (true)
-{ let m =  reg.exec (s);
+{ j++;
+  if (j > 999)
+	{ console.log (`Found more than 999 RegExp matches, returning only 999`);
+	  // This happens on Edge.
+	  return matches;
+	}
+  let m =  reg.exec (s);
   if (m)
 	{ matches.push(m);
 	} else

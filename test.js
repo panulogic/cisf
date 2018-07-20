@@ -113,7 +113,7 @@ function w ()  // w for 'wrapper'
   eq (w(a).map (e=>e+1), [2,3,4]);
 
 
-  // MAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
+  // WRAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
   let ob  = {a:22, b: 33};
   let kvs = w(ob).map
   ( key  =>  key + ob[key]
@@ -121,21 +121,19 @@ function w ()  // w for 'wrapper'
   eq (kvs, ["a22", "b33"]);
 
 
-
-  // MAP A STRING TO LOOP OVER ITS CHARS:
+  // WRAP A STRING TO LOOP OVER ITS CHARS:
   let asciis = w("ABC").map (e=>e.codePointAt(0));
   eq (asciis, [65, 66, 67]);
 
 
-
-  // MAP A NUMBER TO REPEAT  N times:
+  // WRAP A NUMBER TO REPEAT  N times:
   // (return the indexes as array)
 
   let digits = w(10).map (e=>e);
   eq (digits, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
+
   // WRAP A FUNCTION TO PRODUCE A SERIES:
-  //
 
   let wf     = w (a=>a*10);
   let series = wf.map (5, 3) ; // (firstArg, howManyResults)
@@ -180,8 +178,17 @@ function w ()  // w for 'wrapper'
    , [Number, Number, Number, Boolean, String]
    );
 
+
   // WRAP A REGEXP TO FIND ALL ITS MATCHES.
-  //
+  if (typeof require === "undefined")
+  { // we skip testing  wrapped-RegExps on BROWSERS
+    // because
+    // they dont work on IE.  Better to have something
+    // working on IE than crashing the tests.
+
+    return;
+	}
+
   // The 1st arg to map is a string to
   // find the matches in, not a function.
   // This because regexp kind of is a
@@ -200,6 +207,7 @@ function w ()  // w for 'wrapper'
    // your own algorithm that depends on all
    // matches found and their locations you could
    // not do that simply.
+
 
   let ups  = w ( /[A-Z]+/
                ).map ("Get My UPPer-Case-Letters"
@@ -523,10 +531,6 @@ function Type ()
       } = this;
 
 
-// todo: Below we have sections for testing
-// different types os types. Should create
-// an inner function for each of them to
-// make code better organized.
 
 	let CtorType = Type (String);
 	let ctorT    = new CtorType();
@@ -564,11 +568,14 @@ and whoever gets it can evaluate it and get the
 exactly same type to use in their own applications.
  */
 
-
 /* ==================================
    TRUTHY TYPE
  */
 
+TruthyType ();
+
+function TruthyType ()
+{
 let TT = Type (true);
 
 x (-1  , TT)
@@ -599,11 +606,15 @@ fails (_=> x (""   		 , true));
 fails (_=> x (false		 , true));
 fails (_=> x (null 		 , true));
 fails (_=> x (undefined, true));
-
+}
 
 /* ==================================
    FALSY TYPE
  */
+FalsyType ();
+
+ function FalsyType ()
+ {
 let FT = Type (false);
 
 x (0    , FT);
@@ -635,7 +646,7 @@ fails (_=> x (true  , false));
 fails (_=> x ({}    , false));
 fails (_=> x ([]    , false));
 fails (_=> x (x     , false));
-
+ }
 
 /* ==================================
    REGEXP TYPE
@@ -643,7 +654,10 @@ fails (_=> x (x     , false));
    creates a type whose members are all the
    strings which match the regexp.
  */
+ RegExpType ();
 
+function RegExpType ()
+{
 let BT = Type (Boolean);   // just checking
 x(true, BT);
 x(false, BT);
@@ -671,12 +685,18 @@ fails(_=> x(1, BT));
 
 x (5, /\d/);
 fails (_=> 5 . match(/\d/));
+}
+
 
 
 /* ==================================
    BIGGER OR EQUAL TYPE
 
 */
+BiggerOrEqualType ();
+
+function BiggerOrEqualType ()
+{
 x     ( 0, 0);
 x     ( 0.001, 0);
 fails (_=> x ( -0.001, 0));
@@ -707,6 +727,7 @@ x (smallPositiveReal + 0, 0);
 ok ( 0.1 === 0 || 0.1 > 0);
 ok ( 0   === 0 || 0   > 0);
 
+}
 
 
 
@@ -715,7 +736,9 @@ ok ( 0   === 0 || 0   > 0);
 
 */
 
-
+StartsWithType ();
+function StartsWithType ()
+{
  // next will work because
  // because every string has "" as prefix
 
@@ -726,42 +749,8 @@ ok ( 0   === 0 || 0   > 0);
 
   fails (_=> x ("Abc", "a"));
   fails (_=> x ("", "a"));
+}
 
-
-// ------------------- MISC: ----------------------
-
-
-
-  // interperting 1 as a type means it is
-  // a SHORTHAND for its constructor in the
-  // context where a type is expected.
-
-  // Since 3.1.2 this also works:
-  x( 111, 5);
-  // but since 4.x it works for a different reason,
-  // it works because 111 >= 5
-  ok (is( 111, 5));
-
-  ok (is(new Number(111), 5));
-
-  // But not everything can be turned into a type:
-
-   fails (_=> x("".toString, "".toString) );
-   // above fails for 2 reasons.
-   // 1.  "".toString() is not a predicate function
-   //     because it can not be called wiothout argument
-   //     to return an example instance of it and
-   //  2. And even if it was calling it with itself
-   //     as argumewnt woujld not reurn === true.
-
-   let S2 = Type ("abc");
-   ok (S2 !== String);
-   x (123  , Type(1)); // 123 >= 1
-
-   x ( true, Type(true));
-   fails (_=> x ( "a" , "b" ));
-   fails (_=> x ( "a" , "A" ));
-   x ( "Abc" , "A" );
 
 
 /* ==================================
@@ -773,10 +762,18 @@ ok ( 0   === 0 || 0   > 0);
    types. But you can easily create your own
    constructors or "classes" which can be
    used as "types" as is.
+
+   What we mean by 'ConstructorType' is really
+   a SumType with only one addend.
+
  */
 
+ConstructorType ();
 
-// JS-PROBLEM:
+function ConstructorType ()
+{
+
+// JS-SHORTCOMING IS THIS:
 not (123   instanceof Number);
 not ("abc" instanceof String);
 
@@ -821,24 +818,33 @@ x ("abc" , String);
                     // and all Functions are instances
                     // of Object
 
-
+}
 
 /* ==================================
    SUM TYPES
  */
 
+SumType ();
+
+function SumType ()
+{
   let ST  = Type (String, Number);
   let ST2 = Type (ST);
   ok (ST === ST2);
 
   ST2 = Type (ST, ST);
   not (ST === ST2);
+}
 
 
 /* ==================================
    NULL TYPES
  */
 
+ NullType ();
+
+function NullType ()
+ {
  let NullT = Type(null);
  x (null, NullT);
  x (undefined, NullT);
@@ -859,6 +865,8 @@ a value of a specific type:
 
   fails (_=> x(123, StringOrNull));
 
+  }
+
 
 /* ==================================
    FUNCTION TYPES
@@ -868,6 +876,10 @@ a value of a specific type:
 // take 2 arguments String and Number, and
 // returns a Boolean:
 
+FunctionType ();
+
+function FunctionType ()
+{
 const FunkSNB
 = Type ( () => [String, Number, Boolean] );
 
@@ -890,6 +902,7 @@ ok ( (()=> false) instanceof  FunkSNB);
 
   ok (is (ft()     , Boolean));
   ok (is (ft(1,2,3), Boolean));
+}
 
 
 
@@ -910,6 +923,12 @@ ok ( (()=> false) instanceof  FunkSNB);
 	 when called with it as argument.
 
 */
+
+PredicateType ();
+
+function PredicateType ()
+{
+
 
 function odd_p (n)
 { if (! arguments.length)
@@ -993,31 +1012,26 @@ not (is(1.5, Odd))
 		// return an array of types to tell the
 		// argument- and result-types required
 		// of the instances of that Function-type.
+}
 
 
 /* =====================================
    DEPENDENT TYPES
-   mean type the memebershow of which
+   mean type the members ow of which
    depends on some data expressed outside
    the would-be member.
 
-   You can implement dependent types
-   as predicate types in Cisf.
+   But this is most easily accomplished by
+   creating an inner function that returns
+   a Type whose definition depends on arguments
+   passed to the outer function
  */
 
-	// If first arg is undefined then the
-	// predicate-function of every predicate
-	// type must return a value that is an
-	// instance of the type. We will then
-	// internally TEST that it is indeed an
-	// instance of that type. This way we can
-	// give this predicate-type some internal
-	// integrity testing. This is a bit like
-	// saying that new Number() must return
-	// SOME default number even if you did
-	// not say which one.
 
+DependentType  ();
 
+function DependentType  ()
+{
 function biggerThan ($y=0)
 { return isBigger;
 
@@ -1038,6 +1052,7 @@ function funkUsingDependentType (a, b)
 { let BiggerThanA = Type (biggerThan(a));
 	x (b, BiggerThanA);
 }
+}
 
 
 /* ==================================
@@ -1051,6 +1066,11 @@ function funkUsingDependentType (a, b)
    field in the spec.
  */
 
+
+ObjectType ();
+
+function ObjectType ()
+{
 let XOb = Type ({x: 2});
 
 ok  (is ({x: 777}  , XOb));
@@ -1092,7 +1112,7 @@ ok (OB3.name ===
    );
 x ({a: {b: {c: 77}}}, OB3);
 
-
+}
 
 
 /* ==================================
@@ -1105,7 +1125,10 @@ x ({a: {b: {c: 77}}}, OB3);
 
  */
 
+ArrayType ();
 
+function ArrayType ()
+{
 x ( [1, "A"],  Type ([String, Number]) );
 // Note String and Number in the type are alternative
 // element types, their order does not matter.
@@ -1179,11 +1202,13 @@ not (is ([ [1,2], [null] ], NA2D));
 
 ok ("abc" instanceof  Type(String, null) );
 
-
-
+}
 
 // MULTI-D ARRAYS:
+MultiDArrayType ();
 
+function MultiDArrayType ()
+{
 let A2 = Type( [ [1] ] ) ;
 ok ([[5]] instanceof A2);
 
@@ -1231,16 +1256,105 @@ fails
   A ([String, Number],  ... arr)
 );
 
+}
 
+
+// EQUALS TYPE
+// Equals-type is something which
+// has as its member all values which
+// are equal to a specific value.
+// NOte equal is not the same as  == or ===.
+//
+// We dont' create EqualsType as a
+// Type of its own because you really
+// want to test whether something is
+// a memeber of the type or not and
+// you can do that with eq(), isEq()
+// neq(), isNeq().
+
+EqualsType ();
+
+function EqualsType ()
+{
+eq  ([1,2,3], [1,2,3]);
+neq ([1,2,3], [1,2,3,4]);
+
+ok (isEq  ([1,2,3], [1,2,3  ]));
+ok (isNeq ([1,2,3], [1,2,3,4]));
+}
+
+/* ==================================
+   NON-TYPES
+
+   Calling Type() with no argument creates
+   a type which is nobody's type.
+   It is not very useful but it is possible
+   you might find a use for it.
+
+*/
+
+EmptyType  ();
+
+function EmptyType  ()
+{
+   let NBT = new Type();
+   not (is (123, NBT));   // but we can't test them all
+}
 
 
 /* =====================================
  LEGACY MISC TESTS:
 */
 
-  not (is(2, Odd2 ));
+xMiscTypeTests () ;
 
-fails (()=> x(2, Odd2));
+function xMiscTypeTests ()
+{
+
+	/*
+   You can not call Type with just
+   anything. You have to know what are
+   its valid arguments, see further below
+   the tests for each type of Type you can
+   create. Here are some exaxmples of
+   what you can NOT call Type() with:
+	 */
+	fails (()=> Type (new String() ));
+	fails (()=> Type (new Number() ));
+	fails (()=> Type (new Boolean()));
+	fails (()=> Type (undefined));
+
+
+// ------------------- MISC: ----------------------
+
+
+  // Since 3.1.2 this also works:
+  x( 111, 5);
+  // but since 4.x it works for a different reason,
+  // it works because 111 >= 5
+  ok (is( 111, 5));
+
+  ok (is(new Number(111), 5));
+
+  // But not everything can be turned into a type:
+
+   fails (_=> x("".toString, "".toString) );
+   // above fails for 2 reasons.
+   // 1.  "".toString() is not a predicate function
+   //     because it can not be called wiothout argument
+   //     to return an example instance of it and
+   //  2. And even if it was calling it with itself
+   //     as argumewnt woujld not reurn === true.
+
+   let S2 = Type ("abc");
+   ok (S2 !== String);
+   x (123  , Type(1)); // 123 >= 1
+
+   x ( true, Type(true));
+   fails (_=> x ( "a" , "b" ));
+   fails (_=> x ( "a" , "A" ));
+   x ( "Abc" , "A" );
+
 
   let NumberOrString  = Type (Number, String);
 
@@ -1301,9 +1415,7 @@ for (let j = 0; j<22; j++)
 
 	  let vof = non2.valueOf();
 	  if (vof !== null)
-		{
-			debugger
-			vof = non2.valueOf();
+		{ vof = non2.valueOf();
 		}
 	  ok (vof  ===  null) ;
 	}
@@ -1329,62 +1441,10 @@ for (let j = 0; j<22; j++)
 
   not (is(33, NullType));
 
+}
 
-
-/* ==================================
-   NON-TYPES
-
-   Calling Type() with no argument creates
-   a type which is nobody's type.
-   It is not very useful but it is possible
-   you might find a use for it.
-
-*/
-
-   let NBT = new Type();
-   not (is (123, NBT));   // but we can't test them all
-
-	/*
-   You can not call Type with just
-   anything. You have to know what are
-   its valid arguments, see further below
-   the tests for each type of Type you can
-   create. Here are some exaxmples of
-   what you can NOT call Type() with:
-	 */
-	fails (()=> Type (new String() ));
-	fails (()=> Type (new Number() ));
-	fails (()=> Type (new Boolean()));
-	fails (()=> Type (undefined));
-
-// end test.js::Type()
-
-
-// EQUALS TYPE
-// Equals-type is something which
-// has as its member all values which
-// are equal to a specific value.
-// NOte equal is not the same as  == or ===.
-//
-// We dont' create EqualsType as a
-// Type of its own because you really
-// want to test whether something is
-// a memeber of the type or not and
-// you can do that with eq(), isEq()
-// neq(), isNeq().
-
-
-eq  ([1,2,3], [1,2,3]);
-neq ([1,2,3], [1,2,3,4]);
-
-ok (isEq  ([1,2,3], [1,2,3  ]));
-ok (isNeq ([1,2,3], [1,2,3,4]));
 
 return;
-
-
-
-
 }
 
 // -----------------------------------------------

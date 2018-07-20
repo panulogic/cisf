@@ -5,6 +5,50 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
+##### v. 4.0.2: Refactored Type-Tests
+
+Refactored the test-function 'Type()'
+into multiple inner functions one per
+the type of Type being tested.
+
+If you view the code in an IDE that
+allows you to see a listing of
+functions in the file this helps
+when you want to look up the
+behavior and thus the de facto
+definition  of a given type of type.
+
+The inner test-functions of Type()
+are now:
+
+1. ArrayType
+1. BiggerOrEqualType
+1. ConstructorType
+1. DependentType
+1. EmptyType
+1. EqualsType
+1. FalsyType
+1. FunctionType
+1. MultiDArrayType
+1. NullType
+1. ObjectType
+1. PredicateType
+1. RegExpType
+1. StartsWithType
+1. SumType
+1. TruthyType
+1. xMiscTypeTests
+
+Tests run on Node, FireFox Chrome and Edge
+except ...
+
+KNOWN ISSUE:
+Do not use  w(RegExp) on Edge-browser.
+The tests for w(RegExpo are disabled
+when ruiinning on a browser. See the
+code in test.js.
+
+
 ##### v. 4.0.1: Better log()
 
 The API-function log() prefixes its output
