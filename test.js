@@ -64,6 +64,8 @@ function testCisf ()
   w       .bind (cisf) ();
 
   tell_tests_passd ();
+
+
   return;
 
 function tell_tests_passd (s)
@@ -401,6 +403,25 @@ function A ()
 
   A     (        [String, Number], "good", 123   );
   fails (_=> A ( [String, Number], "good", "BAD" ));
+
+function myFunk (n)
+{ if (  ! (n instanceof Number) &&
+        (typeof n !== "number")
+     )
+  { throw "type-error"
+  }
+}
+function myFunk2 (n)
+{ x(n, Number);
+}
+
+
+let see = myFunk2 / 2;
+
+myFunk2 (123);
+
+myFunk (123);
+// myFunk( );
 
 
 
@@ -1642,9 +1663,18 @@ function warn()
 /* ----------------------------------------- */
 
 function err()
-{ let ok=this.ok,err=this.err, fails=this.fails;
+{ let ok=this.ok, err=this.err, fails=this.fails;
+
   let e  = fails ( _=> err ('something wrong') );
   let e2 = fails ( _=> err ('wrong type', TypeError) );
+
+  // err ('halts in debugger'); // YES
+  // Above would halt, whereas the fails-tests
+  // before it do not.
+
+  // ok (1 === 2);  // would halt in debugger
+
+
 }
 
 /**
@@ -1772,17 +1802,7 @@ function not( )
   not (false);
   fails ( _ => not ("false"));
   fails ( _ => not (true));
-  [ 0, 1, 5, "", "s", true, false, null, undefined
-  ] .map
-  ( b =>
-    { try {ok (b)} catch (e)
-      {  not (b)  ;
-      }
-      try {not (b)} catch (e)
-      {  ok (b)  ;
-      }
-    }
-  );
+
 }
 
 /**

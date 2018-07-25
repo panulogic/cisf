@@ -4,6 +4,54 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+
+##### v. 4.1.0:  Jump to debugger
+
+When an assertion like ok() or x() fails
+an error is thrown like in the previous
+versions. What is news is the before
+the error is thrown if you are debugging
+you will halt in the debugger instead
+of killing the process and just seeing
+the error-message and stack-trace.
+
+So now instead you can inspect the
+exatc state of the program when the
+error happens, but before the process
+is killed. Very useful and measn you
+can put in eperimental assertions to
+just TEST whether your assumptions
+are correct.
+
+Instead of writing:
+
+    if (! condition)
+    { debugger;
+    }
+you can get the same halt into the
+debugger with less code:
+
+    ok (condition)
+
+The effect is not exactly the same
+for the two code-segements above
+AFYER the halt. If condition is falsy
+ok() WILL throw an error. if you don't
+kill the process yourself before that.
+
+Depending on your IDE
+you might be able to configure it
+so that every error causes it
+to halt in the debugger if debugging.
+
+But sometimes you don't want to
+stop in the debugger - when you
+are callling fails() to show to
+yourself and others that something
+causes an error. You would typically
+do that in your tests.
+
+
 ##### v. 4.0.3:  Link to online documentation
 
 The presentation given at NYC Node.js

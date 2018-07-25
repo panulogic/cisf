@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.0.3" ;
+let CISF_VERSION = "4.1.0" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -1623,34 +1623,6 @@ function cisfRequire  (path)
   return imports;
 }
 
-function ok_XXXXXXXXXX
-( aBoolean=false, msg="ok() failed"
-)
-{ if (aBoolean)
-  { return true;
-  }
-	 var loc = new Error("ok() failed").stack ;
-
-	var em   = `
-	ok() failed  
-	Message: ${ msg}
-	At: ${ loc}
-	`;
-	err   (em);
-}
-
-function not_XXXXXXXX  (aBoolean=false, msg )
-{ if (aBoolean)
-		{ // var loc = getCallingLine();
-			// getCallingLine() could not work on the browser.
-			 var m = `not(): ${ msg}) 
-`;
-			err   (m);
-		}
-	return true;
-}
-
-
     function ok (arg)
     { x(arg, true);
     }
@@ -1662,19 +1634,15 @@ function not_XXXXXXXX  (aBoolean=false, msg )
 function is (value, ... types)
 { let b = false;
 	// value instanceof  types[0]
-	try
-	{ x (value, ... types);
-		return true;
-	} catch (e)
-	{ return false;
-	}
+
+	b = isBasic (value, ... types);
+  return b;
 }
 
 function isNot (... args)
 { return ! is (... args);
 
 }
-
 
 function isEq (...args)
 {
@@ -1693,7 +1661,6 @@ function isNeq (...args)
 	}
 	return false;
 }
-
 
 function x (value, ... typesArg)
 { let  types = [... typesArg];
@@ -1744,10 +1711,35 @@ is not an instance of
 any of the rest.
 .
 `;
-
-
 err (em);
 }
+
+function isBasic (value, ... typesArg)
+{ let  types = [... typesArg];
+  if (! arguments.length)
+  { return (`x() called without arguments.`);
+  }
+
+  if (! types.length)
+  { // called with a single argument, it
+    // can be anything except null or undefined.
+    if (value === null || value === undefined)
+    { return false ;
+    }
+    return true;
+  }
+  let e2, r;
+  let eType  = types.pop ();
+  let b =  isSingle (value, eType);
+  if (b)
+	{ return true;
+	}
+  if (! types.length)
+	{ return false;
+	}
+  return isBasic (value, ... types);
+}
+
 
 function typeFromSpec (type)
 {
@@ -1755,6 +1747,68 @@ function typeFromSpec (type)
 	return T;
 }
 
+  function isSingle (value, type )
+  {
+
+     if (type === true || type === false)
+		 { // It means the Truthy or Falsy type
+		   type = Type (type);
+		 }
+     if (typeof type === "string"
+       || typeof type === "number"
+        )
+		 { // It means StartsWithType or BiggerOrEqualType
+		   type = Type (type);
+		 }
+
+    try
+    { if (value instanceof type)
+      { return true;
+      }
+    } catch (ee)
+    { // type can be something thet does not dupport instanceof
+      return false;
+     }
+
+     if  (value === undefined || value === null)
+     { if (type === null  )
+      { return value;
+      }
+      return false;
+  	}
+    if (type === null  )
+    { if (value === null || value === undefined)
+      { return true ;
+      }
+      return false;
+		}
+    if (value === null || value === undefined)
+    { // since above type was not null if the
+      // value is null or undefined it is not
+      // an instacne of the type.
+       return false;
+    }
+
+		let TypeC = type.constructor;
+		let typeS = typeof type;
+
+		if ( value !== null &&
+		     value !== undefined  &&
+		     value.constructor === type
+		    )
+    { return true;
+      // handles unboxed numbers strings and booleans
+      // which are not "instanceof" of their constructor.
+    }
+
+	 let type2 = typeFromSpec (type);
+	 if (value instanceof type2)
+   { return true;
+   }
+
+   return false;
+
+  }
 
   function xSingle (value, type )
   {
@@ -2255,7 +2309,7 @@ function deepCopy (ob, level=0)
     let stack;
     // the stack here
     let err =    errorOrString;
-    let s = errorOrString;
+    let s   = errorOrString;
     if (typeof s === "string")
     {
       stack =  (new Error ()).stack ;
@@ -2270,18 +2324,32 @@ function deepCopy (ob, level=0)
 
     Error.stackTraceLimit = Infinity;
 
-    if ( stack . match (/fails\s*\(/)   )
-    { } else
-    { let stack = (new Error()).stack;
+    let doNotHalt = stack . match (/fails\s*\(/);
 
-      let doNotHalt
-      = stack.match (/ xSingle /) ||
-        stack.match (/ is /) ;
+    if ( !  doNotHalt  )
+    {
+      // err() was called maybe because a type-check
+      // failed or maybe err() was called directly by
+      // user-code. We have checked above that
+      // we are NOT called from fails() which would
+      // mean we expect err() to be called to cause
+      // an error to be thrown. If that eas the case
+      // we dont want to halt into the debugger because
+      // what we asserted happened.  But if this is
+      // NOT called from fails then we will halt here
+      // rtaher than kill the process so if you are
+      // debugging you will see the STATE and stack that
+      // led to the error. If yo9u are not debugging then
+      // debugger -statement does nothing.  So at
+      // DEVTIME this is very useful rather than juts seeing
+      // an error-message and stack, you jump right into
+      // the debugger.
+
+      debugger
+      // LEAVER THIS debugger -STATEMENT HERE
+      // IT IS HERE ON PURPOSE AND VERY USEFUL.
     }
 
-		if (this === "no stack")
-		{ err = err.message;
-		}
     throw (err);
    }
 
@@ -2327,19 +2395,20 @@ function A (typesArray, ... values)
 
 
 
-function neq  (a,b)
+function neq  (a, b)
 {
-	try
-	{ eq (a,b)
-	} catch (e)
-	{ return e;
+  let m = eqMsg (a, b);
+  if (m)
+	{ // they are not equal because there was a message
+	  // telling which part of them is not equal
+    // We can in fact return that message.
+    return m;
 	}
-
 	err
 	(`neq(${a}, ${b}) failed because 
 	  eq (${a}, ${b}) did not.
 	  `
-	)
+	);
 }
 
 
