@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.1.0" ;
+let CISF_VERSION = "4.2.0" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -17,8 +17,10 @@ let CISF_VERSION = "4.1.0" ;
  
    =============================================
    USAGE:
-   let {ok, x, r, not, fails, log, warn, err, Type, is
-       , A, eq, neq, w
+   let {ok, not, x, xNot, A, eq, neq
+       , is, isNot, isEq, isNeq
+       , fails, log, warn, err, Type
+       , w, r
        } = require ("cisf");
 
    Or pick just the functions you need
@@ -62,7 +64,9 @@ if (typeof module !== "undefined")  // in the browser it is undefined
 function CISF_inner  ()
 { var C          = _Canary()    ;
 
-  let ok=C.ok, not=C.not, x=C.x, fails=C.fails, is=C.is, r=C.r;
+  let ok=C.ok, not=C.not, x=C.x, xNot=C.xNot
+    , fails=C.fails
+    , is=C.is, r=C.r;
 
   let isNot=C.isNot ;
   let isEq=C.isEq, isNeq=C.isNeq ;
@@ -78,7 +82,7 @@ function CISF_inner  ()
 
   let api =
   { Type
-  , ok, not, x, A, eq, neq, fails
+  , ok, not, x, xNot, A, eq, neq, fails
   , is, isNot, isEq, isNeq
   , w,  log, err, r, path, fs
   };
@@ -1098,23 +1102,52 @@ function _AtomicType ( $atomicCtor )
     {
        if (value && value.constructor === this)
        {  return true;
-         // when we create new Odd(3)
-         // we want it, the boxed value,
-         // to also be instanceof Odd,
-         // not juts the unboxed value 3.
 			 }
-       value = value.valueOf();
-			 if (value === undefined)
+       let ub  = value.valueOf();
+       /*
+       Juts a note: WE had our class Dir() whose
+       valueOf() returned its path. But that caused
+       unexpected results because we wanted to test
+       whether is(dir, String) which returned true
+       because of the valueOf() conversion below.
+
+       But rather than change how cisf works seems
+       best we change our Dir()-class, because now
+       Dir() works just like String, Number and Boolean
+       so the same logic applies.
+
+        Si8mply put Type(String) accepts anmything
+        whose valueOf() is an unboxed strgin as its
+        instance. OR we could say it accepts
+        amutyhing whose constructor is String.
+        That's probably safer because it is more
+        conservative adn we saw how we got tripped
+        up by this ourselves. And you can now
+        always call the valueOf() yourself if you
+        want to call is() with that.
+
+        Yes would seem to make sense except that
+        we also want the types to be able to return
+        instancess and we want those instances to be
+        their instances, and cosntructors can never
+        reurn unboxedf values. Therefore muts keep
+        it as it is.
+        */
+        if(true)
+				{ // return false;
+				}
+
+			 if (ub === undefined)
        { return false;
        }
-			 if (value === null)
+			 if (ub === null)
        { return false;
        }
 
-       if (value instanceof $atomicCtor)
+       if (ub instanceof $atomicCtor)
        { return true;
        }
-       let C =  value.constructor;
+       let C =  ub.constructor;
        if (C ===  $atomicCtor)
        { return true;
        }
@@ -1581,7 +1614,9 @@ function assignMethods (Canary)
   }
 
   C.ok       = ok    ;
-  C.x        = x      ;
+  C.x        = x     ;
+  C.xNot     = xNot  ;
+
   C.fails    = fails  ;
   C.not      = not    ;
 
@@ -1713,6 +1748,27 @@ any of the rest.
 `;
 err (em);
 }
+
+
+function xNot (value)
+{
+  if (! arguments.length)
+  { err (`xNot() called without arguments.`);
+  }
+  if (arguments.length > 1)
+  { err (`xNot() called with > 1 arguments.`);
+  }
+  if (value === undefined)
+	{ return true;
+	}
+  if (value === null)
+	{ return true;
+	}
+  err (`xNot() called with argument which 
+       is neither null nor undefined.`
+      );
+}
+
 
 function isBasic (value, ... typesArg)
 { let  types = [... typesArg];

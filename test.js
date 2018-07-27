@@ -42,6 +42,8 @@ function testCisf ()
 */
 
   x       .bind (cisf) ();
+  xNot    .bind (cisf) ();
+
   ok      .bind (cisf) ();
   not     .bind (cisf) ();
   fails   .bind (cisf) ();
@@ -1551,6 +1553,24 @@ function x ()
   fails (() => x(null));
   fails (() => x(undefined));
   fails (() => x());
+}
+
+function xNot ()
+{
+  let xNot=this.xNot, x=this.x, ok=this.ok, fails=this.fails;
+
+  xNot (null);
+  xNot (undefined);
+
+  fails (_=> xNot ())          ;  // must have 1 arg
+  fails (_=> xNot (null, null));  // max 1 arg allowed
+  fails (_=> xNot (null, 1,2,3)); // max 1 arg allowed
+
+  fails (_=> xNot (false));
+  fails (_=> xNot (true));
+  fails (_=> xNot (0));
+  fails (_=> xNot (""));
+
 }
 
 // -----------------------------------------------

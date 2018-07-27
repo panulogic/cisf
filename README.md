@@ -1,4 +1,4 @@
-# Cisf 4.0.2
+# Cisf 4.2.0
 
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites
@@ -34,9 +34,11 @@ See documentation of w().
 
 ##### USAGE:
 
-    let { ok, not, x, fails, eq, neq, A, Type,
-          is, isNot, isEq, isNeq
-          log, err, r, path, fs, r, w
+    let { ok, not, x, xNot(), fails, eq, neq, A
+        , Type
+        , is, isNot, isEq, isNeq
+        , log, err, r, w
+        , path, fs
         } = require ("cisf");
         
 Or, pick just the subset of API-functions you need:
@@ -297,8 +299,17 @@ it returns its first argument.
         ...
     };
 
+##### 3.3.B  xNot (nullOrUndefined)
 
-   
+xNot() causes an error unless it is called
+with exactly a single argument which is
+either null or undefined.
+
+Useful for ensuring that immutable
+instance-variables can have only
+one value.
+
+
 ##### 3.4 is (value, Type)
 
 is() returns true if x() called with the

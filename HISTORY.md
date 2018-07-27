@@ -4,6 +4,20 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+##### v. 4.2.0: xNot()
+
+xNot() is the negation of x() except
+it must be called with exactly one
+argument.
+
+xNot() causes an error unless it is called
+with exactly a single argument which is
+either null or undefined.
+
+Useful for ensuring that immutable
+instance-variables can have only
+one value.
+
 
 ##### v. 4.1.0:  Jump to debugger
 
