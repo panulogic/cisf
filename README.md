@@ -1,4 +1,4 @@
-# Cisf 4.2.0
+# Cisf 4.3.0
 
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites

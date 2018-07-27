@@ -1682,17 +1682,56 @@ function warn()
 
 /* ----------------------------------------- */
 
+
 function err()
 { let ok=this.ok, err=this.err, fails=this.fails;
 
   let e  = fails ( _=> err ('something wrong') );
   let e2 = fails ( _=> err ('wrong type', TypeError) );
 
+  err (null);
+  err ();
+  err (undefined);
+
+  /*
+  In v. 4.3.0 the above 3 no longer
+  cause an error at all.
+
+  That is VERY useful when using
+  Node.js async APIs because their
+  callbacks are called whether there
+  was an error or not. So now you can
+  write the callback simply with ES6
+  arrow-syntax as:
+
+   fs. writeFile
+   (path
+   , aString
+   , e => err(e)
+   );
+
+   The callback then does nothing if
+   there was no error but throws an
+   error if there was one.
+
+   Of course you could easily write
+   a similar do-nothing-if-no-error
+   -callback yourself, but you would
+   have to write it everywhere you
+   need it, or require the module where
+   you wrote it. If you require("cisf")
+   you don't need to do that and get
+   all the other APIs of cisf with one
+   require. Kill two+ flies with one swat.
+
+   */
+
+
   // err ('halts in debugger'); // YES
   // Above would halt, whereas the fails-tests
   // before it do not.
 
-  // ok (1 === 2);  // would halt in debugger
+
 
 
 }

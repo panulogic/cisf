@@ -4,6 +4,37 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+
+##### v. 4.3.0: Error only if there is an error-message
+
+    err (null);
+    err ();
+    err (undefined);
+
+  In v. 4.3.0 the above 3 no longer
+  cause an error at all.
+
+  That is very useful when using
+  Node.js async APIs because their
+  callbacks are called whether there
+  was an error or not. So now you can
+  write the callbacks simply with ES6
+  arrow-syntax like this:
+
+    fs.writeFile
+    ( path
+    , contentString
+    , e => err(e)
+    );
+
+   The callback above does nothing if
+   writeFile() did not cause an error,
+   but throws an error if it did.
+   Makes your code faster to type
+   and easier to read and understand.
+
+
+
 ##### v. 4.2.0: xNot()
 
 xNot() is the negation of x() except

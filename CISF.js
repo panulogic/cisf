@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.2.0" ;
+let CISF_VERSION = "4.3.0" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -2360,19 +2360,23 @@ function deepCopy (ob, level=0)
   return log (`WARNING: ${ msg}`);
  }
 
-  function err ( errorOrString = "", ErrorClass = AssertError  )
-  {
-    let stack;
-    // the stack here
-    let err =    errorOrString;
-    let s   = errorOrString;
-    if (typeof s === "string")
-    {
-      stack =  (new Error ()).stack ;
-      s   =  `` + trimLineBeginnings (s + `
-`);
-     s += `
-`;
+
+  function err ( errorOrString, ErrorClass = AssertError  )
+  {  let e = errorOrString ;
+     if(e === null || e === undefined)
+		 { return;  // v. 4.3.0
+		 }
+
+			let stack;	// the current stack
+			let err =    errorOrString;
+			let s   = errorOrString;
+			if (typeof s === "string")
+			{
+				stack =  (new Error ()).stack ;
+				s   =  `` + trimLineBeginnings (s + `
+	`);
+			 s += `
+	`;
       err = new ErrorClass ( s );
     } else
     { stack = err.stack;
@@ -2402,7 +2406,7 @@ function deepCopy (ob, level=0)
       // the debugger.
 
       debugger
-      // LEAVER THIS debugger -STATEMENT HERE
+      // LEAVE THIS debugger -STATEMENT HERE
       // IT IS HERE ON PURPOSE AND VERY USEFUL.
     }
 
