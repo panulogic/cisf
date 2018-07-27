@@ -5,6 +5,29 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
+##### v. 4.3.1:  Better README.md
+
+The Motivating Example now acknowledges
+the fact that you can not ask for
+constructor of null or undefined:
+
+    if ( arg !== null               &&
+         arg !== undefined          &&
+         arg.constructor !== Number &&
+         arg.constructor !== String
+	   )
+	  { throw "not number nor string";
+	  }
+
+The Motivating Example is what you __don't__
+want to be writing repeatedly.
+Cisf greatly simplifies the above to:
+
+     x (arg, Number, String);
+
+
+
+
 ##### v. 4.3.0: Error only if there is an error-message
 
     err (null);

@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.3.0" ;
+let CISF_VERSION = "4.3.1" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC

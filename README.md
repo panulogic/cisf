@@ -1,4 +1,4 @@
-# Cisf 4.3.0
+# Cisf 4.3.1
 
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites
@@ -60,7 +60,9 @@ something that is not a Number
 and not a String.  You might
 write something like this:  
 
-    if ( arg.constructor !== Number &&   
+    if ( arg !== null               &&
+         arg !== undefined          &&
+         arg.constructor !== Number &&
          arg.constructor !== String
 	   )
 	  { throw "not number nor string";
@@ -77,7 +79,6 @@ remaining arguments.
 You are more likely to put such checks
 into your code when they are easy
 to write  and easy to read and understand.
- 
 This in turn means that bugs get caught
 early, which is good.
  
