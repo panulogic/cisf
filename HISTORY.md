@@ -4,6 +4,26 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+##### v. 4.3.2:  Better debugging
+
+If you now execute
+
+    x (123, Object);
+
+while debugging, it will  halt
+in the debugger before
+throwing the error. Previously
+it would just throw the error.
+
+Note: You may need to configure your
+IDE or Node.js debugger so that
+it does "step into library scripts",
+because most likely you will have
+cisf.js in your node_modules -folder.
+
+
+
+
 
 ##### v. 4.3.1:  Better README.md
 

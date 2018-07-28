@@ -1,22 +1,20 @@
-# Cisf 4.3.1
+# Cisf 4.3.2
 
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites
  
 Cisf.js allows you to add type-checks to your
-JavaScript code with minimalistic syntax.
-
-cisf.js could be described as "TypeScript Light",
+JavaScript with minimal syntax: x(), ok(), not(), ... Cisf could be described as "TypeScript Light",
 simple and easy to learn and unobtrusive to use.
 No transpiling to JavaScript is needed since
 you do it all in JavaScript.
 
-Cisf also provides a select few a
-dditional utilities
+Cisf also provides a select few
+additional utilities
 for making programmers' lives easier:
 log, err, r, w, fs, path.
 
-'w()' is actually
+The **w() -API** is actually
 a minimalistic framework for adding
 extensions to JavaScript base-classes.
 Since cisf is open source you can modify
@@ -125,7 +123,8 @@ types of arguments:
 	{ A ([String, Number], s, n);
 	}
 
-Unlike with Java or #C this is optional.
+Unlike with Java or #C Cisf-type-checking
+is optional.
 Use it when and where it helps.
 
 
@@ -147,7 +146,7 @@ Use it when and where it helps.
 The module CISF.js exports an object
 with the API-functions shown above.
 You  can  easily take in just the functions
-you want  with  ES6 destructuring
+you want  by using the ES6 destructuring
 assignment. For instance:
 
     const { ok, x }  = require ('CISF');
@@ -173,7 +172,8 @@ above and then runs all CISF-tests
 within the browser. To
 check whether it runs on your browser 
 open  **test_browser.html** in it. 
-Seems to work on latest versions of Edge, 
+
+Seems to work on latest versions of Edge,
 FireFox and Chrome but not in IE-11. 
 
 #### 3. API  

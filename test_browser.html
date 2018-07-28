@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <!--
-   cisf/test_btowser.html v. 4.0.2
+   cisf/test_btowser.html
 
    Copyright 2018 Class Cloud LLC
 
@@ -26,6 +26,7 @@ body
 }
 </style>
 <script src="cisf.js"></script>
+
 <script type="text/javascript">
 
 testCisf ();
@@ -1485,6 +1486,9 @@ function x ()
 {
   let x=this.x, ok=this.ok, fails=this.fails;
 
+  // x (123, Object);
+  // above would fail and take you to debugger
+
 
   // BASICS:
   x (3, Number);
@@ -1929,7 +1933,6 @@ function fails()
 
 // Copyright 2018 Class Cloud LLC
 }
-
 
 </script>
 

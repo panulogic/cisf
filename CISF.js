@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.3.1" ;
+let CISF_VERSION = "4.3.2" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -1878,14 +1878,6 @@ function typeFromSpec (type)
 		 { // It means StartsWithType or BiggerOrEqualType
 		   type = Type (type);
 		 }
-
-/*
-    if (type === undefined )
-		{  throw new Error
-		   ('cisf.x() type-error, type === undefined'
-		   );
-		}
-*/
     try
     {
       if (value instanceof type)
@@ -1898,32 +1890,25 @@ function typeFromSpec (type)
     { if (type === null  )
       { return value;
       }
-      throw new Error ('cisf.x() undefined or null value type-error');
+      err ('cisf.x() undefined or null value type-error');
 		}
     if (type === null  )
     { if (value === null || value === undefined)
       { return value;
       }
-      throw new Error ('cisf.x() type-error');
+      err ('cisf.x() type-error');
 		}
     if (value === null || value === undefined)
     { // since above type was not null the
       // value can not be null or undefined.
 
-     throw new Error ('cisf.x() type-error');
+    err ('cisf.x() type-error');
 
     }
 
 let TypeC = type.constructor;
 let typeS = typeof type;
-if ( type instanceof Array ||
-     TypeC === Object      ||
-     typeS === "string"    ||
-     typeS === "number"    ||
-     typeS === "number"
-   )
-{
-}
+
 
 		if ( value !== null &&
 		     value !== undefined  &&
@@ -1940,7 +1925,7 @@ if ( type instanceof Array ||
   }
 
 
-		throw new Error ('cisf.x() type-error');
+		err ('cisf.x() type-error');
 		// does not matter what the error says
 		// because there can be many type-args
 		// and it is only an error if NONE of
@@ -2388,26 +2373,15 @@ function deepCopy (ob, level=0)
 
     if ( !  doNotHalt  )
     {
-      // err() was called maybe because a type-check
-      // failed or maybe err() was called directly by
-      // user-code. We have checked above that
-      // we are NOT called from fails() which would
-      // mean we expect err() to be called to cause
-      // an error to be thrown. If that eas the case
-      // we dont want to halt into the debugger because
-      // what we asserted happened.  But if this is
-      // NOT called from fails then we will halt here
-      // rtaher than kill the process so if you are
-      // debugging you will see the STATE and stack that
-      // led to the error. If yo9u are not debugging then
-      // debugger -statement does nothing.  So at
-      // DEVTIME this is very useful rather than juts seeing
-      // an error-message and stack, you jump right into
-      // the debugger.
-
       debugger
-      // LEAVE THIS debugger -STATEMENT HERE
-      // IT IS HERE ON PURPOSE AND VERY USEFUL.
+      // THIS debugger -STATEMENT IS LEFT HERE
+      // ON PURPOSE  if you are debugging and
+      // err() is called internally because a
+      // typecheck or ok() failed then it is
+      // better to stop in debugger before
+      // throwing the error. But note above
+      // if you call fails() and it does what
+      // you expect then we dont halt here.
     }
 
     throw (err);

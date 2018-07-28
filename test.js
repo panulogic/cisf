@@ -1476,6 +1476,9 @@ function x ()
 {
   let x=this.x, ok=this.ok, fails=this.fails;
 
+  // x (123, Object);
+  // above would fail and take you to debugger
+
 
   // BASICS:
   x (3, Number);
