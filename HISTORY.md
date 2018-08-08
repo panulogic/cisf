@@ -4,6 +4,58 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+
+##### v. 4.4.0:  Better Paths
+
+###### A) RELATIVE PATHS
+
+cisf.r.rel() now produces the relattive
+path of its argument relative to process.cwd()
+also when the argument-path is
+not under process.cwd(), as shown by these
+tests taken from test.js:
+
+    const {r} = rquire("cisf");
+    let rel   = r.rel ;
+    let abs   = r.abs ;
+
+    let pathBelowCwd  =  $path.resolve ("./abc");
+    let pathBelowCwd2 = $path.resolve (rel (pathBelowCwd) );
+    ok (pathBelowCwd2 === pathBelowCwd) ;
+
+    let pathAboveCwd  = $path.resolve ("../abc");
+    let pathAboveCwd2 = $path.resolve (rel (pathAboveCwd) );
+    ok (pathAboveCwd2 === pathAboveCwd) ;
+
+
+###### B) $fs and $path as ALIASES FOR path and  fs
+
+In previous version of cisf you could easily
+get access to Node.js built-in modules 'fs'
+and 'path' with:
+
+    let {path, fs} = require ("cisf");
+
+In 4.4.0 they can also be accessed as:
+
+    let {$path, $fs} = require ("cisf");
+
+This is helpful because you often have
+an argument or local variable you want to
+name 'path'. Now you can, and still
+refer to the built-in module 'path'
+as well with '$path'.
+
+In general we believe that references
+to built-in modules like 'path' and 'fs'
+are best named in a way that makes
+them standaout from ordinary variables.
+They are special, so best to name them
+specially as well.
+
+
+
+
 ##### v. 4.3.2:  Better debugging
 
 If you now execute

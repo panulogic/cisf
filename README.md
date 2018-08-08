@@ -1,4 +1,4 @@
-# Cisf 4.3.2
+# Cisf 4.4.0
 
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites
@@ -20,14 +20,14 @@ extensions to JavaScript base-classes.
 Since cisf is open source you can modify
 cisf.js  and add your own favorite
 extensions as needed.
-
 Cisf comes with several useful
 JS-extensions already such as the
  **last()** -method for Arrays,
  and **map()** for Objects.
- More but not many more
- may be added in the future.
-See documentation of w().
+ See documentation of w().
+ Here's just an example:
+
+    ok ( w([1,2,3]).last() === 3 );
 
 
 ##### USAGE:

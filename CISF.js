@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.3.2" ;
+let CISF_VERSION = "4.4.0" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -20,7 +20,7 @@ let CISF_VERSION = "4.3.2" ;
    let {ok, not, x, xNot, A, eq, neq
        , is, isNot, isEq, isNeq
        , fails, log, warn, err, Type
-       , w, r
+       , w, r, $path, $fs
        } = require ("cisf");
 
    Or pick just the functions you need
@@ -80,11 +80,14 @@ function CISF_inner  ()
   let AssertError = class AssertError extends Error { };
 
 
+  const $path = path;
+  const $fs = fs;
+
   let api =
   { Type
   , ok, not, x, xNot, A, eq, neq, fails
   , is, isNot, isEq, isNeq
-  , w,  log, err, r, path, fs
+  , w,  log, err, r, path, fs, $path, $fs
   };
 
   return api;
@@ -1575,19 +1578,107 @@ function _Canary ()
 		 { return path.replace(/\\/g, "/");
 		 }
 
-     function rRelative (path)
-		 { let full = this.abs(path);
-		   let base = this.abs();
-		   let rp   = full.replace(base, "");
-		   // Above will start with \ or /
-		   // but since my result should not
+/*
+rRelative() tells you waht r3elativwe path
+you should add to the process cwd to get
+to the path that was given as argument
+to rRelative
+ */
+     function rRelative (argPath)
+		 {
+		   if (! Path.isAbsolute(argPath))
+			 { return argPath;
+			   // if it is a relative path to start with
+			   // it can only mean relative to the cwd
+			   // so makes no sense to transform it
+			   // to anything else.
+			 }
+
+
+       let cwd = process.cwd();
+		   let argAbsPath = this.abs(argPath);
+
+       let dirPath  = argAbsPath;
+       let filePath = "";
+       if (dirPath.match (/\.w+$/))
+			 { dirPath  = Path.dirname (argAbsPath);
+         filePath = Path.basename(argAbsPath);
+			 }
+
+       if (argAbsPath  === cwd )
+			 {
+			   if (filePath)
+				 { debugger
+				   return $path.join ("./",  filePath);
+				 }
+			   return "."; // dir-paths do not end in '/'
+			               // just a convention
+			 }
+
+       let relPath;
+
+			 if (  argAbsPath.includes(cwd))
+			 { // easy case the argpath is unde cwd.
+			   relPath =  argAbsPath.replace(cwd, "");
+			 } else
+			 {
+
+			   /*   muts go up from cwd    until
+			   we are at a dir that is part of the
+			   arg-abspath
+			   and build up the ../ while doing it.
+			   then remove that the common path-part
+			   from arg-path and prefix it with the
+			  accumulated ../.
+			    */
+			   let cwdParts  = cwd.split (Path.sep);
+			   let stepsUp = "";
+			   let cwdOrAbove = cwdParts.join('/') ;
+         while (true)
+				 { if (argAbsPath.includes (cwdOrAbove))
+					 { break;
+					 }
+					 cwdParts.pop();
+				   cwdOrAbove = cwdParts.join('/');
+					 stepsUp += "../";
+				 }
+         let downPath = argAbsPath.replace (cwdOrAbove, "");
+         relPath =  $path.join ( stepsUp,downPath);
+			 }
+       relPath = linux(relPath);
+
+		   //  since my result should not
 		   // be interpreted as absolute path
 		   // which everything starting with '/'
 		   // is on Linux we must not allow that
-		   rp = rp.slice(1);
-		   rp =  "." + Path.sep + rp;
-		   return rp;
+
+		   if (relPath[0] === "/")
+			 { relPath =  "." +  relPath;
+		   }
+		   if (relPath[0] !== ".")
+			 { relPath =  "./" +  relPath;
+			    // all relative paths MUTS start wiht . or ..
+		   }
+
+			 return  platformed ( relPath ) ;
 		 }
+
+
+function linux(path)
+{ return path.replace(/\\/g, "/");
+}
+function windows(path)
+{ return path.replace(/\//g, "\\");
+}
+function platformed  (path)
+{ let sep = $path.sep;
+  if (sep === "/")
+	{ return linux(path);
+	}
+	return windows(path);
+}
+
+
 
      function cisfRequireResolve (path="")
 		 { let cwd = process.cwd();
@@ -1606,9 +1697,10 @@ function assignMethods (Canary)
   if (typeof require !== "undefined" &&  require.main)
   {  // in the browser there is no require.
 
-     cisfRequire.abs   = cisfRequireResolve;
-     cisfRequire.rel   = rRelative;
-     cisfRequire.linux = rLinux;
+     cisfRequire.abs   = cisfRequireResolve.bind(cisfRequire);
+     cisfRequire.rel   = rRelative.bind(cisfRequire);
+
+    // cisfRequire.linux = rLinux;
 
      C.r  =  cisfRequire;
   }

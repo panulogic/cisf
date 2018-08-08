@@ -1580,7 +1580,11 @@ function xNot ()
 
 function r ()
 {
-  let {r, ok, log, path, not}  = this;
+  let {r, ok ,  not, log
+      , path , fs
+      , $path, $fs
+
+      }  = this;
 
   if (! r)
   { log (`cisf/tes.js: There is no 'r()'
@@ -1589,12 +1593,26 @@ function r ()
     return;
 	}
 
+// 4.4.0:
+  ok ($path === path);
+  ok ($fs   === fs);
+
+
+// Made the exports of cisf have $path and $fs
+// as synonyms for path and fs because often you
+// want to have a local variable path and it is
+// a good idea to mark variables containing
+// build-in system imports differently from
+// ordinary local variables.
+
+
 	ok ( r ("path") === require ("path")) ;
 	ok ( r ("fs"  ) === require ("fs"))   ;  // etc.
 
   let cwd = process.cwd();
-  ok (r.abs() === cwd );
+  ok (r.abs()   === cwd );
   ok (r.abs("") === cwd );
+  ok (r.abs(cwd) === cwd );
 
 
   let relPath = r.rel(__filename);
@@ -1602,7 +1620,6 @@ function r ()
   ok (r.abs (r.rel (__filename) ) === __filename);
 
   ok (r (relPath) === require (__filename));
-
   // Above is the main reason for r(), you can
   // require modules by giving r() their path
   // relative to the cwd, so you don't need
@@ -1610,9 +1627,80 @@ function r ()
   // nor use fragile non-portable module-relative
   // upward paths.
 
+
+let rel = r.rel ;
+let abs = r.abs ;
+
+cwd = process.cwd(); // C:\Output\4_PRODUCE\Dev\ClassCloud
+
+
+let somePathAboveCwd = "C:\\Users";
+let rel3 = rel (somePathAboveCwd);
+let abs3 = abs (rel3);
+ok (abs3 === somePathAboveCwd) ;
+
+// issue abs returns windows paths but rel linux path.
+// TODO: Make rel alspo retunr the native path-format.
+// That is needed for working with Windows shell.
+
+ok (abs (rel (abs ("a/b/c/d")))  === abs("a\\b\\c\\d"));
+
+
+let relPathToDiskRoot = rel ("/") ;
+let diskRoot          = abs (relPathToDiskRoot);
+ok (diskRoot.split($path.sep).length === 2);
+
+relPathToDiskRoot = rel ("\\") ;
+diskRoot = abs (relPathToDiskRoot);
+ok (diskRoot.split($path.sep).length === 2);
+
+
+ok ( rel ( cwd ) === ".")
+ok (  rel ("abc"   ) === "abc"); // because arg is not absolute path
+ok (rel ("./abc"   ) === "./abc");
+ok (rel ("../abc"  ) === "../abc");
+ok (rel ("./../abc") === "./../abc");
+
+
+let pathBelowCwd =  $path.resolve ("./abc");
+let pathBelowCwd2 = $path.resolve (rel (pathBelowCwd) );
+ok (pathBelowCwd2 === pathBelowCwd) ;
+
+let pathAboveCwd =  $path.resolve ("../abc");
+let pathAboveCwd2 = $path.resolve (rel (pathAboveCwd) );
+ok (pathAboveCwd2 === pathAboveCwd) ;
+
+debugger
+
 }
 
 
+	/*
+	note:
+	$path.resolve() ->
+	C:\Output\4_PRODUCE\Dev\ClassCloud
+
+	$path.resolve("abc") ->
+	C:\Output\4_PRODUCE\Dev\ClassCloud\abc
+
+	$path.resolve("abc", "efg") ->
+  C:\Output\4_PRODUCE\Dev\ClassCloud\abc\efg
+
+   r.abs("abc" ) ->
+   C:\Output\4_PRODUCE\Dev\ClassCloud\abc
+
+   So r.abs() is much the same as path.resolve.
+   Juts simpler because to understand because it
+   takes only one argument. But it also has
+
+   r.rel ("abc")
+   -> .\abc
+
+   r.rel ("../../abc")
+   -> .\:\Output\4_PRODUCE\abc
+
+
+	 */
 
 function log()
 { let  ok=this.ok, log=this.log;
