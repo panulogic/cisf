@@ -5,6 +5,8 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
+##### v. 4.5.1: Updated README.md
+
 ##### v. 4.5.0: Fixed is(), expanded isNot()
 
 
