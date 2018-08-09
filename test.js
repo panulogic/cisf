@@ -232,13 +232,23 @@ function w ()  // w for 'wrapper'
 
 
 function is()                 // tests also isNot()
-{ let {is, isNot, ok} = this;
+{ let {is, isNot, ok, not, x} = this;
 
   ok (is (1, Number));
   ok (is (1, String, Number));
 
   ok (isNot ("abc", Number));
   ok (isNot (true, Number, String));
+
+  // v. 4.5 news:
+  ok  (is (null     , null));
+  ok  (is (undefined, null));
+  not (isNot (null     , null));
+  not (isNot (undefined, null));
+
+  x(null, null)
+  x(undefined, null)
+
 }
 
 
@@ -550,7 +560,7 @@ argument-types in a single statement.
 
 function Type ()
 { let {Type, A, ok, not, fails, x, is, err, log
-      , eq, neq, isEq, isNeq
+      , eq, neq, isEq, isNeq, xNot
       } = this;
 
 
@@ -1092,8 +1102,42 @@ function funkUsingDependentType (a, b)
 
 ObjectType ();
 
+
 function ObjectType ()
 {
+
+let Person =
+Type ({ name: String
+      , age : Number
+     });
+
+let bob =
+{ name:  'Bob'
+, age: 3.14
+};
+x  (bob, Person);
+ok (is (bob, Person));
+
+let bob2
+= { name  : 'Bob'
+  , age   :  3.14
+  , hobby : 'math'
+  };
+
+x  (bob2, Person);
+let notPerson
+= { name  : 'Bob'
+  };
+xNot (notPerson, Person);
+
+let notPerson2 =
+{ name: 56
+, age : 3.14
+};
+xNot (notPerson2, Person);
+
+debugger
+
 let XOb = Type ({x: 2});
 
 ok  (is ({x: 777}  , XOb));
@@ -1560,18 +1604,45 @@ function x ()
 
 function xNot ()
 {
-  let xNot=this.xNot, x=this.x, ok=this.ok, fails=this.fails;
+  let xNot=this.xNot, x=this.x, ok=this.ok, fails=this.fails
+    , is=this.is ;
 
   xNot (null);
   xNot (undefined);
 
-  fails (_=> xNot ())          ;  // must have 1 arg
-  fails (_=> xNot (null, null));  // max 1 arg allowed
-  fails (_=> xNot (null, 1,2,3)); // max 1 arg allowed
+  xNot ();
+  // v. 4.5
+  // Does NOT fail because x() would fail.
+  // xNot() is the negaiton of x().
 
+  ok (is (null     , null));
+  ok (is (undefined, null));
+
+  // null and undefined are the only
+  // members of type represented by null:
+
+  x               (null     , null);
+  x               (undefined, null);
+  // Therefore:
+  fails (_=> xNot (null     , null));
+  fails (_=> xNot (undefined, null));
+
+  x (null     , String, null);
+  x (undefined, String, null);
+  fails (_=> xNot (null     , String, null))
+  fails (_=> xNot (undefined, String, null))
+
+  xNot (null, 1,2,3);
+  x (false);
   fails (_=> xNot (false));
+
+  x (true)
   fails (_=> xNot (true));
+
+  x (0)
   fails (_=> xNot (0));
+
+  x("");
   fails (_=> xNot (""));
 
 }

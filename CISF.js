@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.4.0" ;
+let CISF_VERSION = "4.5.0" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -1760,8 +1760,6 @@ function cisfRequire  (path)
 
 function is (value, ... types)
 { let b = false;
-	// value instanceof  types[0]
-
 	b = isBasic (value, ... types);
   return b;
 }
@@ -1842,23 +1840,57 @@ err (em);
 }
 
 
-function xNot (value)
+function xNot (value, ... types)
 {
   if (! arguments.length)
-  { err (`xNot() called without arguments.`);
+  { // err (`xNot() called without arguments.`);
+    return true;
+    // Since x() can not be called without
+    // arguments xNot() can.
   }
-  if (arguments.length > 1)
-  { err (`xNot() called with > 1 arguments.`);
-  }
-  if (value === undefined)
-	{ return true;
+
+  if (! types.length)
+	{ if (value === null)
+		{ return true;
+		  // because x(null) fails
+		}
+		if (value === undefined)
+		{ return true;
+		  // because x(undefined) fails
+		}
+		err
+   (`xNot (${value}, ${acceptingType})
+	   FAILS because 
+	   x (${value}, ${acceptingType}) 
+	   would not. `
+   );
 	}
-  if (value === null)
-	{ return true;
-	}
-  err (`xNot() called with argument which 
-       is neither null nor undefined.`
-      );
+
+// next there can be n types if any of them
+// is null then value can be null or undefined,
+// ot anything that si a memeber of one of them
+// types -argument.
+
+  let acceptingType =
+  types.find
+	( eType =>
+		{ if (is (value, eType))
+		  { return true;
+			} // beware not to return the matching type
+			  // from heresince it can be null.
+		}
+  );
+
+	 if (acceptingType !== undefined) // bewarte it can be null
+	 { err
+     (`xNot (${value}, ${acceptingType})
+	     FAILS because 
+	     x (${value}, ${acceptingType}) 
+	     is true. `
+     );
+	 }
+
+	 return true;
 }
 
 
@@ -1895,9 +1927,9 @@ function typeFromSpec (type)
 	return T;
 }
 
+
   function isSingle (value, type )
   {
-
      if (type === true || type === false)
 		 { // It means the Truthy or Falsy type
 		   type = Type (type);
@@ -1908,6 +1940,19 @@ function typeFromSpec (type)
 		 { // It means StartsWithType or BiggerOrEqualType
 		   type = Type (type);
 		 }
+
+     if (value === null && type === null)
+		 { return true;
+		   // v.  "4.5"
+		   // instanceof test below would  cause error else
+		 }
+
+		 if (value === undefined && type === null)
+		 { return true;
+		   // v.  "4.5"
+		   // instanceof test below would  cause error else
+		 }
+
 
     try
     { if (value instanceof type)

@@ -5,6 +5,84 @@ For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
 
+##### v. 4.5.0: Fixed is(), expanded isNot()
+
+
+###### A) Fixed is() null-type behavior
+
+A fix  for is() and
+correspondingly to isNot()
+means that now:
+
+    ok  (is (null     , null));
+    ok  (is (undefined, null));
+
+    not (isNot (null     , null));
+    not (isNot (undefined, null));
+
+That makes sense, right? The main
+reason for the change was that above
+behavior now agrees with:
+
+    x(null, null)
+    x(undefined, null)
+
+See test.js test-function for is().
+
+
+###### B) xNot() now more proper negation of x()
+
+xNot() called without arguments no longer
+fails, because x() called without arguments does.
+
+So xNot() is now more properly the negation
+of x(). Also if there are multiple type-arguments
+given to xNot() it fails is any of them accepts
+the value argument as its member.
+
+See test.js section for xNot() .
+
+
+###### C) Clarifying test for Object-Types
+
+New tests fo ObjectType mroe clearly
+show what it measn to be an instance
+of ObjectType, the value must have
+all the fields declared with correct
+types of values, but it can have more.
+
+This simply says that a value must
+have ALL REQUIRED FIELDS, with correct
+types of values.
+
+    let Person =
+    Type ({ name: String
+          , age : Number
+         });
+
+    let bob = {name:  'Bob', age: 3.14};
+    x  (bob, Person);
+    ok (is (bob, Person));
+
+    let bob2
+    = { name  : 'Bob'
+      , age   :  3.14
+      , hobby : 'math'
+      };
+
+    x  (bob2, Person);
+    let notPerson
+    = { name  : 'Bob'
+      };
+    xNot (notPerson, Person);
+
+    let notPerson2 =
+    { name: 56
+    , age : 3.14
+    };
+    xNot (notPerson2, Person);
+
+
 ##### v. 4.4.0:  Better Paths
 
 ###### A) RELATIVE PATHS
