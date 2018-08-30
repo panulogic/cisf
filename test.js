@@ -1136,7 +1136,6 @@ let notPerson2 =
 };
 xNot (notPerson2, Person);
 
-debugger
 
 let XOb = Type ({x: 2});
 
@@ -1664,10 +1663,10 @@ function r ()
     return;
 	}
 
+
 // 4.4.0:
   ok ($path === path);
   ok ($fs   === fs);
-
 
 // Made the exports of cisf have $path and $fs
 // as synonyms for path and fs because often you
@@ -1675,7 +1674,6 @@ function r ()
 // a good idea to mark variables containing
 // build-in system imports differently from
 // ordinary local variables.
-
 
 	ok ( r ("path") === require ("path")) ;
 	ok ( r ("fs"  ) === require ("fs"))   ;  // etc.
@@ -1685,37 +1683,42 @@ function r ()
   ok (r.abs("") === cwd );
   ok (r.abs(cwd) === cwd );
 
-
   let relPath = r.rel(__filename);
   not (path.isAbsolute(relPath));
   ok (r.abs (r.rel (__filename) ) === __filename);
 
+
   ok (r (relPath) === require (__filename));
+
   // Above is the main reason for r(), you can
   // require modules by giving r() their path
   // relative to the cwd, so you don't need
-  // to type out the full host-specific abspath,
-  // nor use fragile non-portable module-relative
-  // upward paths.
-
+  // to type out the full absolute host-specific path,
+  // or use fragile non-portable module-relative
+  // upward paths. (you can not copy them elsewhere
+  // and expect them to require the same module)
 
 let rel = r.rel ;
 let abs = r.abs ;
 
-cwd = process.cwd(); // C:\Output\4_PRODUCE\Dev\ClassCloud
+let pathBelowCwd =  $path.resolve ("./abc");
+let pathBelowCwd2 = $path.resolve (rel (pathBelowCwd) );
+ok (pathBelowCwd2 === pathBelowCwd) ;
+
+let pathAboveCwd =  $path.resolve ("../abc");
+let pathAboveCwd2 = $path.resolve (rel (pathAboveCwd) );
+ok (pathAboveCwd2 === pathAboveCwd) ;
 
 
+cwd = process.cwd();
 let somePathAboveCwd = "C:\\Users";
 let rel3 = rel (somePathAboveCwd);
 let abs3 = abs (rel3);
 ok (abs3 === somePathAboveCwd) ;
 
-// issue abs returns windows paths but rel linux path.
-// TODO: Make rel alspo retunr the native path-format.
-// That is needed for working with Windows shell.
 
-ok (abs (rel (abs ("a/b/c/d")))  === abs("a\\b\\c\\d"));
-
+// ok (abs (rel (abs ("a/b/c/d")))  === abs("a\\b\\c\\d"));
+// Above would not be true on linux
 
 let relPathToDiskRoot = rel ("/") ;
 let diskRoot          = abs (relPathToDiskRoot);
@@ -1726,22 +1729,39 @@ diskRoot = abs (relPathToDiskRoot);
 ok (diskRoot.split($path.sep).length === 2);
 
 
-ok ( rel ( cwd ) === ".")
-ok (  rel ("abc"   ) === "abc"); // because arg is not absolute path
+// If 1st arg is relative rel() returns
+// is as is, since it is already relative:
+
+ok (rel ( cwd      ) === ".")
+ok (rel ("abc"     ) === "abc");
 ok (rel ("./abc"   ) === "./abc");
 ok (rel ("../abc"  ) === "../abc");
 ok (rel ("./../abc") === "./../abc");
 
 
-let pathBelowCwd =  $path.resolve ("./abc");
-let pathBelowCwd2 = $path.resolve (rel (pathBelowCwd) );
-ok (pathBelowCwd2 === pathBelowCwd) ;
+// 2nd OPTIONAL ARG CAN SPECIFY A BASE
+// FOR CALCULATING THE RELATIVE PATH:
 
-let pathAboveCwd =  $path.resolve ("../abc");
-let pathAboveCwd2 = $path.resolve (rel (pathAboveCwd) );
-ok (pathAboveCwd2 === pathAboveCwd) ;
+ok ( rel ( cwd     ) === "."); // Using default foir 2nd arg
+ok ( rel ( cwd, cwd) === "."); // Passing the default value for 2nd arg explicitly
 
-debugger
+let SEP = $path.sep ;
+
+let customCwd = $path.join     (cwd, "../");
+let cwdName   = $path.basename (cwd);
+ok ( rel (cwd, customCwd )  ===  "."  + SEP + cwdName);
+
+ok ( rel ("/a/b", "/a/b/c") ===  ".." + SEP  ) ;
+ok ( rel ("/a", "/a/b/c"  ) ===  ".." + SEP  + ".." + SEP) ;
+ok ( rel ("/a/b/c", "/a"  ) ===  "."  + SEP  + "b"  + SEP + "c") ;
+
+
+// Custom cwd does not affect the rel() -result
+// IF 1st arg is already relative:
+ok (rel ("abc", customCwd      ) === "abc");
+ok (rel ("./abc" , customCwd   ) === "./abc");
+ok (rel ("../abc", customCwd   ) === "../abc");
+ok (rel ("./../abc", customCwd ) === "./../abc");
 
 }
 

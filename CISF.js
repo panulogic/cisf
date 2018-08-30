@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.5.1" ;
+let CISF_VERSION = "4.6.0" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -1579,12 +1579,99 @@ function _Canary ()
 		 }
 
 /*
-rRelative() tells you waht r3elativwe path
+rRelative() tells you waht relative path
 you should add to the process cwd to get
 to the path that was given as argument
 to rRelative
  */
-     function rRelative (argPath)
+
+     function rRelative (argPath, customCwd)
+		 {
+		   if (! Path.isAbsolute(argPath))
+			 { return argPath;
+			   // if it is a relative path to start with
+			   // it can only mean relative to the cwd
+			   // so makes no sense to transform it
+			   // to anything else.
+			 }
+
+
+       let cwd = process.cwd();
+       if (customCwd)
+			 { cwd =  platformed (customCwd) ;
+			   // platformed so it looks like the real one
+			 }
+		   let argAbsPath = this.abs(argPath);
+
+       let dirPath  = argAbsPath;
+       let filePath = "";
+       if (dirPath.match (/\.w+$/))    // IT HAS A FILE-EXTENSION
+			 { dirPath  = Path.dirname (argAbsPath);
+         filePath = Path.basename(argAbsPath);
+			 }
+
+       if (argAbsPath  === cwd )
+			 {
+			   if (filePath)
+				 { return $path.join ("./",  filePath); // platformized
+				 }  //
+			   return "."; // dir-paths do not end in '/'
+			               // just a convention
+			 }
+
+       let relPath;
+
+			 if (  argAbsPath.includes(cwd))
+			 { // easy case the argpath is unde cwd.
+			   relPath =  argAbsPath.replace(cwd, "");
+			 } else
+			 {
+
+			   /*   muts go up from cwd    until
+			   we are at a dir that is part of the
+			   arg-abspath
+			   and build up the ../ while doing it.
+			   then remove that the common path-part
+			   from arg-path and prefix it with the
+			  accumulated ../.
+			    */
+			   let cwdParts  = cwd.split (Path.sep);
+			   let stepsUp = "";
+			   let cwdOrAbove = cwdParts.join('/') ;
+         while (true)
+				 { if (argAbsPath.includes (cwdOrAbove))
+					 { break;
+					 }
+					 cwdParts.pop();
+				   cwdOrAbove = cwdParts.join('/');
+					 stepsUp += "../";
+				 }
+         let downPath = argAbsPath.replace (cwdOrAbove, "");
+         relPath =  $path.join ( stepsUp,downPath);
+			 }
+       relPath = linux(relPath);
+
+		   //  since my result should not
+		   // be interpreted as absolute path
+		   // which everything starting with '/'
+		   // is on Linux we must not allow that
+
+		   if (relPath[0] === "/")
+			 { relPath =  "." +  relPath;
+		   }
+		   if (relPath[0] !== ".")
+			 { relPath =  "./" +  relPath;
+			    // all relative paths MUTS start wiht . or ..
+		   }
+
+			 return  platformed (relPath);
+			 // it is best to return platform path because
+			 // that  will work with Windows shell
+
+		 }
+
+
+     function rRelativeXXXXXXXXXXXXXXX (argPath)
 		 {
 		   if (! Path.isAbsolute(argPath))
 			 { return argPath;

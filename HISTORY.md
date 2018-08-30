@@ -4,6 +4,43 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+##### v. 4.6.0: r.rel() optional 2nd argument added
+
+If given the 2nd argument to r.rel()
+specifies a custom base-path to use
+instead of process.cwd()  relative to
+which the relative paths returned by
+r.rel() are relative to.
+
+Tests added to test.js:
+
+    // 2nd OPTIONAL ARG CAN SPECIFY A BASE
+    // FOR CALCULATING THE RELATIVE PATH:
+
+    let rel = r.rel ;
+
+    ok ( rel ( cwd ) === ".");
+    let SEP = $path.sep ;
+
+    let customCwd = $path.join     (cwd, "../");
+    let cwdName   = $path.basename (cwd);
+
+    ok ( rel (cwd, customCwd )  ===  "."  + SEP + cwdName);
+
+    ok ( rel ("/a/b", "/a/b/c") ===  ".." + SEP  ) ;
+    ok ( rel ("/a", "/a/b/c"  ) ===  ".." + SEP  + ".." + SEP) ;
+    ok ( rel ("/a/b/c", "/a"  ) ===  "."  + SEP  + "b"  + SEP + "c") ;
+
+
+    // Custom cwd does not affect the rel() -result
+    // IF 1st arg is already relative:
+
+    ok (rel ("abc", customCwd      ) === "abc");
+    ok (rel ("./abc" , customCwd   ) === "./abc");
+    ok (rel ("../abc", customCwd   ) === "../abc");
+    ok (rel ("./../abc", customCwd ) === "./../abc");
+
+
 
 ##### v. 4.5.1: Updated README.md
 
