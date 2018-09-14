@@ -4,6 +4,80 @@
 For information about future releases
 follow https://twitter.com/ClassCloudLLC.
 
+
+##### v. 5.0.0:  w({}).map() usable with library functions
+
+Small and slightly backwards incompatible
+change to the arguments of w().map() when
+looping over Objects.
+
+The test for the changed behavior in test.js i
+s as follows.
+
+// WRAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
+
+    let ob  = {a:22, b: 33};
+
+    let kvs = w(ob).map
+    ( ([k, v])  =>
+      {  return k  + v;
+      }
+    );
+
+    eq (kvs, ["a22", "b33"]);
+
+In previous versions the argument
+passed to the function given as
+argument to map() was simply the
+key. In the new implementation it
+is an array of two elements, the key
+and the value, of each "entry" in
+the argument-object we are mapping
+over.
+
+Why doe sit matter? IOn the previous
+version the function given as argument
+to map() had to be in the same scope
+as the call to mapo(), because in order
+for it to do anything with the key it
+got as argument, it had to refer to
+the object whose key it was. Thus
+in the old implementation the test-section
+above was:
+
+    let kvs = w(ob).map
+    ( key  =>
+      {  return key + ob[key];
+      }
+    );
+
+See, the arrow-function had to
+REFER to the 'ob' it is iterating
+over.
+
+The new implementation measn that the
+function you give as argument to
+w({}).map() can be a function that
+comes form a library. It need not
+have the obvject it is iterating over
+in the same scope.
+
+So this is a one small step for cisf,
+but it does mean if your code relies
+on the old behavior  of w({}).map(),
+to bneed to updated your code. We
+apologize not having this change
+already in place in the eqarlier
+versions. To make old compatible
+with the new version observe that
+the old version really was simply
+iterating over the KEYS of the object,
+which you can get at with Object.keys({}).
+
+Note, this is the ONLY change
+made for Cisf version 5.0.0.
+
+
 ##### v. 4.6.0: r.rel() optional 2nd argument added
 
 If given the 2nd argument to r.rel()

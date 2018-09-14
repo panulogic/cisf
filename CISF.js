@@ -1,4 +1,4 @@
-let CISF_VERSION = "4.6.0" ;
+let CISF_VERSION = "5.0.0" ;
 
 /* =========================================
    Copyright 2018 Class Cloud LLC
@@ -259,17 +259,16 @@ while (true)
  note we dont take ina function to map with
  because the result is an array so you can
  easily do that yourself.
-
   */
 			  }
 
 
-//			let values = Object.entries (anArray)
-//					           .map (e => e[1]);
-			let keys     = Object.keys (anArray);
-    	let mappedOb = keys.map (... mapArgs)
+//			let keys     = Object.keys (anArray);
+//    	let mappedOb = keys.map (... mapArgs)
 
-      return   mappedOb
+			 let entries =  Object.entries (anArray);
+			 let mappedOb = entries.map (... mapArgs)
+       return   mappedOb
 		  }
 
 		}      )

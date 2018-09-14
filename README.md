@@ -1,4 +1,4 @@
-# Cisf 4.6.0
+# Cisf 5.0.0
 
 Support for simple **Runtime Type-Assertions **
 in JavaScript, and assorted simple utilitites
@@ -614,9 +614,13 @@ cisf/test.js:
 
     // MAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
     let ob  = {a:22, b: 33};
+
     let kvs = w(ob).map
-    ( key  =>  key + ob[key]
+    ( ([k, v])  =>
+      { return k  + v;
+      }
     );
+
     eq (kvs, ["a22", "b33"]);
 
 

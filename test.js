@@ -118,12 +118,31 @@ function w ()  // w for 'wrapper'
 
 
   // WRAP AN OBJECT TO LOOP OVER ITS KV-PAIRS:
+
   let ob  = {a:22, b: 33};
   let kvs = w(ob).map
-  ( key  =>  key + ob[key]
+  ( ([k, v])  =>
+    { return k  + v;
+    }
   );
   eq (kvs, ["a22", "b33"]);
 
+
+/*--------- was:
+  let kvs = w(ob).map
+  ( key  =>
+    {  return key + ob[key];
+    }
+  );
+------------------------ */
+/*
+why change it to take [k,v] as argument?
+Because that means that any library function
+could be passed as argument to map the
+function need not exist in the same scope
+it does not need to KNOW about the object
+whose entries it is looping over.
+ */
 
   // WRAP A STRING TO LOOP OVER ITS CHARS:
   let asciis = w("ABC").map (e=>e.codePointAt(0));
